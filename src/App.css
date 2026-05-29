@@ -1097,3 +1097,33 @@ body {
     margin-right: 0 !important;
   }
 }
+@media screen and (max-width: 768px) {
+  /* Aligne le texte correctement pour l'arabe sur mobile */
+  body {
+    text-align: right;
+  }
+
+  /* Force les blocs empilés horizontalement à passer l'un sous l'autre */
+  .grid, .flex-row, [class*="container"] {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+
+  /* Empêche les éléments de dépasser sur les côtés */
+  .card, section, div {
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  /* Évite que les grands titres ne coupent ou ne débordent */
+  h1 {
+    font-size: 1.8rem !important;
+  }
+
+  /* Sécurité pour les images et logos */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+}
