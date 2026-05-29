@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import piSDK from './pi.js';
@@ -1147,6 +1148,7 @@ function useParamsFromRoute() {
 
 // ==================== MAIN APP ====================
 function App() {
+  const { t, i18n } = useTranslation();
   const [user, setUser] = useState(null);
   const [toasts, setToasts] = useState([]);
   const [showLogin, setShowLogin] = useState(false);
@@ -1208,7 +1210,7 @@ function App() {
   };
 
   return (
-    <div className="app-layout">
+    <div className="app-layout" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
       <ToastContainer toasts={toasts} removeToast={removeToast} />
       <Sidebar
         user={user}
@@ -1216,7 +1218,25 @@ function App() {
         navigate={navigate}
         onLogout={handleLogout}
       />
-      <main className="main-content">
+<main className="main-content">
+  <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+    <button 
+      onClick={() => i18n.changeLanguage('en')}
+      style={{
+        padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer',
+        background: i18n.language === 'en' ? '#6366f1' : '#1e293b',
+        color: 'white', border: '1px solid rgba(255,255,255,0.1)', fontWeight: 600
+      }}
+    >🇬🇧 EN</button>
+    <button 
+      onClick={() => i18n.changeLanguage('ar')}
+      style={{
+        padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer',
+        background: i18n.language === 'ar' ? '#6366f1' : '#1e293b',
+        color: 'white', border: '1px solid rgba(255,255,255,0.1)', fontWeight: 600
+      }}
+    >🇸🇦 AR</button>
+  </div>
         <Header
           user={user}
           onLogin={() => setShowLogin(true)}
