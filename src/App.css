@@ -857,6 +857,397 @@ body {
   }
 }
 
+/* ===== Corrections Mobiles Générales & Support RTL ===== */
+@media screen and (max-width: 768px) {
+  body {
+    text-align: right !important;
+  }
+
+  /* Force la barre latérale d'origine à se masquer correctement à droite en RTL */
+  .sidebar {
+    transform: translateX(100%) !important;
+    left: auto !important;
+    right: 0 !important;
+  }
+
+  /* Si elle a la classe .open, elle s'affiche correctement */
+  .sidebar.open {
+    transform: translateX(0) !important;
+  }
+
+  /* Force le contenu principal à occuper tout l'écran */
+  .main-content {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    width: 100% !important;
+    padding: 1rem !important;
+    padding-top: 5rem !important;
+  }
+
+  /* Empêche les éléments de dépasser sur les côtés */
+  .card, section, div, .hero, .header {
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  /* Force les lignes horizontales à passer en colonnes verticalement */
+  .grid, .flex-row, [class*="grid"], [class*="flex"] {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+
+  /* Sécurité pour les titres et les images */
+  h1 {
+    font-size: 1.8rem !important;
+  }
+
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+            }x solid var(--warning); }
+.toast-info { border-right: 4px solid var(--primary); }
+
+/* ===== Home Page ===== */
+.hero {
+  text-align: center;
+  padding: 3rem 1rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.hero-title {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, white, var(--primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.2;
+}
+
+.hero-subtitle {
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  color: var(--gray);
+  margin-bottom: 2rem;
+  line-height: 1.8;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.5rem;
+  margin-top: 3rem;
+}
+
+.stat-item h3 {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.stat-item p {
+  color: var(--gray);
+  font-size: 0.9rem;
+}
+
+.section-title {
+  text-align: center;
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
+  margin: 2.5rem 0 1.5rem;
+  color: var(--white);
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.category-card {
+  background: var(--dark-light);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.category-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--primary);
+}
+
+.category-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.category-name {
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.category-count {
+  color: var(--gray);
+  font-size: 0.75rem;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.service-card {
+  background: var(--dark-light);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.service-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+}
+
+.service-image {
+  width: 100%;
+  height: 180px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  position: relative;
+}
+
+.service-category {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(10px);
+  padding: 0.4rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.service-body {
+  padding: 1.25rem;
+}
+
+.service-freelancer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.service-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--white);
+}
+
+.service-desc {
+  color: var(--gray);
+  font-size: 0.8rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+}
+
+.service-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.service-price {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--secondary);
+}
+
+/* ===== Forms ===== */
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.form-input,
+.form-textarea,
+.form-select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--dark-light);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-md);
+  color: var(--white);
+  font-family: inherit;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+  border-color: var(--primary);
+}
+
+.form-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* ===== Tables ===== */
+.table-container {
+  overflow-x: auto;
+  border-radius: var(--radius-xl);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+.table th,
+.table td {
+  padding: 1rem;
+  text-align: right;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.table th {
+  background: rgba(255,255,255,0.05);
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--gray);
+}
+
+.table tr:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+/* ===== Pagination ===== */
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+
+.page-btn {
+  min-width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--dark-light);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--gray);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.page-btn:hover,
+.page-btn.active {
+  background: var(--primary);
+  color: var(--white);
+  border-color: var(--primary);
+}
+
+/* ===== Loading ===== */
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255,255,255,0.1);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ===== Empty State ===== */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.empty-state-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-state h3 {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+  color: var(--gray);
+  margin-bottom: 1.5rem;
+}
+
+/* ========================================
+   RESPONSIVE BREAKPOINTS
+   ======================================== */
+
+/* Tablet (max-width: 1024px) */
+@media (max-width: 1024px) {
+  :root {
+    --sidebar-width: 240px;
+  }
+
+  .services-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+}
+
 /* Tablet Small (max-width: 768px) */
 @media (max-width: 768px) {
   :root {
