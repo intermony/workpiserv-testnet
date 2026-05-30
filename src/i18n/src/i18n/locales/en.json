@@ -1,0 +1,49 @@
+{
+  "app": {
+    "name": "WorkPiServ",
+    "tagline": "Secure Freelancer Marketplace powered by Pi Network"
+  },
+  "nav": {
+    "home": "Home",
+    "marketplace": "Marketplace",
+    "orders": "My Orders",
+    "messages": "Messages",
+    "my_services": "My Services",
+    "earnings": "Earnings",
+    "profile": "Profile",
+    "admin": "Admin Panel",
+    "disputes": "Disputes",
+    "main_menu": "Main Menu",
+    "freelancer": "Freelancer",
+    "admin_section": "Administration"
+  },
+  "header": {
+    "search_placeholder": "Search services, freelancers...",
+    "login": "Login",
+    "logout": "Logout"
+  },
+  "home": {
+    "hero_title": "Get Work Done Securely with",
+    "hero_title_highlight": "Pi",
+    "hero_subtitle": "The first secure Arabic & global freelance platform powered by Pi cryptocurrency.",
+    "explore_services": "Explore Services",
+    "join_freelancer": "Join as Freelancer",
+    "popular_categories": "Popular Categories",
+    "featured_services": "Featured Services",
+    "stats_services": "Available Services",
+    "stats_freelancers": "Active Freelancers",
+    "stats_orders": "Successful Deals"
+  },
+  "roles": {
+    "client": "Client",
+    "freelancer": "Professional Freelancer",
+    "admin": "Administrator",
+    "visitor": "Visitor"
+  },
+  "common": {
+    "loading": "Loading...",
+    "close": "Close",
+    "save": "Save",
+    "cancel": "Cancel"
+  }
+}
