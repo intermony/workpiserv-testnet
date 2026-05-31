@@ -1038,3 +1038,63 @@ body {
     font-size: 1.25rem;
   }
 }
+/* ===== CORRECTIONS MOBILE ===== */
+
+/* Cacher la scrollbar violette */
+::-webkit-scrollbar { width: 0; background: transparent; }
+* { scrollbar-width: none; }
+
+/* Header mobile optimisé */
+@media screen and (max-width: 768px) {
+
+  /* Header en 2 lignes propres */
+  .header {
+    padding: 0.75rem 0;
+    gap: 0.5rem;
+  }
+
+  /* Actions header compactes */
+  .header-actions {
+    gap: 0.5rem;
+    flex-wrap: nowrap;
+  }
+
+  /* Balance pill plus petit */
+  .balance-pill {
+    padding: 0.4rem 0.65rem;
+    font-size: 0.85rem;
+    gap: 0.3rem;
+  }
+
+  /* Bouton déconnexion compact */
+  .btn-danger {
+    padding: 0.4rem 0.65rem !important;
+    font-size: 0.75rem !important;
+  }
+
+  /* Cloche compacte */
+  .btn-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+
+  /* Logo sidebar complet */
+  .sidebar-logo {
+    font-size: 1.2rem;
+    white-space: nowrap;
+    overflow: visible;
+  }
+
+  /* Menu items sur 1 ligne */
+  .sidebar-nav-item {
+    white-space: nowrap;
+    padding: 0.65rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  /* Sidebar plus étroite */
+  .sidebar {
+    width: 260px;
+  }
+     }
