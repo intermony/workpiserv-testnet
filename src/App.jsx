@@ -368,16 +368,16 @@ const ServiceCard = ({ service, onClick, T }) => (
 // ==================== HOME PAGE ====================
 const HomePage = ({ navigate, T }) => {
   const [services, setServices] = useState([]);
-  const stats = { services: 500, freelancers: 120, orders: 1200 };
+  const stats = { services: 0, freelancers: 0, orders: 0 };
 
   useEffect(() => {
     api.get('/api/services?limit=4').then(res => setServices(res.data.slice(0,4))).catch(()=>{});
   }, []);
 
   const categories = [
-    { key:'catDesign', icon:'🎨', count:120 }, { key:'catDev', icon:'💻', count:85 },
-    { key:'catMarketing', icon:'📢', count:64 }, { key:'catWriting', icon:'✍️', count:92 },
-    { key:'catVideo', icon:'🎬', count:45 }, { key:'catAudio', icon:'🎙️', count:33 },
+    { key:'catDesign', icon:'🎨', count:0 }, { key:'catDev', icon:'💻', count:0 },
+    { key:'catMarketing', icon:'📢', count:0 }, { key:'catWriting', icon:'✍️', count:0 },
+    { key:'catVideo', icon:'🎬', count:0 }, { key:'catAudio', icon:'🎙️', count:0 },
   ];
 
   return (
