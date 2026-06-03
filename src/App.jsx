@@ -494,13 +494,32 @@ const ServiceDetailPage = ({ navigate, user, addToast, T }) => {
     api.get(`/api/services/${id}`).then(res => setService(res.data)).catch(()=>{});
   }, [id]);
 
-  const handleOrder = async () => {
+ const handleOrder = async () => {
     if (!user) { addToast(T.loginFirst, 'warning'); return; }
     try {
-      const res = await api.post('/api/orders', { serviceId: service._id, requirements });
-      addToast(`✅ #${res.data._id}`, 'success');
-      navigate('/orders'); setShowOrderModal(false);
-    } catch (err) { addToast(err.response?.data?.error || T.errorCreatingOrder, 'error'); }
+      await piSDK.createPayment(
+        {
+          amount: service.price,
+          memo: `WorkPiServ: ${service.title}`,
+          serviceId: service._id,
+          requirements: requirements || ''
+        },
+        {
+          onReadyForServerApproval: (paymentId, data) => {
+            console.log('Approved:', data);
+          },
+          onReadyForServerCompletion: (paymentId, txid, data) => {
+            addToast(`✅ Paiement confirmé !`, 'success');
+            navigate('/orders');
+            setShowOrderModal(false);
+          },
+          onCancel: () => { addToast('Paiement annulé', 'warning'); },
+          onError: (err) => { addToast('Erreur paiement Pi', 'error'); }
+        }
+      );
+    } catch (err) {
+      addToast(err.message || T.errorCreatingOrder, 'error');
+    }
   };
 
   if (!service) return <div className="loading-spinner"><div className="spinner"/></div>;
