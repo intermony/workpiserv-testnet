@@ -1172,7 +1172,7 @@ const LoginModal = ({ isOpen, onClose, onLogin, onPiLogin, T }) => {
     {
       value: 'client',
       icon: '🛍️',
-      label: T.clientOption || 'Client',
+      label: 'Client',
       desc: 'Je cherche des services et des freelancers',
       color: '#0A2463',
       gradient: 'linear-gradient(135deg, #0A2463, #1B4F8A)',
@@ -1180,7 +1180,7 @@ const LoginModal = ({ isOpen, onClose, onLogin, onPiLogin, T }) => {
     {
       value: 'freelancer',
       icon: '💼',
-      label: T.freelancerOption || 'Freelancer',
+      label: 'Freelancer',
       desc: 'Je propose mes services et mes competences',
       color: '#F4801A',
       gradient: 'linear-gradient(135deg, #F4801A, #C9610A)',
