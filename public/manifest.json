@@ -1,0 +1,23 @@
+{
+  "name": "WorkPiServ Marketplace",
+  "short_name": "WorkPiServ",
+  "description": "Freelance skills marketplace on the Pi Network",
+  "icons": [
+    {
+      "src": "/logo192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#7B2FBE",
+  "background_color": "#1a0533"
+}
