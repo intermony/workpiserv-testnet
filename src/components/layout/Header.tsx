@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, ShoppingCart, Package, MessageCircle, Bell, Search, Menu, X } from 'lucide-react';
+import { Home, ShoppingCart, Package, MessageCircle, Bell, Search, Menu, X, LogOut, User } from 'lucide-react';
 import { useIsDesktop, useIsMobile } from '@/hooks/useMediaQuery';
 import { motion, AnimatePresence } from 'framer-motion';
+import { usePiAuth } from '@/hooks/usePiAuth';
 
 const navItems = [
   { label: 'Home', icon: Home, href: '/' },
@@ -19,6 +20,9 @@ export function Header() {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
+  // Pi Auth
+  const { user, loading, error, loggedIn, login, logout } = usePiAuth();
+
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener('scroll', handleScroll);
@@ -29,6 +33,47 @@ export function Header() {
     setMobileDrawerOpen(false);
   }, [location.pathname]);
 
+  // Login button — shows state (loading, logged in, or default)
+  const LoginButton = ({ className = '' }: { className?: string }) => {
+    if (loading) {
+      return (
+        <button disabled className={`btn-primary text-sm py-2 px-5 opacity-70 ${className}`}>
+          <span className="flex items-center gap-2">
+            <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            Connecting...
+          </span>
+        </button>
+      );
+    }
+
+    if (loggedIn && user) {
+      return (
+        <div className={`flex items-center gap-2 ${className}`}>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-brand-light rounded-full">
+            <User size={14} className="text-brand" />
+            <span className="text-sm font-medium text-brand">@{user.username}</span>
+          </div>
+          <button
+            onClick={logout}
+            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            aria-label="Logout"
+          >
+            <LogOut size={18} className="text-gray-500" />
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <button
+        onClick={login}
+        className={`btn-primary text-sm py-2 px-5 ${className}`}
+      >
+        Login with π
+      </button>
+    );
+  };
+
   return (
     <>
       <header
@@ -38,7 +83,7 @@ export function Header() {
       >
         <div className="section-container">
           <div className="flex items-center justify-between h-16">
-            {/* Left - Mobile Menu or Logo */}
+            {/* Left - Mobile Menu */}
             {isMobile ? (
               <button
                 onClick={() => setMobileDrawerOpen(true)}
@@ -93,21 +138,27 @@ export function Header() {
                 <Search size={20} className="text-gray-500" />
               </button>
 
-              {/* Notification */}
-              <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors relative hidden sm:block" aria-label="Notifications">
-                <Bell size={20} className="text-gray-500" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
-              </button>
+              {/* Notifications — only when logged in */}
+              {loggedIn && (
+                <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors relative hidden sm:block" aria-label="Notifications">
+                  <Bell size={20} className="text-gray-500" />
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
+                </button>
+              )}
 
-              {/* Login */}
-              <Link
-                to="#"
-                className="btn-primary text-sm py-2 px-5 hidden sm:inline-flex"
-              >
-                Login
-              </Link>
+              {/* Login / User */}
+              <div className="hidden sm:block">
+                <LoginButton />
+              </div>
             </div>
           </div>
+
+          {/* Error message */}
+          {error && (
+            <div className="py-2 px-4 bg-red-50 text-red-600 text-sm text-center border-t border-red-100">
+              {error}
+            </div>
+          )}
         </div>
 
         {/* Search Overlay */}
@@ -170,10 +221,7 @@ export function Header() {
                       Work<span className="text-brand">π</span>Serv
                     </span>
                   </Link>
-                  <button
-                    onClick={() => setMobileDrawerOpen(false)}
-                    className="p-2 rounded-lg hover:bg-gray-100"
-                  >
+                  <button onClick={() => setMobileDrawerOpen(false)} className="p-2 rounded-lg hover:bg-gray-100">
                     <X size={20} />
                   </button>
                 </div>
@@ -195,9 +243,7 @@ export function Header() {
                   })}
                 </nav>
                 <div className="mt-6 pt-6 border-t border-gray-200">
-                  <Link to="#" className="btn-primary w-full text-center block">
-                    Login
-                  </Link>
+                  <LoginButton className="w-full text-center" />
                 </div>
               </div>
             </motion.div>
