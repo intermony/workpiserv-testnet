@@ -15,13 +15,21 @@ interface UsePiAuthReturn {
   logout: () => void;
 }
 
+// Initialize Pi SDK once when module loads
+if (window.Pi) {
+  try {
+    window.Pi.init({ version: '2.0', sandbox: true });
+  } catch (e) {
+    console.warn('Pi SDK init failed:', e);
+  }
+}
+
 export function usePiAuth(): UsePiAuthReturn {
   const [user, setUser] = useState<PiUser | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const login = useCallback(async () => {
-    // Check Pi SDK availability at click time, not render time
     if (!window.Pi) {
       setError('Please open WorkPiServ inside the Pi Browser app to login.');
       setTimeout(() => setError(null), 5000);
@@ -32,9 +40,6 @@ export function usePiAuth(): UsePiAuthReturn {
     setError(null);
 
     try {
-      // Init Pi SDK just before authenticate
-      window.Pi.init({ version: '2.0', sandbox: true });
-
       const auth = await window.Pi.authenticate(
         ['username', 'payments'],
         (payment) => {
