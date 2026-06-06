@@ -1,6 +1,5 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import { useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
@@ -10,7 +9,7 @@ import ServiceDetailPage from '@/pages/ServiceDetailPage';
 import OrdersPage from '@/pages/OrdersPage';
 import ProfilePage from '@/pages/ProfilePage';
 
-// Pi SDK init (called once on app load)
+// Pi SDK types
 declare global {
   interface Window {
     Pi?: {
@@ -34,12 +33,8 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 export default function App() {
   const location = useLocation();
 
-  useEffect(() => {
-    // Initialize Pi SDK on app load
-    if (window.Pi) {
-      window.Pi.init({ version: '2.0', sandbox: true }); // Set sandbox: false for production
-    }
-  }, []);
+  // Pi.init() is called only inside usePiAuth when user clicks Login
+  // Do NOT call it here to avoid timeout on non-Pi browsers
 
   return (
     <AppLayout>
