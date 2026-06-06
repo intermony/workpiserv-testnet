@@ -11,16 +11,36 @@ interface UsePiAuthReturn {
   loading: boolean;
   error: string | null;
   loggedIn: boolean;
+  inPiBrowser: boolean;
   login: () => Promise<void>;
   logout: () => void;
 }
 
-// Initialize Pi SDK once when module loads
-if (window.Pi) {
+// Detect Pi Browser
+function detectPiBrowser(): boolean {
+  return typeof window !== 'undefined' && !!window.Pi;
+}
+
+// Detect user language (system/browser)
+function getPiBrowserMessage(): string {
+  const lang = navigator.language?.toLowerCase() || 'en';
+  
+  if (lang.startsWith('ar')) {
+    return 'افتح WorkPiServ في تطبيق Pi Browser لتسجيل الدخول والمعاملات الحقيقية';
+  }
+  if (lang.startsWith('fr')) {
+    return 'Ouvrez WorkPiServ dans Pi Browser pour vous connecter et effectuer de vraies transactions';
+  }
+  // Default English
+  return 'Open WorkPiServ in the Pi Browser app to login and make real transactions';
+}
+
+// Init Pi SDK if available
+if (typeof window !== 'undefined' && window.Pi) {
   try {
-    window.Pi.init({ version: '2.0', sandbox: true });
+    window.Pi.init({ version: '2.0', sandbox: false }); // sandbox: false = production
   } catch (e) {
-    console.warn('Pi SDK init failed:', e);
+    console.warn('Pi SDK init:', e);
   }
 }
 
@@ -28,11 +48,13 @@ export function usePiAuth(): UsePiAuthReturn {
   const [user, setUser] = useState<PiUser | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const inPiBrowser = detectPiBrowser();
 
   const login = useCallback(async () => {
-    if (!window.Pi) {
-      setError('Please open WorkPiServ inside the Pi Browser app to login.');
-      setTimeout(() => setError(null), 5000);
+    // Not in Pi Browser — show multilingual message
+    if (!inPiBrowser) {
+      setError(getPiBrowserMessage());
+      setTimeout(() => setError(null), 6000);
       return;
     }
 
@@ -40,10 +62,11 @@ export function usePiAuth(): UsePiAuthReturn {
     setError(null);
 
     try {
-      const auth = await window.Pi.authenticate(
+      const auth = await window.Pi!.authenticate(
         ['username', 'payments'],
         (payment) => {
-          console.warn('Incomplete payment found:', payment);
+          console.warn('Incomplete payment — sending to backend:', payment);
+          // TODO: send to backend to resolve incomplete payment
         }
       );
 
@@ -55,7 +78,7 @@ export function usePiAuth(): UsePiAuthReturn {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [inPiBrowser]);
 
   const logout = useCallback(() => {
     apiLogout();
@@ -67,6 +90,7 @@ export function usePiAuth(): UsePiAuthReturn {
     loading,
     error,
     loggedIn: isLoggedIn() || user !== null,
+    inPiBrowser,
     login,
     logout,
   };
