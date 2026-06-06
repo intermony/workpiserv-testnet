@@ -1,19 +1,21 @@
-name: Deploy WorkPiServ
+name: Deploy WorkPiServ to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [kimi-design]
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm install
@@ -21,9 +23,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          VITE_API_URL: https://workpiserv-backend.onrender.com
-          VITE_PI_APP_ID: workpiserv
-          VITE_PI_SANDBOX: false
+          VITE_BACKEND_URL: https://workpiserv-backend.onrender.com
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
