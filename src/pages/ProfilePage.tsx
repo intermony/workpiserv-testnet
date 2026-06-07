@@ -1,15 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MapPin, Calendar, Star, ShoppingBag, CheckCircle,
-  Clock, MessageCircle, Share2, Edit3, LayoutGrid, User, Settings
+  Clock, MessageCircle, Share2, Edit3, LayoutGrid, User, Settings, LogIn
 } from 'lucide-react';
-import { freelancers } from '@/data/users';
 import { services } from '@/data/services';
-import { reviews } from '@/data/reviews';
 import { ScrollReveal } from '@/components/shared/ScrollReveal';
 import { StarRating } from '@/components/shared/StarRating';
 import { ServiceCard } from '@/components/shared/ServiceCard';
+import { usePiAuth } from '@/hooks/usePiAuth';
+
+const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api.onrender.com';
 
 const profileTabs = [
   { key: 'services', label: 'Services', icon: LayoutGrid },
@@ -18,26 +19,119 @@ const profileTabs = [
   { key: 'settings', label: 'Settings', icon: Settings },
 ];
 
+interface ProfileData {
+  _id: string;
+  username: string;
+  displayName?: string;
+  title?: string;
+  bio?: string;
+  location?: string;
+  avatar?: string;
+  memberSince?: string;
+  rating?: number;
+  completedOrders?: number;
+  completionRate?: number;
+  responseTime?: string;
+  yearsExp?: number;
+  skills?: string[];
+  languages?: { name: string; level: string; flag: string }[];
+  balance?: number;
+  type?: string;
+  online?: boolean;
+}
+
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState('services');
-  const freelancer = freelancers.sarah;
-  const freelancerServices = services.filter(s => s.freelancer.id === freelancer.id);
+  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { user, loggedIn, inPiBrowser, login } = usePiAuth();
+
+  useEffect(() => {
+    async function loadProfile() {
+      const token = localStorage.getItem('workpiserv_token');
+      if (!token) { setLoading(false); return; }
+      try {
+        const res = await fetch(`${API_URL}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setProfile(data);
+        }
+      } catch (err) {
+        console.error('Profile load error:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadProfile();
+  }, [user]);
+
+  // Not logged in
+  if (!loggedIn && !loading) {
+    return (
+      <main className="min-h-screen pb-20 flex items-center justify-center">
+        <div className="text-center p-8">
+          <div className="w-20 h-20 bg-brand-light rounded-full flex items-center justify-center mx-auto mb-4">
+            <User size={36} className="text-brand" />
+          </div>
+          <h2 className="font-heading font-bold text-2xl text-navy mb-2">Your Profile</h2>
+          <p className="text-gray-500 mb-6">Login with Pi to access your profile</p>
+          {inPiBrowser ? (
+            <button onClick={login} className="btn-primary flex items-center gap-2 mx-auto">
+              <LogIn size={18} /> Login with π
+            </button>
+          ) : (
+            <p className="text-sm text-gray-400">Open WorkπServ in Pi Browser to login</p>
+          )}
+        </div>
+      </main>
+    );
+  }
+
+  // Loading state
+  if (loading) {
+    return (
+      <main className="min-h-screen pb-20">
+        <div className="h-48 lg:h-72 bg-gradient-to-br from-navy to-[#312E81] rounded-b-3xl animate-pulse" />
+        <div className="section-container -mt-12 relative z-10">
+          <div className="card-surface p-6 animate-pulse">
+            <div className="flex gap-6">
+              <div className="w-24 h-24 rounded-full bg-gray-200 -mt-20" />
+              <div className="flex-1 space-y-3 pt-2">
+                <div className="h-6 bg-gray-200 rounded w-40" />
+                <div className="h-4 bg-gray-200 rounded w-60" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // Use profile from backend or fallback to auth user
+  const displayName = profile?.displayName || profile?.username || user?.username || 'Pioneer';
+  const username = profile?.username || user?.username || '';
+  const title = profile?.title || 'Client & Freelancer on WorkπServ';
+  const bio = profile?.bio || 'Welcome to WorkπServ! Start by browsing services or creating your own.';
+  const location = profile?.location || 'Pi Network';
+  const memberSince = profile?.memberSince ? new Date(profile.memberSince).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'June 2026';
+  const rating = profile?.rating || 0;
+  const completedOrders = profile?.completedOrders || 0;
+  const balance = profile?.balance || 0;
+  const skills = profile?.skills || [];
+  const languages = profile?.languages || [];
+  const avatarInitial = username.charAt(0).toUpperCase();
 
   const stats = [
-    { value: freelancer.rating, label: 'Rating', icon: Star },
-    { value: freelancer.orders, label: 'Orders', icon: ShoppingBag },
-    { value: freelancer.completion, label: 'Completion', icon: CheckCircle },
-    { value: freelancer.responseTime, label: 'Response', icon: Clock },
-    { value: `${freelancer.yearsExp}`, label: 'Years Exp.', icon: Calendar },
+    { value: rating > 0 ? rating.toFixed(1) : '—', label: 'Rating', icon: Star },
+    { value: completedOrders, label: 'Orders', icon: ShoppingBag },
+    { value: profile?.completionRate ? `${profile.completionRate}%` : '—', label: 'Completion', icon: CheckCircle },
+    { value: profile?.responseTime || '—', label: 'Response', icon: Clock },
+    { value: profile?.yearsExp || '—', label: 'Years', icon: Calendar },
   ];
 
-  const ratingBreakdown = [
-    { stars: 5, count: 105 },
-    { stars: 4, count: 12 },
-    { stars: 3, count: 4 },
-    { stars: 2, count: 2 },
-    { stars: 1, count: 1 },
-  ];
+  const myServices = services.filter(s => s.freelancer.username === username);
 
   return (
     <main className="min-h-screen pb-20">
@@ -45,51 +139,51 @@ export default function ProfilePage() {
       <div className="h-48 lg:h-72 bg-gradient-to-br from-navy to-[#312E81] rounded-b-3xl" />
 
       <div className="section-container -mt-12 lg:-mt-16 relative z-10">
-        {/* Profile Info Card */}
         <ScrollReveal>
           <div className="card-surface p-6 shadow-lg">
             <div className="flex flex-col md:flex-row gap-6">
               {/* Avatar */}
               <div className="-mt-20 md:-mt-24 mx-auto md:mx-0">
                 <div className="relative">
-                  <img
-                    src={freelancer.avatar}
-                    alt={freelancer.name}
-                    className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-white shadow-lg"
-                  />
-                  {freelancer.online && (
-                    <span className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full" />
+                  {profile?.avatar ? (
+                    <img src={profile.avatar} alt={displayName} className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-white shadow-lg" />
+                  ) : (
+                    <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white shadow-lg bg-brand flex items-center justify-center">
+                      <span className="text-white font-bold text-4xl">{avatarInitial}</span>
+                    </div>
                   )}
+                  <span className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full" />
                 </div>
               </div>
 
               {/* Info */}
               <div className="flex-1 text-center md:text-left">
                 <div className="flex flex-col md:flex-row md:items-center gap-2">
-                  <h1 className="font-heading font-bold text-2xl text-navy">{freelancer.name}</h1>
-                  {freelancer.online && (
-                    <span className="text-xs text-green-600 font-medium">Online</span>
-                  )}
+                  <h1 className="font-heading font-bold text-2xl text-navy">{displayName}</h1>
+                  <span className="text-xs text-green-600 font-medium">Online</span>
                 </div>
-                <p className="text-gray-500 mt-1">{freelancer.title}</p>
+                <p className="text-gray-500 mt-1">@{username}</p>
+                <p className="text-gray-600 mt-1">{title}</p>
                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mt-2 text-sm text-gray-500">
-                  <span className="flex items-center gap-1">
-                    <MapPin size={14} /> {freelancer.location}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Calendar size={14} /> Member since {freelancer.memberSince}
-                  </span>
+                  <span className="flex items-center gap-1"><MapPin size={14} /> {location}</span>
+                  <span className="flex items-center gap-1"><Calendar size={14} /> Member since {memberSince}</span>
+                </div>
+
+                {/* Balance */}
+                <div className="inline-flex items-center gap-2 mt-3 px-4 py-1.5 bg-brand-light rounded-full">
+                  <span className="text-sm font-bold text-brand">π {balance.toFixed(2)}</span>
+                  <span className="text-xs text-gray-500">balance</span>
                 </div>
 
                 {/* Actions */}
                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-4">
                   <button className="btn-primary text-sm py-2 px-5 flex items-center gap-2">
-                    <MessageCircle size={16} /> Contact Me
+                    <MessageCircle size={16} /> Messages
                   </button>
                   <button className="btn-ghost text-sm py-2 px-4 flex items-center gap-2">
                     <Share2 size={16} /> Share
                   </button>
-                  <button className="btn-secondary text-sm py-2 px-4 flex items-center gap-2">
+                  <button onClick={() => setActiveTab('settings')} className="btn-secondary text-sm py-2 px-4 flex items-center gap-2">
                     <Edit3 size={16} /> Edit Profile
                   </button>
                 </div>
@@ -110,11 +204,9 @@ export default function ProfilePage() {
 
         {/* Tabs */}
         <div className="mt-6 sticky top-16 z-30 bg-[#F3F4F6] pt-2">
-          <div className="bg-white border border-gray-200 rounded-xl p-1 flex gap-1 overflow-x-auto scrollbar-hide">
+          <div className="bg-white border border-gray-200 rounded-xl p-1 flex gap-1 overflow-x-auto">
             {profileTabs.map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
+              <button key={tab.key} onClick={() => setActiveTab(tab.key)}
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                   activeTab === tab.key ? 'bg-brand-light text-brand' : 'text-gray-500 hover:bg-gray-50'
                 }`}
@@ -129,225 +221,120 @@ export default function ProfilePage() {
         {/* Tab Content */}
         <div className="mt-6">
           <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            >
+            <motion.div key={activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+
               {/* Services Tab */}
               {activeTab === 'services' && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {freelancerServices.length > 0 ? (
-                    freelancerServices.map((service, index) => (
-                      <ServiceCard key={service.id} service={service} index={index} />
-                    ))
+                <div>
+                  {myServices.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                      {myServices.map((service, index) => (
+                        <ServiceCard key={service.id} service={service} index={index} />
+                      ))}
+                    </div>
                   ) : (
-                    services.slice(0, 3).map((service, index) => (
-                      <ServiceCard key={service.id} service={service} index={index} />
-                    ))
+                    <div className="card-surface p-12 text-center">
+                      <LayoutGrid size={48} className="text-gray-300 mx-auto mb-4" />
+                      <h3 className="font-heading font-bold text-lg text-navy mb-2">No services yet</h3>
+                      <p className="text-gray-500 mb-6">Create your first service and start earning Pi</p>
+                      <button className="btn-primary">+ Create a Service</button>
+                    </div>
                   )}
                 </div>
               )}
 
               {/* Reviews Tab */}
               {activeTab === 'reviews' && (
-                <div className="card-surface p-6 lg:p-8">
-                  {/* Rating Summary */}
-                  <div className="flex flex-col sm:flex-row gap-8 mb-8">
-                    <div className="text-center sm:text-left">
-                      <div className="text-5xl font-bold text-navy">{freelancer.rating}</div>
-                      <StarRating rating={freelancer.rating} size={24} className="mt-2 justify-center sm:justify-start" />
-                      <p className="text-sm text-gray-500 mt-1">{freelancer.orders} reviews</p>
+                <div className="card-surface p-6">
+                  {rating > 0 ? (
+                    <div className="text-center">
+                      <div className="text-5xl font-bold text-navy">{rating.toFixed(1)}</div>
+                      <StarRating rating={rating} size={24} className="mt-2 justify-center" />
+                      <p className="text-sm text-gray-500 mt-1">{completedOrders} completed orders</p>
                     </div>
-                    <div className="flex-1 space-y-2">
-                      {ratingBreakdown.map(item => {
-                        const total = ratingBreakdown.reduce((a, b) => a + b.count, 0);
-                        const pct = (item.count / total) * 100;
-                        return (
-                          <div key={item.stars} className="flex items-center gap-3">
-                            <span className="text-sm text-gray-600 w-8">{item.stars} ★</span>
-                            <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                              <div className="h-full bg-amber-400 rounded-full" style={{ width: `${pct}%` }} />
-                            </div>
-                            <span className="text-xs text-gray-400 w-8 text-right">{item.count}</span>
-                          </div>
-                        );
-                      })}
+                  ) : (
+                    <div className="text-center py-8">
+                      <Star size={48} className="text-gray-300 mx-auto mb-4" />
+                      <h3 className="font-heading font-bold text-lg text-navy mb-2">No reviews yet</h3>
+                      <p className="text-gray-500">Complete your first order to get reviews</p>
                     </div>
-                  </div>
-
-                  {/* Review List */}
-                  <div className="space-y-0 divide-y divide-gray-100">
-                    {reviews.map((review, index) => (
-                      <motion.div
-                        key={review.id}
-                        initial={{ opacity: 0, y: 12 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: index * 0.08 }}
-                        className="py-5"
-                      >
-                        <div className="flex items-center gap-3">
-                          <img src={review.avatar} alt={review.author} className="w-10 h-10 rounded-full object-cover" />
-                          <div>
-                            <span className="font-medium text-navy text-sm">{review.author}</span>
-                            <p className="text-xs text-gray-400">{review.date}</p>
-                          </div>
-                        </div>
-                        <div className="mt-2">
-                          <StarRating rating={review.rating} size={14} showValue />
-                        </div>
-                        <p className="mt-2 text-sm text-gray-600">{review.content}</p>
-                        <span className="inline-block mt-2 bg-brand-light text-brand text-xs px-2.5 py-1 rounded-full">
-                          {review.package}
-                        </span>
-                      </motion.div>
-                    ))}
-                  </div>
+                  )}
                 </div>
               )}
 
               {/* About Tab */}
               {activeTab === 'about' && (
                 <div className="space-y-6">
-                  <div className="card-surface p-6 lg:p-8">
+                  <div className="card-surface p-6">
                     <h3 className="font-heading font-bold text-lg text-navy mb-4">About Me</h3>
-                    <div className="text-gray-600 leading-relaxed space-y-4">
-                      <p>{freelancer.bio}</p>
-                    </div>
+                    <p className="text-gray-600 leading-relaxed">{bio}</p>
                   </div>
-
-                  <div className="card-surface p-6 lg:p-8">
-                    <h3 className="font-heading font-bold text-lg text-navy mb-4">Skills</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {freelancer.skills?.map(skill => (
-                        <span
-                          key={skill}
-                          className="px-4 py-2 border border-brand/30 text-brand text-sm rounded-full"
-                        >
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="card-surface p-6 lg:p-8">
-                    <h3 className="font-heading font-bold text-lg text-navy mb-4">Languages</h3>
-                    <div className="space-y-3">
-                      {freelancer.languages?.map(lang => (
-                        <div key={lang.name} className="flex items-center gap-3">
-                          <span className="text-lg">{lang.flag}</span>
-                          <span className="text-sm text-gray-700">{lang.name}</span>
-                          <span className="text-xs text-gray-400 ml-auto">{lang.level}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="card-surface p-6 lg:p-8">
-                    <h3 className="font-heading font-bold text-lg text-navy mb-4">Experience</h3>
-                    <div className="space-y-4">
-                      <div className="flex gap-4">
-                        <div className="w-3 h-3 rounded-full bg-brand shrink-0 mt-1.5" />
-                        <div>
-                          <p className="font-medium text-navy text-sm">Senior Brand Designer — Freelance</p>
-                          <p className="text-xs text-gray-400">2022 - Present</p>
-                          <p className="text-sm text-gray-500 mt-1">Working with clients globally through WorkPi Serv and other platforms</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-4">
-                        <div className="w-3 h-3 rounded-full bg-brand shrink-0 mt-1.5" />
-                        <div>
-                          <p className="font-medium text-navy text-sm">Graphic Designer — Creative Agency Casablanca</p>
-                          <p className="text-xs text-gray-400">2020 - 2022</p>
-                          <p className="text-sm text-gray-500 mt-1">Led brand design projects for 50+ clients</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-4">
-                        <div className="w-3 h-3 rounded-full bg-gray-300 shrink-0 mt-1.5" />
-                        <div>
-                          <p className="font-medium text-navy text-sm">Bachelor of Fine Arts — Design</p>
-                          <p className="text-xs text-gray-400">Universite Hassan II, Casablanca — 2016-2020</p>
-                        </div>
+                  {skills.length > 0 && (
+                    <div className="card-surface p-6">
+                      <h3 className="font-heading font-bold text-lg text-navy mb-4">Skills</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {skills.map(skill => (
+                          <span key={skill} className="px-4 py-2 border border-brand/30 text-brand text-sm rounded-full">{skill}</span>
+                        ))}
                       </div>
                     </div>
-                  </div>
+                  )}
+                  {languages.length > 0 && (
+                    <div className="card-surface p-6">
+                      <h3 className="font-heading font-bold text-lg text-navy mb-4">Languages</h3>
+                      <div className="space-y-3">
+                        {languages.map(lang => (
+                          <div key={lang.name} className="flex items-center gap-3">
+                            <span className="text-lg">{lang.flag}</span>
+                            <span className="text-sm text-gray-700">{lang.name}</span>
+                            <span className="text-xs text-gray-400 ml-auto">{lang.level}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
               {/* Settings Tab */}
               {activeTab === 'settings' && (
                 <div className="max-w-2xl">
-                  <div className="card-surface p-6 lg:p-8">
+                  <div className="card-surface p-6">
                     <h3 className="font-heading font-bold text-lg text-navy mb-6">Personal Information</h3>
                     <div className="space-y-4">
                       <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Pi Username</label>
+                        <input type="text" value={`@${username}`} readOnly className="w-full h-12 px-4 border border-gray-200 rounded-xl text-base bg-gray-50 text-gray-500 cursor-not-allowed" />
+                        <p className="text-xs text-gray-400 mt-1">Pi username cannot be changed</p>
+                      </div>
+                      <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1.5">Display Name</label>
-                        <input
-                          type="text"
-                          defaultValue={freelancer.name}
-                          className="w-full h-12 px-4 border border-gray-200 rounded-xl text-base focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
-                        />
+                        <input type="text" defaultValue={displayName} className="w-full h-12 px-4 border border-gray-200 rounded-xl text-base focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1.5">Professional Title</label>
-                        <input
-                          type="text"
-                          defaultValue={freelancer.title}
-                          className="w-full h-12 px-4 border border-gray-200 rounded-xl text-base focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
-                        />
+                        <input type="text" defaultValue={title} className="w-full h-12 px-4 border border-gray-200 rounded-xl text-base focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1.5">Bio</label>
-                        <textarea
-                          defaultValue={freelancer.bio}
-                          rows={4}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl text-base focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all resize-y"
-                        />
+                        <textarea defaultValue={bio} rows={4} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-base focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all resize-y" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1.5">Location</label>
-                        <input
-                          type="text"
-                          defaultValue={freelancer.location}
-                          className="w-full h-12 px-4 border border-gray-200 rounded-xl text-base focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
-                        />
+                        <input type="text" defaultValue={location} className="w-full h-12 px-4 border border-gray-200 rounded-xl text-base focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all" />
                       </div>
                     </div>
-
-                    <h3 className="font-heading font-bold text-lg text-navy mt-8 mb-6 pt-6 border-t border-gray-200">
-                      Notification Preferences
-                    </h3>
-                    <div className="space-y-4">
-                      {[
-                        { label: 'Email notifications for new orders', default: true },
-                        { label: 'Email notifications for messages', default: true },
-                        { label: 'Order status updates', default: true },
-                        { label: 'Marketing emails', default: false },
-                        { label: 'Browser notifications', default: true },
-                      ].map(item => (
-                        <div key={item.label} className="flex items-center justify-between py-2">
-                          <span className="text-sm text-gray-700">{item.label}</span>
-                          <label className="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" defaultChecked={item.default} className="sr-only peer" />
-                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand" />
-                          </label>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="mt-8 pt-6 border-t border-gray-200">
+                    <div className="mt-6">
                       <button className="btn-primary w-full py-3">Save Changes</button>
                     </div>
                   </div>
                 </div>
               )}
+
             </motion.div>
           </AnimatePresence>
         </div>
       </div>
     </main>
   );
-}
+                                }
