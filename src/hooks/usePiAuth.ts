@@ -1,9 +1,18 @@
 import { useState, useCallback } from 'react';
 import { piSDK, isPiBrowser } from '@/lib/pi';
 
+const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api.onrender.com';
+
 interface PiUser {
-  uid: string;
+  _id: string;
+  uid?: string;
   username: string;
+  balance: number;
+  type: string;
+  unreadNotifications: number;
+  unreadMessages: number;
+  newOrders: number;
+  avatar: string;
 }
 
 interface UsePiAuthReturn {
@@ -14,6 +23,19 @@ interface UsePiAuthReturn {
   inPiBrowser: boolean;
   login: () => Promise<void>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
+}
+
+async function fetchMe(): Promise<PiUser | null> {
+  const token = localStorage.getItem('workpiserv_token');
+  if (!token) return null;
+  try {
+    const res = await fetch(`${API_URL}/api/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch { return null; }
 }
 
 export function usePiAuth(): UsePiAuthReturn {
@@ -26,14 +48,18 @@ export function usePiAuth(): UsePiAuthReturn {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Detected at click time, not render time — avoids timeout
   const inPiBrowser = isPiBrowser();
 
-  const login = useCallback(async () => {
-    if (!inPiBrowser) {
-      // Show modal — handled in Header
-      return;
+  const refreshUser = useCallback(async () => {
+    const fresh = await fetchMe();
+    if (fresh) {
+      setUser(fresh);
+      localStorage.setItem('workpiserv_user', JSON.stringify(fresh));
     }
+  }, []);
+
+  const login = useCallback(async () => {
+    if (!inPiBrowser) return; // Modal handled in Header
 
     setLoading(true);
     setError(null);
@@ -41,7 +67,11 @@ export function usePiAuth(): UsePiAuthReturn {
     try {
       const result = await piSDK.authenticate();
       if (result?.user) {
-        setUser({ uid: result.user.uid, username: result.user.username });
+        // Fetch full profile from backend
+        const full = await fetchMe();
+        const userData = full || { ...result.user, balance: 0, type: 'both', unreadNotifications: 0, unreadMessages: 0, newOrders: 0, avatar: result.user.username.charAt(0) };
+        setUser(userData as PiUser);
+        localStorage.setItem('workpiserv_user', JSON.stringify(userData));
       } else {
         setError('Authentication failed. Please try again.');
         setTimeout(() => setError(null), 5000);
@@ -67,6 +97,6 @@ export function usePiAuth(): UsePiAuthReturn {
     inPiBrowser,
     login,
     logout,
+    refreshUser,
   };
-}
-  
+  }
