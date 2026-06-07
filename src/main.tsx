@@ -11,9 +11,14 @@ import '@fontsource/inter/600.css'
 import './index.css'
 import App from './App.tsx'
 
+// Auto-detect basename:
+// - GitHub Pages: intermony.github.io/WorkPiServ → basename="/WorkPiServ"
+// - workpiserv.com → basename="/"
+const basename = window.location.hostname.includes('github.io') ? '/WorkPiServ' : '/';
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter basename="/WorkPiServ">
+    <BrowserRouter basename={basename}>
       <App />
     </BrowserRouter>
   </StrictMode>,
