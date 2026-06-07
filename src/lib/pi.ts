@@ -1,14 +1,18 @@
+// بسم الله الرحمن الرحيم
 // WorkPiServ Pi Network SDK Integration
-// Porté de pi.js (main) vers TypeScript pour kimi-design
-// يعمل على Sandbox (Testnet) و Mainnet
+// Connecté au backend workpiserv-backend sur Render + MongoDB Atlas
 
-const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-backend.onrender.com';
+const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api.onrender.com';
 
-// Detect real Pi Browser by User Agent
 export function isPiBrowser(): boolean {
   if (typeof navigator === 'undefined') return false;
   const ua = navigator.userAgent.toLowerCase();
   return ua.includes('pibrowser') || ua.includes('pi network') || ua.includes('pinetwork');
+}
+
+interface PiAuthResult {
+  user: { uid: string; username: string };
+  accessToken: string;
 }
 
 interface OrderData {
@@ -31,7 +35,7 @@ class PiSDK {
 
   async init(): Promise<boolean> {
     if (typeof window === 'undefined' || !window.Pi) {
-      console.warn('Pi SDK not loaded');
+      console.warn('Pi SDK not available');
       return false;
     }
     try {
@@ -46,41 +50,72 @@ class PiSDK {
     }
   }
 
-  async authenticate(): Promise<{ user: { uid: string; username: string } } | null> {
+  async authenticate(): Promise<{ token: string; user: { uid: string; username: string }; isNew?: boolean; piUserId?: string; username?: string } | null> {
     if (!this.initialized) await this.init();
     if (!window.Pi) return null;
 
     try {
+      // 1. Authenticate with Pi SDK — get user + accessToken
       const auth = await window.Pi.authenticate(
         ['username', 'payments'],
         this.onIncompletePaymentFound.bind(this)
-      );
+      ) as PiAuthResult;
 
+      // 2. Send to backend with REAL accessToken
       const res = await fetch(`${API_URL}/api/auth/pi`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          accessToken: (auth as { accessToken?: string }).accessToken,
-          user: auth.user
+          user: auth.user,
+          accessToken: auth.accessToken  // ✅ vrai token, pas vide
         })
       });
 
       const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Authentication failed');
+      }
+
+      // 3. New user — register automatically (type: 'both')
+      if (data.isNew) {
+        const regRes = await fetch(`${API_URL}/api/auth/pi/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            piUserId: data.piUserId,
+            username: data.username
+          })
+        });
+        const regData = await regRes.json();
+        if (regData.token) {
+          localStorage.setItem('workpiserv_token', regData.token);
+          localStorage.setItem('workpiserv_user', JSON.stringify(regData.user));
+          this.user = regData.user;
+          return regData;
+        }
+        return null;
+      }
+
+      // 4. Existing user — store token + user
       if (data.token) {
         localStorage.setItem('workpiserv_token', data.token);
         localStorage.setItem('workpiserv_user', JSON.stringify(data.user));
         this.user = data.user;
         return data;
       }
+
       return null;
     } catch (err) {
       console.error('Pi auth error:', err);
-      return null;
+      throw err;
     }
   }
 
   async createPayment(orderData: OrderData, callbacks: PaymentCallbacks) {
     if (!this.initialized || !window.Pi) throw new Error('Pi SDK not initialized');
+
+    const token = localStorage.getItem('workpiserv_token');
 
     try {
       const payment = await (window.Pi as unknown as {
@@ -95,33 +130,21 @@ class PiSDK {
           onReadyForServerApproval: async (paymentId: string) => {
             const res = await fetch(`${API_URL}/api/payments/approve`, {
               method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('workpiserv_token')}`
-              },
-              body: JSON.stringify({
-                paymentId,
-                serviceId: orderData.serviceId,
-                requirements: orderData.requirements || ''
-              })
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+              body: JSON.stringify({ paymentId, serviceId: orderData.serviceId, requirements: orderData.requirements || '' })
             });
             const data = await res.json();
             callbacks.onReadyForServerApproval?.(paymentId, data);
           },
-
           onReadyForServerCompletion: async (paymentId: string, txid: string) => {
             const res = await fetch(`${API_URL}/api/payments/complete`, {
               method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('workpiserv_token')}`
-              },
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
               body: JSON.stringify({ paymentId, txid })
             });
             const data = await res.json();
             callbacks.onReadyForServerCompletion?.(paymentId, txid, data);
           },
-
           onCancel: () => callbacks.onCancel?.(),
           onError: (error: unknown) => callbacks.onError?.(error)
         }
@@ -136,12 +159,10 @@ class PiSDK {
   async onIncompletePaymentFound(payment: unknown) {
     console.log('Incomplete payment found:', payment);
     try {
+      const token = localStorage.getItem('workpiserv_token');
       await fetch(`${API_URL}/api/payments/incomplete`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('workpiserv_token')}`
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ paymentId: (payment as { identifier: string }).identifier })
       });
     } catch (err) {
