@@ -2,7 +2,7 @@ name: Deploy WorkPiServ to GitHub Pages
 
 on:
   push:
-    branches: [kimi-design]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
