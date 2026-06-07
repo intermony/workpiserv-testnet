@@ -2,7 +2,7 @@ name: Deploy WorkPiServ to GitHub Pages
 
 on:
   push:
-    branches: [gh-pages-source]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -20,13 +20,15 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build for GitHub Pages
+      - name: Build
         run: npm run build
         env:
-          VITE_BACKEND_URL: https://workpiserv-backend.onrender.com
+          VITE_BACKEND_URL: https://workpiserv-api.onrender.com
+          VITE_PI_SANDBOX: false
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
+          
