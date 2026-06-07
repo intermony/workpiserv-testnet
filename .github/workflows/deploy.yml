@@ -2,7 +2,7 @@ name: Deploy WorkPiServ to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [gh-pages-source]
   workflow_dispatch:
 
 jobs:
@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build
+      - name: Build for GitHub Pages
         run: npm run build
         env:
           VITE_BACKEND_URL: https://workpiserv-backend.onrender.com
