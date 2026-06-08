@@ -1,4 +1,5 @@
-import { useState, useRef, ChangeEvent } from 'react';
+import { useState, useRef } from 'react';
+import type { ChangeEvent } from 'react';
 import { Camera, Loader2 } from 'lucide-react';
 
 interface AvatarUploadProps {
@@ -31,12 +32,10 @@ export function AvatarUpload({ currentAvatar, username, displayName, onUpload }:
       return;
     }
 
-    // Preview locale immédiate
     const reader = new FileReader();
     reader.onloadend = () => setPreview(reader.result as string);
     reader.readAsDataURL(file);
 
-    // Upload API
     setIsLoading(true);
     try {
       await onUpload(file);
@@ -63,7 +62,6 @@ export function AvatarUpload({ currentAvatar, username, displayName, onUpload }:
         </div>
       )}
 
-      {/* Overlay hover */}
       <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
         {isLoading ? (
           <Loader2 className="w-8 h-8 text-white animate-spin" />
@@ -72,7 +70,6 @@ export function AvatarUpload({ currentAvatar, username, displayName, onUpload }:
         )}
       </div>
 
-      {/* Badge online */}
       <span className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full" />
 
       <input
@@ -85,5 +82,5 @@ export function AvatarUpload({ currentAvatar, username, displayName, onUpload }:
       />
     </div>
   );
-      }
-    
+        }
+        
