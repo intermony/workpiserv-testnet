@@ -42,9 +42,19 @@ function normalizeOrder(o: any): Order {
     price        : o.amount || o.price || 0,
     date         : o.createdAt ? new Date(o.createdAt).toLocaleDateString() : o.date || '',
     freelancer   : {
-      id    : o.freelancerId?._id || '',
-      name  : o.freelancerId?.username || 'Pioneer',
-      avatar: o.freelancerId?.avatar || '👤',
+      id          : o.freelancerId?._id || '',
+      name        : o.freelancerId?.username || 'Pioneer',
+      username    : o.freelancerId?.username || '',
+      avatar      : o.freelancerId?.avatar || '👤',
+      title       : 'Freelancer on WorkπServ',
+      verified    : false,
+      location    : 'Pi Network',
+      memberSince : '',
+      rating      : o.freelancerId?.rating || 0,
+      orders      : 0,
+      completion  : '—',
+      responseTime: '—',
+      yearsExp    : 0,
     },
     timeline     : o.timeline || [],
     milestones   : o.milestones || [],
@@ -217,14 +227,14 @@ export default function OrdersPage() {
                 </ScrollReveal>
 
                 {/* Timeline */}
-                {activeOrder.timeline && activeOrder.timeline.length > 0 && (
+                {(activeOrder.timeline ?? []).length > 0 && (
                   <ScrollReveal className="mt-4">
                     <div className="card-surface p-6">
                       <h3 className="font-semibold text-navy mb-5">Order Timeline</h3>
                       <div className="relative">
-                        {activeOrder.timeline.map((event, i) => (
+                        {(activeOrder.timeline ?? []).map((event, i) => (
                           <div key={i} className="flex gap-4 relative pb-6 last:pb-0">
-                            {i < activeOrder.timeline.length - 1 && (
+                            {i < (activeOrder.timeline ?? []).length - 1 && (
                               <div className="absolute left-[5px] top-3 w-0.5 h-full bg-gray-200" />
                             )}
                             <div className="relative z-10">
