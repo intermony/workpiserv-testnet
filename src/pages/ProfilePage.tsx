@@ -145,18 +145,36 @@ export default function ProfilePage() {
           <div className="card-surface p-6 shadow-lg">
             <div className="flex flex-col md:flex-row gap-6">
               {/* Avatar */}
-              <div className="-mt-20 md:-mt-24 mx-auto md:mx-0">
-                <div className="relative">
-                  {profile?.avatar ? (
-                    <img src={profile.avatar} alt={displayName} className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-white shadow-lg" />
-                  ) : (
-                    <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white shadow-lg bg-brand flex items-center justify-center">
-                      <span className="text-white font-bold text-4xl">{avatarInitial}</span>
-                    </div>
-                  )}
-                  <span className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full" />
-                </div>
-              </div>
+<div className="-mt-20 md:-mt-24 mx-auto md:mx-0">
+  <AvatarUpload
+    currentAvatar={profile?.avatar}
+    username={username}
+    displayName={displayName}
+    onUpload={async (file) => {
+      const token = localStorage.getItem('workpiserv_token');
+      if (!token) throw new Error('Non authentifié');
+
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      const res = await fetch(`${API_URL}/api/users/avatar`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Upload failed');
+      }
+
+      const data = await res.json();
+      // Met à jour le state local pour afficher le nouvel avatar immédiatement
+      setProfile(prev => prev ? { ...prev, avatar: data.avatarUrl } : prev);
+    }}
+  />
+</div>
+      
 
               {/* Info */}
               <div className="flex-1 text-center md:text-left">
