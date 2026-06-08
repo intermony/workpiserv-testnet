@@ -11,11 +11,11 @@ interface AvatarUploadProps {
 export function AvatarUpload({ currentAvatar, username, displayName, onUpload }: AvatarUploadProps) {
   const [preview, setPreview] = useState<string | null>(currentAvatar || null);
   const [isLoading, setIsLoading] = useState(false);
-  const inputRef = useRef<<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const getInitial = (name: string) => name.charAt(0).toUpperCase();
 
-  const handleFileChange = async (e: ChangeEvent<<HTMLInputElement>) => {
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -85,4 +85,5 @@ export function AvatarUpload({ currentAvatar, username, displayName, onUpload }:
       />
     </div>
   );
-    }
+      }
+    
