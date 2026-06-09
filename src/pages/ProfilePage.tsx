@@ -60,7 +60,7 @@ function normalizeService(s: any): Service {
       id          : freelancerId._id || '',
       name        : freelancerId.username || 'Pioneer',
       username    : freelancerId.username || '',
-      avatar      : freelancerId.avatar || '👤',
+      avatar      : freelancerId.avatar || '',
       title       : 'Freelancer on WorkπServ',
       verified    : false,
       location    : 'Pi Network',
@@ -79,6 +79,12 @@ export default function ProfilePage() {
   const [profile, setProfile]         = useState<ProfileData | null>(null);
   const [myServices, setMyServices]   = useState<Service[]>([]);
   const [loading, setLoading]         = useState(true);
+  const [saving, setSaving]           = useState(false);
+  const [saveMsg, setSaveMsg]         = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [formDisplayName, setFormDisplayName] = useState('');
+  const [formTitle, setFormTitle]             = useState('');
+  const [formBio, setFormBio]                 = useState('');
+  const [formLocation, setFormLocation]       = useState('');
   const { user, loggedIn, inPiBrowser, login } = usePiAuth();
   const navigate = useNavigate();
 
@@ -94,7 +100,10 @@ export default function ProfilePage() {
         if (res.ok) {
           const data = await res.json();
           setProfile(data);
-          // Fetch this user's services
+          setFormDisplayName(data.displayName || data.username || '');
+          setFormTitle(data.title || '');
+          setFormBio(data.bio || '');
+          setFormLocation(data.location || '');
           const sRes = await fetch(`${API_URL}/api/services?freelancer=${data._id}`);
           if (sRes.ok) {
             const sData = await sRes.json();
@@ -111,7 +120,6 @@ export default function ProfilePage() {
     loadProfile();
   }, [user]);
 
-  // Not logged in
   if (!loggedIn && !loading) {
     return (
       <main className="min-h-screen pb-20 flex items-center justify-center">
@@ -133,7 +141,6 @@ export default function ProfilePage() {
     );
   }
 
-  // Loading
   if (loading) {
     return (
       <main className="min-h-screen pb-20">
@@ -175,16 +182,46 @@ export default function ProfilePage() {
     { value: profile?.yearsExp || '—',               label: 'Years' },
   ];
 
+  const handleSaveProfile = async () => {
+    setSaving(true);
+    setSaveMsg(null);
+    let token: string | null = null;
+    try { token = localStorage.getItem('workpiserv_token'); } catch { token = null; }
+    if (!token) { setSaving(false); return; }
+    try {
+      const res = await fetch(`${API_URL}/api/users/profile`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          displayName: formDisplayName.trim(),
+          title: formTitle.trim(),
+          bio: formBio.trim(),
+          location: formLocation.trim(),
+        }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setProfile(prev => prev ? { ...prev, ...updated } : prev);
+        setSaveMsg({ type: 'success', text: 'Profile updated successfully!' });
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setSaveMsg({ type: 'error', text: (err as { message?: string }).message || 'Failed to save. Please try again.' });
+      }
+    } catch {
+      setSaveMsg({ type: 'error', text: 'Network error. Please try again.' });
+    } finally {
+      setSaving(false);
+      setTimeout(() => setSaveMsg(null), 4000);
+    }
+  };
+
   return (
     <main className="min-h-screen pb-20">
-      {/* Cover */}
       <div className="h-48 lg:h-72 bg-gradient-to-br from-navy to-[#312E81] rounded-b-3xl" />
-
       <div className="section-container -mt-12 lg:-mt-16 relative z-10">
         <ScrollReveal>
           <div className="card-surface p-6 shadow-lg">
             <div className="flex flex-col md:flex-row gap-6">
-              {/* Avatar */}
               <div className="-mt-20 md:-mt-24 mx-auto md:mx-0">
                 <AvatarUpload
                   currentAvatar={profile?.avatar}
@@ -210,8 +247,6 @@ export default function ProfilePage() {
                   }}
                 />
               </div>
-
-              {/* Info */}
               <div className="flex-1 text-center md:text-left">
                 <div className="flex flex-col md:flex-row md:items-center gap-2">
                   <h1 className="font-heading font-bold text-2xl text-navy">{displayName}</h1>
@@ -227,16 +262,12 @@ export default function ProfilePage() {
                   <span className="flex items-center gap-1"><MapPin size={12} /> {location}</span>
                   <span className="flex items-center gap-1"><Calendar size={14} /> Member since {memberSince}</span>
                 </div>
-
-                {/* Balance */}
                 <div className="inline-flex items-center gap-2 mt-3 px-4 py-1.5 bg-brand-light rounded-full">
                   <span className="text-sm font-bold text-brand">π {balance.toFixed(2)}</span>
                   <span className="text-xs text-gray-500">balance</span>
                 </div>
-
-                {/* Actions */}
                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-4">
-                  <button className="btn-primary text-sm py-2 px-5 flex items-center gap-2">
+                  <button onClick={() => navigate('/messages')} className="btn-primary text-sm py-2 px-5 flex items-center gap-2">
                     <MessageCircle size={16} /> Messages
                   </button>
                   <button className="btn-ghost text-sm py-2 px-4 flex items-center gap-2">
@@ -248,8 +279,6 @@ export default function ProfilePage() {
                 </div>
               </div>
             </div>
-
-            {/* Stats */}
             <div className="grid grid-cols-3 sm:grid-cols-5 gap-4 mt-6 pt-6 border-t border-gray-100">
               {stats.map(stat => (
                 <div key={stat.label} className="text-center">
@@ -261,7 +290,6 @@ export default function ProfilePage() {
           </div>
         </ScrollReveal>
 
-        {/* Tabs */}
         <div className="mt-6 sticky top-16 z-30 bg-[#F3F4F6] pt-2">
           <div className="bg-white border border-gray-200 rounded-xl p-1 flex gap-1 overflow-x-auto">
             {profileTabs.map(tab => (
@@ -277,27 +305,20 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Tab Content */}
         <div className="mt-6">
           <AnimatePresence mode="wait">
             <motion.div key={activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
 
-              {/* Services Tab */}
               {activeTab === 'services' && (
                 <div>
-                  {/* Header with Create button */}
                   <div className="flex items-center justify-between mb-5">
                     <h2 className="font-semibold text-navy text-lg">
                       My Services <span className="text-gray-400 text-sm font-normal">({myServices.length})</span>
                     </h2>
-                    <button
-                      onClick={() => navigate('/create-service')}
-                      className="btn-primary text-sm py-2 px-4 flex items-center gap-2"
-                    >
+                    <button onClick={() => navigate('/create-service')} className="btn-primary text-sm py-2 px-4 flex items-center gap-2">
                       <Plus size={16} /> Create Service
                     </button>
                   </div>
-
                   {myServices.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                       {myServices.map((service, index) => (
@@ -309,10 +330,7 @@ export default function ProfilePage() {
                       <LayoutGrid size={48} className="text-gray-300 mx-auto mb-4" />
                       <h3 className="font-heading font-bold text-lg text-navy mb-2">No services yet</h3>
                       <p className="text-gray-500 mb-6">Create your first service and start earning Pi</p>
-                      <button
-                        onClick={() => navigate('/create-service')}
-                        className="btn-primary flex items-center gap-2 mx-auto"
-                      >
+                      <button onClick={() => navigate('/create-service')} className="btn-primary flex items-center gap-2 mx-auto">
                         <Plus size={18} /> Create a Service
                       </button>
                     </div>
@@ -320,7 +338,6 @@ export default function ProfilePage() {
                 </div>
               )}
 
-              {/* Reviews Tab */}
               {activeTab === 'reviews' && (
                 <div className="card-surface p-6">
                   {rating > 0 ? (
@@ -339,7 +356,6 @@ export default function ProfilePage() {
                 </div>
               )}
 
-              {/* About Tab */}
               {activeTab === 'about' && (
                 <div className="space-y-6">
                   <div className="card-surface p-6">
@@ -373,7 +389,6 @@ export default function ProfilePage() {
                 </div>
               )}
 
-              {/* Settings Tab */}
               {activeTab === 'settings' && (
                 <div className="max-w-2xl">
                   <div className="card-surface p-6">
@@ -386,23 +401,31 @@ export default function ProfilePage() {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1.5">Display Name</label>
-                        <input type="text" defaultValue={displayName} className="w-full h-12 px-4 border border-gray-200 rounded-xl text-base focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all" />
+                        <input type="text" value={formDisplayName} onChange={e => setFormDisplayName(e.target.value)} className="w-full h-12 px-4 border border-gray-200 rounded-xl text-base focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1.5">Professional Title</label>
-                        <input type="text" defaultValue={title} className="w-full h-12 px-4 border border-gray-200 rounded-xl text-base focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all" />
+                        <input type="text" value={formTitle} onChange={e => setFormTitle(e.target.value)} className="w-full h-12 px-4 border border-gray-200 rounded-xl text-base focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1.5">Bio</label>
-                        <textarea defaultValue={bio} rows={4} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-base focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all resize-y" />
+                        <textarea value={formBio} onChange={e => setFormBio(e.target.value)} rows={4} className="w-full px-4 py-3 border border-gray-200 rounded-xl text-base focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all resize-y" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1.5">Location</label>
-                        <input type="text" defaultValue={location} className="w-full h-12 px-4 border border-gray-200 rounded-xl text-base focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all" />
+                        <input type="text" value={formLocation} onChange={e => setFormLocation(e.target.value)} className="w-full h-12 px-4 border border-gray-200 rounded-xl text-base focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all" />
                       </div>
                     </div>
+                    {saveMsg && (
+                      <div className={`mt-4 px-4 py-3 rounded-xl text-sm font-medium ${saveMsg.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
+                        {saveMsg.text}
+                      </div>
+                    )}
                     <div className="mt-6">
-                      <button className="btn-primary w-full py-3">Save Changes</button>
+                      <button onClick={handleSaveProfile} disabled={saving} className="btn-primary w-full py-3 flex items-center justify-center gap-2 disabled:opacity-70">
+                        {saving && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+                        {saving ? 'Saving...' : 'Save Changes'}
+                      </button>
                     </div>
                   </div>
                 </div>
