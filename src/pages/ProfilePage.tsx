@@ -3,8 +3,8 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
-  MapPin, Calendar, Star, ShoppingBag, CheckCircle,
-  Clock, MessageCircle, Share2, Edit3, LayoutGrid, User, Settings, LogIn, Plus
+  MapPin, Calendar, Star,
+  MessageCircle, Share2, Edit3, LayoutGrid, User, Settings, LogIn, Plus
 } from 'lucide-react';
 import { ScrollReveal } from '@/components/shared/ScrollReveal';
 import { StarRating } from '@/components/shared/StarRating';
