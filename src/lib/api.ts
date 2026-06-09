@@ -1,7 +1,7 @@
 // WorkPiServ API client - connects to FastAPI backend on Render
 // Switch BACKEND_URL for local dev vs production
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-backend.onrender.com';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api.onrender.com';
 
 // ──────────────────────────────────────────────
 // Generic fetch helper with JWT support
