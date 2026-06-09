@@ -1,22 +1,23 @@
 import { AvatarUpload } from '@/components/AvatarUpload';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import {
   MapPin, Calendar, Star, ShoppingBag, CheckCircle,
-  Clock, MessageCircle, Share2, Edit3, LayoutGrid, User, Settings, LogIn
+  Clock, MessageCircle, Share2, Edit3, LayoutGrid, User, Settings, LogIn, Plus
 } from 'lucide-react';
-import { services } from '@/data/services';
 import { ScrollReveal } from '@/components/shared/ScrollReveal';
 import { StarRating } from '@/components/shared/StarRating';
 import { ServiceCard } from '@/components/shared/ServiceCard';
 import { usePiAuth } from '@/hooks/usePiAuth';
+import type { Service } from '@/types';
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api.onrender.com';
 
 const profileTabs = [
   { key: 'services', label: 'Services', icon: LayoutGrid },
-  { key: 'reviews', label: 'Reviews', icon: Star },
-  { key: 'about', label: 'About', icon: User },
+  { key: 'reviews',  label: 'Reviews',  icon: Star },
+  { key: 'about',    label: 'About',    icon: User },
   { key: 'settings', label: 'Settings', icon: Settings },
 ];
 
@@ -41,15 +42,50 @@ interface ProfileData {
   online?: boolean;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function normalizeService(s: any): Service {
+  const freelancerId = s.freelancerId || {};
+  return {
+    id          : s._id || s.id,
+    title       : s.title,
+    category    : s.category,
+    rating      : s.rating || 0,
+    reviewCount : s.reviews || 0,
+    price       : s.price,
+    deliveryDays: s.deliveryDays || 3,
+    image       : s.image || '/images/service-default.jpg',
+    escrow      : true,
+    description : s.description,
+    freelancer  : {
+      id          : freelancerId._id || '',
+      name        : freelancerId.username || 'Pioneer',
+      username    : freelancerId.username || '',
+      avatar      : freelancerId.avatar || '👤',
+      title       : 'Freelancer on WorkπServ',
+      verified    : false,
+      location    : 'Pi Network',
+      memberSince : '',
+      rating      : freelancerId.rating || 0,
+      orders      : 0,
+      completion  : '—',
+      responseTime: '—',
+      yearsExp    : 0,
+    },
+  };
+}
+
 export default function ProfilePage() {
-  const [activeTab, setActiveTab] = useState('services');
-  const [profile, setProfile] = useState<ProfileData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab]     = useState('services');
+  const [profile, setProfile]         = useState<ProfileData | null>(null);
+  const [myServices, setMyServices]   = useState<Service[]>([]);
+  const [loading, setLoading]         = useState(true);
   const { user, loggedIn, inPiBrowser, login } = usePiAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function loadProfile() {
-      const token = localStorage.getItem('workpiserv_token');
+      let token: string | null = null;
+      try { token = localStorage.getItem('workpiserv_token'); } catch { token = null; }
       if (!token) { setLoading(false); return; }
       try {
         const res = await fetch(`${API_URL}/api/auth/me`, {
@@ -58,6 +94,13 @@ export default function ProfilePage() {
         if (res.ok) {
           const data = await res.json();
           setProfile(data);
+          // Fetch this user's services
+          const sRes = await fetch(`${API_URL}/api/services?freelancer=${data._id}`);
+          if (sRes.ok) {
+            const sData = await sRes.json();
+            const raw = Array.isArray(sData) ? sData : sData.services || [];
+            setMyServices(raw.map(normalizeService));
+          }
         }
       } catch (err) {
         console.error('Profile load error:', err);
@@ -90,7 +133,7 @@ export default function ProfilePage() {
     );
   }
 
-  // Loading state
+  // Loading
   if (loading) {
     return (
       <main className="min-h-screen pb-20">
@@ -110,30 +153,27 @@ export default function ProfilePage() {
     );
   }
 
-  // Use profile from backend or fallback to auth user
-  const displayName = profile?.displayName || profile?.username || user?.username || 'Pioneer';
-  const username = profile?.username || user?.username || '';
-  const title = profile?.title || 'Client & Freelancer on WorkπServ';
-  const bio = profile?.bio || 'Welcome to WorkπServ! Start by browsing services or creating your own.';
-  const location = profile?.location || 'Pi Network';
-  const memberSince = profile?.memberSince ? new Date(profile.memberSince).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'June 2026';
-  const rating = profile?.rating || 0;
+  const displayName   = profile?.displayName || profile?.username || user?.username || 'Pioneer';
+  const username      = profile?.username || user?.username || '';
+  const title         = profile?.title || 'Client & Freelancer on WorkπServ';
+  const bio           = profile?.bio || 'Welcome to WorkπServ! Start by browsing services or creating your own.';
+  const location      = profile?.location || 'Pi Network';
+  const memberSince   = profile?.memberSince
+    ? new Date(profile.memberSince).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    : 'June 2026';
+  const rating          = profile?.rating || 0;
   const completedOrders = profile?.completedOrders || 0;
-  const balance = profile?.balance || 0;
-  const skills = profile?.skills || [];
-  const languages = profile?.languages || [];
+  const balance         = profile?.balance || 0;
+  const skills          = profile?.skills || [];
+  const languages       = profile?.languages || [];
 
   const stats = [
-    { value: rating > 0 ? rating.toFixed(1) : '—', label: 'Rating', icon: Star },
-    { value: completedOrders, label: 'Orders', icon: ShoppingBag },
-    { value: profile?.completionRate ? `${profile.completionRate}%` : '—', label: 'Completion', icon: CheckCircle },
-    { value: profile?.responseTime || '—', label: 'Response', icon: Clock },
-    { value: profile?.yearsExp || '—', label: 'Years', icon: Calendar },
+    { value: rating > 0 ? rating.toFixed(1) : '—', label: 'Rating' },
+    { value: completedOrders,                        label: 'Orders' },
+    { value: profile?.completionRate ? `${profile.completionRate}%` : '—', label: 'Completion' },
+    { value: profile?.responseTime || '—',           label: 'Response' },
+    { value: profile?.yearsExp || '—',               label: 'Years' },
   ];
-
-  const myServices = services.filter(s =>
-    (s.freelancer.username ?? s.freelancer.id) === username
-  );
 
   return (
     <main className="min-h-screen pb-20">
@@ -151,23 +191,20 @@ export default function ProfilePage() {
                   username={username}
                   displayName={displayName}
                   onUpload={async (file) => {
-                    const token = localStorage.getItem('workpiserv_token');
+                    let token: string | null = null;
+                    try { token = localStorage.getItem('workpiserv_token'); } catch { token = null; }
                     if (!token) throw new Error('Non authentifié');
-
                     const formData = new FormData();
                     formData.append('avatar', file);
-
                     const res = await fetch(`${API_URL}/api/users/avatar`, {
                       method: 'POST',
                       headers: { Authorization: `Bearer ${token}` },
                       body: formData,
                     });
-
                     if (!res.ok) {
                       const err = await res.json().catch(() => ({}));
-                      throw new Error(err.message || 'Upload failed');
+                      throw new Error((err as { message?: string }).message || 'Upload failed');
                     }
-
                     const data = await res.json();
                     setProfile(prev => prev ? { ...prev, avatar: data.avatarUrl } : prev);
                   }}
@@ -178,12 +215,16 @@ export default function ProfilePage() {
               <div className="flex-1 text-center md:text-left">
                 <div className="flex flex-col md:flex-row md:items-center gap-2">
                   <h1 className="font-heading font-bold text-2xl text-navy">{displayName}</h1>
-                  <span className="text-xs text-green-600 font-medium">Online</span>
+                  {profile?.online && (
+                    <span className="flex items-center gap-1 text-sm text-green-500 font-medium mx-auto md:mx-0">
+                      <span className="w-2 h-2 rounded-full bg-green-500 inline-block" /> Online
+                    </span>
+                  )}
                 </div>
-                <p className="text-gray-500 mt-1">@{username}</p>
+                <p className="text-gray-500 text-sm mt-1">@{username}</p>
                 <p className="text-gray-600 mt-1">{title}</p>
-                <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mt-2 text-sm text-gray-500">
-                  <span className="flex items-center gap-1"><MapPin size={14} /> {location}</span>
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-1 mt-2 text-xs text-gray-400">
+                  <span className="flex items-center gap-1"><MapPin size={12} /> {location}</span>
                   <span className="flex items-center gap-1"><Calendar size={14} /> Member since {memberSince}</span>
                 </div>
 
@@ -244,6 +285,19 @@ export default function ProfilePage() {
               {/* Services Tab */}
               {activeTab === 'services' && (
                 <div>
+                  {/* Header with Create button */}
+                  <div className="flex items-center justify-between mb-5">
+                    <h2 className="font-semibold text-navy text-lg">
+                      My Services <span className="text-gray-400 text-sm font-normal">({myServices.length})</span>
+                    </h2>
+                    <button
+                      onClick={() => navigate('/create-service')}
+                      className="btn-primary text-sm py-2 px-4 flex items-center gap-2"
+                    >
+                      <Plus size={16} /> Create Service
+                    </button>
+                  </div>
+
                   {myServices.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                       {myServices.map((service, index) => (
@@ -255,7 +309,12 @@ export default function ProfilePage() {
                       <LayoutGrid size={48} className="text-gray-300 mx-auto mb-4" />
                       <h3 className="font-heading font-bold text-lg text-navy mb-2">No services yet</h3>
                       <p className="text-gray-500 mb-6">Create your first service and start earning Pi</p>
-                      <button className="btn-primary">+ Create a Service</button>
+                      <button
+                        onClick={() => navigate('/create-service')}
+                        className="btn-primary flex items-center gap-2 mx-auto"
+                      >
+                        <Plus size={18} /> Create a Service
+                      </button>
                     </div>
                   )}
                 </div>
@@ -355,4 +414,4 @@ export default function ProfilePage() {
       </div>
     </main>
   );
-    }
+}
