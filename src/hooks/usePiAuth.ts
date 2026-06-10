@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { piSDK, isPiBrowser } from '@/lib/pi';
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api.onrender.com';
@@ -64,51 +64,44 @@ export function usePiAuth(): UsePiAuthReturn {
 
   const login = useCallback(async () => {
     if (!inPiBrowser) return;
+    if (loading) return;
     setLoading(true);
     setError(null);
 
     try {
       const result = await piSDK.authenticate();
       if (result?.user) {
-        // Envoyer au backend et récupérer le token
-        const res = await fetch(`${API_URL}/api/auth/pi-login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            pi_uid      : result.user.uid,
-            pi_username : result.user.username,
-            access_token: result.user.uid,
-          }),
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          // Détecter si c'est un nouveau Pioneer
-          const firstLoginKey = `wps_first_${result.user.uid}`;
-          const alreadySeen = localStorage.getItem(firstLoginKey);
-          if (!alreadySeen) {
-            setIsNewUser(true);
-            localStorage.setItem(firstLoginKey, '1');
-          }
-
-          localStorage.setItem('workpiserv_token', data.token);
-          localStorage.setItem('workpiserv_user', JSON.stringify(data.user));
-          setUser(data.user);
-        } else {
-          setError('Authentication failed. Please try again.');
-          setTimeout(() => setError(null), 5000);
+        // Détecter nouveau Pioneer
+        const firstLoginKey = `wps_first_${result.user.uid}`;
+        const alreadySeen = localStorage.getItem(firstLoginKey);
+        if (!alreadySeen) {
+          setIsNewUser(true);
+          localStorage.setItem(firstLoginKey, '1');
         }
-      } else {
-        setError('Authentication failed. Please try again.');
-        setTimeout(() => setError(null), 5000);
+        // Rafraîchir le profil complet
+        const fresh = await fetchMe();
+        const userData = fresh || result.user as unknown as PiUser;
+        setUser(userData);
+        localStorage.setItem('workpiserv_user', JSON.stringify(userData));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Authentication failed.');
-      setTimeout(() => setError(null), 5000);
+      // Auto-login silencieux — pas d'erreur affichée
+      console.error('Auth error:', err);
     } finally {
       setLoading(false);
     }
-  }, [inPiBrowser]);
+  }, [inPiBrowser, loading]);
+
+  // ✅ AUTO-LOGIN au chargement si Pi Browser
+  useEffect(() => {
+    const token = localStorage.getItem('workpiserv_token');
+    if (inPiBrowser && !token && !loading) {
+      login();
+    } else if (token && !user) {
+      // Token existant — rafraîchir le profil
+      refreshUser();
+    }
+  }, []);
 
   const logout = useCallback(() => {
     piSDK.logout();
@@ -133,4 +126,4 @@ export function usePiAuth(): UsePiAuthReturn {
     refreshUser,
     clearNewUser,
   };
-         }
+  }
