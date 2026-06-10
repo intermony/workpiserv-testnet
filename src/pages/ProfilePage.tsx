@@ -1,254 +1,280 @@
-import { useState, useMemo, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Package, Shield, Loader2 } from 'lucide-react';
-import type { Order, OrderStatus } from '@/types';
+import { useState, useEffect } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import {
+  Wallet, Copy, Check, Pencil, X, LogOut, Package,
+  MessageCircle, PlusCircle, Shield, Loader2, User as UserIcon,
+} from 'lucide-react';
+import { usePiAuth } from '@/hooks/usePiAuth';
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api.onrender.com';
 
-const statusConfig: Record<OrderStatus, { label: string; color: string; bg: string }> = {
-  active:          { label: 'Active',          color: 'text-blue-600',   bg: 'bg-blue-50' },
-  pending_payment: { label: 'Pending Payment', color: 'text-amber-600',  bg: 'bg-amber-50' },
-  in_progress:     { label: 'In Progress',     color: 'text-purple-600', bg: 'bg-purple-50' },
-  delivered:       { label: 'Delivered',       color: 'text-green-600',  bg: 'bg-green-50' },
-  completed:       { label: 'Completed',       color: 'text-green-600',  bg: 'bg-green-50' },
-  cancelled:       { label: 'Cancelled',       color: 'text-red-600',    bg: 'bg-red-50' },
-};
+// Adresse publique Pi (format Stellar) : commence par G, 56 caractères
+const PI_ADDRESS_REGEX = /^G[A-Z2-7]{55}$/;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function normalizeOrder(o: any): Order {
-  return {
-    id           : o._id || o.id || '',
-    orderId      : o.orderId || `#${(o._id || o.id || '').slice(-6).toUpperCase()}`,
-    serviceId    : o.serviceId?._id || o.serviceId || '',
-    serviceTitle : o.serviceId?.title || o.serviceTitle || 'Service',
-    serviceImage : o.serviceId?.image || o.serviceImage || '/images/service-default.jpg',
-    package      : o.package || 'Standard',
-    status       : o.status || 'active',
-    price        : o.amount || o.price || 0,
-    date         : o.createdAt ? new Date(o.createdAt).toLocaleDateString() : o.date || '',
-    freelancer   : {
-      id          : o.freelancerId?._id || '',
-      name        : o.freelancerId?.username || 'Pioneer',
-      username    : o.freelancerId?.username || '',
-      avatar      : o.freelancerId?.avatar || '👤',
-      title       : 'Freelancer on WorkπServ',
-      verified    : false,
-      location    : 'Pi Network',
-      memberSince : '',
-      rating      : o.freelancerId?.rating || 0,
-      orders      : 0,
-      completion  : '—',
-      responseTime: '—',
-      yearsExp    : 0,
-    },
-    timeline     : o.timeline || [],
-    milestones   : o.milestones || [],
-    deliverables : o.deliverables || [],
-  };
+function Avatar({ avatar, size = 72 }: { avatar?: string; size?: number }) {
+  if (avatar && avatar.startsWith('http')) {
+    return (
+      <img
+        src={avatar}
+        alt="Avatar"
+        width={size}
+        height={size}
+        className="rounded-full object-cover border-2 border-brand-light"
+        style={{ width: size, height: size }}
+      />
+    );
+  }
+  return (
+    <div
+      className="rounded-full bg-brand-light flex items-center justify-center border-2 border-brand/20"
+      style={{ width: size, height: size, fontSize: size * 0.5 }}
+    >
+      {avatar || '👤'}
+    </div>
+  );
 }
 
-export default function OrdersPage() {
-  const [orders, setOrders]             = useState<Order[]>([]);
-  const [loading, setLoading]           = useState(true);
-  const [error, setError]               = useState(false);
-  const [activeStatus, setActiveStatus] = useState<OrderStatus | 'all'>('all');
-  const [selectedId, setSelectedId]     = useState<string | null>(null);
+export default function ProfilePage() {
+  const { username: paramUsername } = useParams<{ username?: string }>();
+  const { user, loading, loggedIn, login, logout, inPiBrowser, refreshUser } = usePiAuth();
+
+  // ─── Wallet (stocké côté serveur, dans MongoDB) ─────────────
+  // Le wallet vit dans le document User ; il arrive via /api/auth/me.
+  const serverWallet = (user as (typeof user & { wallet?: string }) | null)?.wallet ?? '';
+
+  const [editing, setEditing]         = useState(false);
+  const [draft, setDraft]             = useState('');
+  const [saving, setSaving]           = useState(false);
+  const [walletError, setWalletError] = useState<string | null>(null);
+  const [copied, setCopied]           = useState(false);
 
   useEffect(() => {
-    let token: string | null = null;
-    try { token = localStorage.getItem('token'); } catch { token = null; }
-
-    fetch(`${API_URL}/api/orders`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    })
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (!data) { setError(true); return; }
-        const raw = Array.isArray(data) ? data : data.orders || [];
-        setOrders(raw.map(normalizeOrder));
-      })
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
+    // Rafraîchit le profil à l'arrivée sur la page (wallet à jour)
+    refreshUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const filtered = useMemo(() => {
-    if (activeStatus === 'all') return orders;
-    return orders.filter(o => o.status === activeStatus);
-  }, [activeStatus, orders]);
+  const saveWallet = async () => {
+    const value = draft.trim().toUpperCase();
+    if (value && !PI_ADDRESS_REGEX.test(value)) {
+      setWalletError('Adresse invalide — elle doit commencer par G et faire 56 caractères.');
+      return;
+    }
+    setSaving(true);
+    setWalletError(null);
+    try {
+      const token = localStorage.getItem('workpiserv_token');
+      const res = await fetch(`${API_URL}/api/users/wallet`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ wallet: value }),
+      });
+      if (!res.ok) throw new Error();
+      await refreshUser();
+      setEditing(false);
+    } catch {
+      setWalletError("Échec de l'enregistrement. Réessayez.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
-  const activeOrder = filtered.find(o => o.id === selectedId) || filtered[0] || null;
+  const copyWallet = async () => {
+    try {
+      await navigator.clipboard.writeText(serverWallet);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch { /* clipboard indisponible */ }
+  };
+
+  // ─── Profil public d'un autre Pioneer (/profile/:username) ──
+  const isOwnProfile = !paramUsername || paramUsername === user?.username;
 
   if (loading) {
     return (
       <main className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Loader2 size={36} className="text-brand animate-spin mx-auto mb-3" />
-          <p className="text-gray-500 text-sm">Loading your orders...</p>
+          <p className="text-gray-500 text-sm">Loading profile...</p>
         </div>
       </main>
     );
   }
 
-  if (error) {
+  // Vue publique minimale d'un autre utilisateur
+  if (!isOwnProfile) {
+    return (
+      <main className="min-h-screen pb-24">
+        <div className="bg-white border-b border-gray-200">
+          <div className="section-container py-8">
+            <div className="text-sm text-gray-500 mb-2">
+              <Link to="/" className="text-brand hover:underline">Home</Link>
+              <span className="mx-2">/</span>
+              <span className="text-gray-700">Profile</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <Avatar avatar="👤" />
+              <div>
+                <h1 className="font-heading font-bold text-2xl text-navy">@{paramUsername}</h1>
+                <p className="text-sm text-gray-500">Pioneer on WorkπServ</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="section-container py-8">
+          <Link to="/marketplace" className="btn-primary inline-block">Browse services</Link>
+        </div>
+      </main>
+    );
+  }
+
+  // Pas connecté
+  if (!loggedIn || !user) {
     return (
       <main className="min-h-screen flex items-center justify-center">
         <div className="text-center px-6">
-          <Package size={48} className="text-gray-300 mx-auto mb-4" />
-          <h2 className="font-semibold text-gray-700 mb-2">Could not load orders</h2>
-          <p className="text-sm text-gray-500 mb-4">Please check your connection and try again.</p>
-          <Link to="/" className="btn-primary">Back to Home</Link>
+          <UserIcon size={48} className="text-gray-300 mx-auto mb-4" />
+          <h2 className="font-semibold text-gray-700 mb-2">You're not signed in</h2>
+          <p className="text-sm text-gray-500 mb-4">
+            {inPiBrowser
+              ? 'Sign in with Pi to view your profile.'
+              : 'Open WorkπServ in the Pi Browser to sign in.'}
+          </p>
+          {inPiBrowser && (
+            <button onClick={login} className="btn-primary">Sign in with Pi</button>
+          )}
         </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen pb-20">
-      {/* Header */}
+    <main className="min-h-screen pb-24 bg-gray-50">
+      {/* En-tête */}
       <div className="bg-white border-b border-gray-200">
         <div className="section-container py-8">
-          <div className="text-sm text-gray-500 mb-2">
+          <div className="text-sm text-gray-500 mb-4">
             <Link to="/" className="text-brand hover:underline">Home</Link>
             <span className="mx-2">/</span>
-            <span className="text-gray-700">My Orders</span>
+            <span className="text-gray-700">My Profile</span>
           </div>
-          <h1 className="font-heading font-bold text-3xl text-navy">My Orders</h1>
 
-          {/* Status tabs */}
-          <div className="flex gap-2 mt-6 overflow-x-auto pb-1">
-            {(['all', 'active', 'in_progress', 'delivered', 'completed', 'pending_payment', 'cancelled'] as const).map(key => {
-              const count = key === 'all' ? orders.length : orders.filter(o => o.status === key).length;
-              const labels: Record<string, string> = {
-                all: 'All', active: 'Active', in_progress: 'In Progress',
-                delivered: 'Delivered', completed: 'Completed',
-                pending_payment: 'Pending', cancelled: 'Cancelled',
-              };
-              return (
-                <button
-                  key={key}
-                  onClick={() => { setActiveStatus(key); setSelectedId(null); }}
-                  className={`shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    activeStatus === key ? 'bg-brand-light text-brand' : 'text-gray-500 hover:bg-gray-50'
-                  }`}
-                >
-                  {labels[key]} <span className="opacity-60 text-xs">({count})</span>
-                </button>
-              );
-            })}
+          <div className="flex items-center gap-4">
+            <Avatar avatar={user.avatar} />
+            <div className="min-w-0">
+              <h1 className="font-heading font-bold text-2xl text-navy truncate">
+                @{user.username}
+              </h1>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-brand bg-brand-light px-2.5 py-1 rounded-full capitalize">
+                  <Shield size={12} /> {user.type || 'Pioneer'}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="section-container py-8">
-        {filtered.length === 0 ? (
-          <div className="text-center py-20">
-            <Package size={48} className="text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-700">No orders yet</h3>
-            <p className="text-sm text-gray-500 mt-1 mb-4">When you place an order, it will appear here</p>
-            <Link to="/marketplace" className="btn-primary">Browse Services</Link>
+      <div className="section-container py-6 space-y-4">
+        {/* Solde */}
+        <section className="card-surface p-5 flex items-center justify-between">
+          <div>
+            <p className="text-sm text-gray-500">Balance</p>
+            <p className="font-heading font-bold text-2xl text-navy">
+              {user.balance ?? 0} <span className="text-brand">π</span>
+            </p>
           </div>
-        ) : (
-          <div className="flex flex-col lg:flex-row gap-6">
-            {/* List */}
-            <div className="lg:w-[360px] shrink-0 space-y-3">
-              {filtered.map(order => {
-                const sc = statusConfig[order.status];
-                return (
-                  <div
-                    key={order.id}
-                    onClick={() => setSelectedId(order.id)}
-                    className={`card-surface p-4 cursor-pointer transition-all ${
-                      activeOrder?.id === order.id ? 'border-brand ring-1 ring-brand' : 'card-surface-hover'
-                    }`}
-                  >
-                    <div className="flex gap-3">
-                      <img
-                        src={order.serviceImage}
-                        alt={order.serviceTitle}
-                        className="w-20 h-14 rounded-lg object-cover shrink-0 bg-gray-100"
-                        onError={(e) => { (e.target as HTMLImageElement).src = '/images/service-default.jpg'; }}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-navy text-sm line-clamp-1">{order.serviceTitle}</h3>
-                        <p className="text-xs text-gray-500 mt-1">{order.freelancer.name}</p>
-                        <div className="flex items-center justify-between mt-2">
-                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${sc.bg} ${sc.color}`}>
-                            {sc.label}
-                          </span>
-                          <span className="text-sm font-bold text-brand">π {order.price}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+          <Link to="/orders" className="btn-primary text-sm">My Orders</Link>
+        </section>
 
-            {/* Detail */}
-            {activeOrder && (
-              <div className="flex-1 min-w-0 space-y-4">
-                <div className="card-surface p-6">
-                  <div className="flex gap-4">
-                    <img
-                      src={activeOrder.serviceImage}
-                      alt={activeOrder.serviceTitle}
-                      className="w-24 h-16 rounded-lg object-cover shrink-0 bg-gray-100"
-                      onError={(e) => { (e.target as HTMLImageElement).src = '/images/service-default.jpg'; }}
-                    />
-                    <div className="flex-1">
-                      <h2 className="font-semibold text-navy">{activeOrder.serviceTitle}</h2>
-                      <p className="text-sm text-gray-600 mt-1">{activeOrder.freelancer.name}</p>
-                      <div className="flex flex-wrap gap-2 mt-2 text-xs text-gray-500">
-                        <span>{activeOrder.orderId}</span>
-                        <span>{activeOrder.date}</span>
-                        <span className="bg-brand-light text-brand px-2 py-0.5 rounded-full">{activeOrder.package}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Escrow */}
-                  <div className="mt-4 bg-purple-50 border border-purple-200 rounded-xl p-4 flex items-center gap-3">
-                    <Shield size={22} className="text-purple-600 shrink-0" />
-                    <div className="flex-1">
-                      <p className="font-semibold text-purple-700 text-sm">Payment Protected in Escrow</p>
-                      <p className="text-xs text-gray-500">π {activeOrder.price} held safely until delivery confirmed</p>
-                    </div>
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusConfig[activeOrder.status].bg} ${statusConfig[activeOrder.status].color}`}>
-                      {statusConfig[activeOrder.status].label}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Deliverables */}
-                <div className="card-surface p-6">
-                  <h3 className="font-semibold text-navy mb-3">Deliverables</h3>
-                  {(activeOrder.deliverables ?? []).length === 0 ? (
-                    <p className="text-sm text-gray-500 text-center py-6">
-                      {activeOrder.status === 'in_progress'
-                        ? 'Work in progress — deliverables will appear here.'
-                        : 'No deliverables yet.'}
-                    </p>
-                  ) : (
-                    <div className="space-y-2">
-                      {(activeOrder.deliverables ?? []).map((file, i) => (
-                        <div key={i} className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg">
-                          <Package size={18} className="text-brand shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-navy truncate">{file.name}</p>
-                            <p className="text-xs text-gray-500">{file.size}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
+        {/* Wallet */}
+        <section className="card-surface p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-heading font-semibold text-navy flex items-center gap-2">
+              <Wallet size={18} className="text-brand" /> Pi Wallet
+            </h2>
+            {!editing && (
+              <button
+                onClick={() => { setDraft(serverWallet); setEditing(true); setWalletError(null); }}
+                className="text-sm text-brand font-medium flex items-center gap-1 hover:underline"
+              >
+                <Pencil size={14} /> {serverWallet ? 'Edit' : 'Add'}
+              </button>
             )}
           </div>
-        )}
+
+          {editing ? (
+            <div className="space-y-3">
+              <input
+                type="text"
+                value={draft}
+                onChange={e => setDraft(e.target.value)}
+                placeholder="G... (56 characters)"
+                spellCheck={false}
+                autoCapitalize="characters"
+                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
+              />
+              {walletError && <p className="text-xs text-red-600">{walletError}</p>}
+              <div className="flex gap-2">
+                <button onClick={saveWallet} disabled={saving} className="btn-primary text-sm flex-1 disabled:opacity-60">
+                  {saving ? <Loader2 size={14} className="animate-spin mx-auto" /> : 'Save'}
+                </button>
+                <button
+                  onClick={() => { setEditing(false); setWalletError(null); }}
+                  className="flex items-center justify-center gap-1 border border-gray-300 text-gray-600 text-sm font-medium px-4 rounded-full hover:bg-gray-50"
+                >
+                  <X size={14} /> Cancel
+                </button>
+              </div>
+            </div>
+          ) : serverWallet ? (
+            <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+              <code className="text-xs text-gray-700 truncate flex-1">{serverWallet}</code>
+              <button
+                onClick={copyWallet}
+                className="text-gray-400 hover:text-brand transition-colors shrink-0"
+                aria-label="Copy wallet address"
+              >
+                {copied ? <Check size={16} className="text-green-600" /> : <Copy size={16} />}
+              </button>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500">
+              Add your public Pi address to receive payments.
+            </p>
+          )}
+        </section>
+
+        {/* Raccourcis */}
+        <section className="grid grid-cols-3 gap-3">
+          {[
+            { label: 'Orders',   icon: Package,       href: '/orders' },
+            { label: 'Messages', icon: MessageCircle, href: '/messages' },
+            { label: 'Sell',     icon: PlusCircle,    href: '/create-service' },
+          ].map(item => (
+            <Link
+              key={item.label}
+              to={item.href}
+              className="card-surface-hover p-4 flex flex-col items-center gap-2 text-center"
+            >
+              <item.icon size={22} className="text-brand" />
+              <span className="text-xs font-medium text-gray-700">{item.label}</span>
+            </Link>
+          ))}
+        </section>
+
+        {/* Déconnexion */}
+        <button
+          onClick={logout}
+          className="w-full flex items-center justify-center gap-2 border border-red-200 text-red-600 font-medium text-sm py-3 rounded-full hover:bg-red-50 transition-colors"
+        >
+          <LogOut size={16} /> Log out
+        </button>
       </div>
     </main>
   );
-      }
-        
+    }
+    
