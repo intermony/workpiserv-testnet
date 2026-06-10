@@ -56,8 +56,7 @@ export default function OrdersPage() {
 
   useEffect(() => {
     let token: string | null = null;
-    try { token = localStorage.getItem('token'); } catch { token = null; }
-
+    try { token = localStorage.getItem('workpiserv_token');
     fetch(`${API_URL}/api/orders`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     })
