@@ -47,7 +47,7 @@ export default function App() {
   return (
     <AppLayout>
       <AnimatePresence mode="wait">
-        <Routes location={location} key={location.pathname + location.hash}>
+        <Routes location={location} key={location.key}>
           <Route path="/" element={<HomePage />} />
           <Route path="/marketplace" element={<MarketplacePage />} />
           <Route path="/service/:id" element={<ServiceDetailPage />} />
@@ -70,4 +70,4 @@ export default function App() {
       </AnimatePresence>
     </AppLayout>
   );
-      }
+}
