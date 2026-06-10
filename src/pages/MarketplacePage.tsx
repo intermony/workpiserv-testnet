@@ -1,252 +1,405 @@
-import { useState, useEffect, useRef } from 'react';
-import { MessageSquare, Send, User, ArrowLeft, Loader2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { Search, ChevronDown, Filter, X, LayoutGrid, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { categories } from '@/data/categories';
+import { ServiceCard } from '@/components/shared/ServiceCard';
+import { ScrollReveal } from '@/components/shared/ScrollReveal';
+import { useIsDesktop } from '@/hooks/useMediaQuery';
+import type { Service } from '@/types';
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api.onrender.com';
 
-interface Conversation {
-  _id: string;
-  participantId: string;
-  participantName: string;
-  participantAvatar?: string;
-  lastMessage: string;
-  lastMessageAt: string;
-  unread: number;
+const sortOptions = [
+  { value: 'popular',    label: 'Most Popular' },
+  { value: 'newest',     label: 'Newest' },
+  { value: 'price_asc',  label: 'Price: Low to High' },
+  { value: 'price_desc', label: 'Price: High to Low' },
+  { value: 'rating',     label: 'Best Rating' },
+];
+
+const deliveryOptions = [
+  { value: 'any', label: 'Any time' },
+  { value: '1',   label: 'Within 24 hours' },
+  { value: '3',   label: 'Within 3 days' },
+  { value: '7',   label: 'Within 7 days' },
+  { value: '14',  label: 'Within 14 days' },
+];
+
+const ratingOptions = [
+  { value: 'any', label: 'Any rating' },
+  { value: '4.5', label: '4.5 & up' },
+  { value: '4.0', label: '4.0 & up' },
+  { value: '3.0', label: '3.0 & up' },
+];
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function normalizeApiService(s: any): Service {
+  const freelancerId = s.freelancerId || {};
+  return {
+    id          : s._id || s.id,
+    title       : s.title,
+    category    : s.category,
+    rating      : s.rating || 0,
+    reviewCount : s.reviews || 0,
+    price       : s.price,
+    deliveryDays: s.deliveryDays || 3,
+    image       : s.image || '/images/service-default.jpg',
+    escrow      : true,
+    description : s.description,
+    freelancer  : {
+      id          : freelancerId._id || '',
+      name        : freelancerId.username || 'Pioneer',
+      username    : freelancerId.username || '',
+      avatar      : freelancerId.avatar || '',
+      title       : 'Freelancer on WorkπServ',
+      verified    : false,
+      location    : 'Pi Network',
+      memberSince : '',
+      rating      : freelancerId.rating || 0,
+      orders      : 0,
+      completion  : '—',
+      responseTime: '—',
+      yearsExp    : 0,
+    },
+  };
 }
 
-interface Message {
-  _id: string;
-  sender_id: string;
-  recver_id: string;
-  text: string;
-  created_at: string;
-}
+export default function MarketplacePage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const isDesktop = useIsDesktop();
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  const [sortOpen, setSortOpen]                 = useState(false);
+  const [allServices, setAllServices]           = useState<Service[]>([]);
+  const [loading, setLoading]                   = useState(true);
+  const [error, setError]                       = useState(false);
 
-function getToken(): string | null {
-  try { return localStorage.getItem('workpiserv_token'); } catch { return null; }
-}
+  const searchQuery    = searchParams.get('q')        || '';
+  const activeCategory = searchParams.get('category') || '';
+  const activeSort     = searchParams.get('sort')     || 'popular';
+  const activeDelivery = searchParams.get('delivery') || 'any';
+  const activeRating   = searchParams.get('rating')   || 'any';
 
-function getMyId(): string | null {
-  try {
-    const u = localStorage.getItem('workpiserv_user');
-    return u ? JSON.parse(u)._id || null : null;
-  } catch { return null; }
-}
-
-export default function MessagesPage() {
-  const navigate = useNavigate();
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [messages, setMessages]           = useState<Message[]>([]);
-  const [activeConv, setActiveConv]       = useState<Conversation | null>(null);
-  const [newMessage, setNewMessage]       = useState('');
-  const [loadingConvs, setLoadingConvs]   = useState(true);
-  const [loadingMsgs, setLoadingMsgs]     = useState(false);
-  const [sending, setSending]             = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
-  const myId = getMyId();
-
-  useEffect(() => {
-    const token = getToken();
-    if (!token) { setLoadingConvs(false); return; }
-    fetch(`${API_URL}/api/messages/conversations`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(r => r.ok ? r.json() : [])
-      .then(data => setConversations(Array.isArray(data) ? data : []))
-      .catch(() => setConversations([]))
-      .finally(() => setLoadingConvs(false));
-  }, []);
-
-  useEffect(() => {
-    if (!activeConv) return;
-    setLoadingMsgs(true);
-    const token = getToken();
-    fetch(`${API_URL}/api/messages/chat/${activeConv.participantId}`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {}
-    })
-      .then(r => r.ok ? r.json() : [])
-      .then(data => setMessages(Array.isArray(data) ? data : []))
-      .catch(() => setMessages([]))
-      .finally(() => setLoadingMsgs(false));
-  }, [activeConv]);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMessage.trim() || !activeConv || sending) return;
-    const token = getToken();
-    if (!token) return;
-    const text = newMessage.trim();
-    setNewMessage('');
-    setSending(true);
-    const tempMsg: Message = {
-      _id: `temp-${Date.now()}`,
-      sender_id: myId || '',
-      recver_id: activeConv.participantId,
-      text,
-      created_at: new Date().toISOString(),
-    };
-    setMessages(prev => [...prev, tempMsg]);
+  const fetchServices = useCallback(async () => {
+    setLoading(true);
+    setError(false);
     try {
-      const res = await fetch(`${API_URL}/api/messages`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ recver_id: activeConv.participantId, text }),
-      });
+      const params = new URLSearchParams();
+      if (searchQuery) params.set('q', searchQuery);
+      if (activeSort)  params.set('sort', activeSort);
+
+      const res = await fetch(`${API_URL}/api/services?${params}`);
       if (res.ok) {
-        const saved = await res.json();
-        setMessages(prev => prev.map(m => m._id === tempMsg._id ? saved : m));
-        setConversations(prev => prev.map(c =>
-          c._id === activeConv._id
-            ? { ...c, lastMessage: text, lastMessageAt: new Date().toISOString() }
-            : c
-        ));
+        const data = await res.json();
+        const raw: unknown[] = Array.isArray(data) ? data : data.services || [];
+        setAllServices(raw.map(normalizeApiService));
+      } else {
+        setError(true);
+        setAllServices([]);
       }
     } catch {
-      // keep optimistic message
+      setError(true);
+      setAllServices([]);
     } finally {
-      setSending(false);
+      setLoading(false);
     }
+  }, [searchQuery, activeSort]);
+
+  useEffect(() => { fetchServices(); }, [fetchServices]);
+
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const s of allServices) {
+      counts[s.category] = (counts[s.category] || 0) + 1;
+    }
+    return counts;
+  }, [allServices]);
+
+  const filteredServices = useMemo(() => {
+    let result = [...allServices];
+
+    if (activeCategory) {
+      result = result.filter(s => s.category === activeCategory);
+    }
+    if (activeDelivery !== 'any') {
+      result = result.filter(s => s.deliveryDays <= parseInt(activeDelivery));
+    }
+    if (activeRating !== 'any') {
+      result = result.filter(s => s.rating >= parseFloat(activeRating));
+    }
+    switch (activeSort) {
+      case 'price_asc':  result.sort((a, b) => a.price - b.price); break;
+      case 'price_desc': result.sort((a, b) => b.price - a.price); break;
+      case 'rating':     result.sort((a, b) => b.rating - a.rating); break;
+      default: break;
+    }
+
+    return result;
+  }, [allServices, activeCategory, activeDelivery, activeRating, activeSort]);
+
+  const updateParam = (key: string, value: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (value && value !== 'any') { params.set(key, value); } else { params.delete(key); }
+    setSearchParams(params);
   };
 
-  const formatTime = (iso: string) => {
-    try { return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
-    catch { return ''; }
-  };
+  const clearFilters = () => setSearchParams(new URLSearchParams());
+  const hasFilters = activeCategory || activeDelivery !== 'any' || activeRating !== 'any';
 
-  const formatDate = (iso: string) => {
-    try {
-      const d = new Date(iso);
-      const today = new Date();
-      if (d.toDateString() === today.toDateString()) return 'Today';
-      return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
-    } catch { return ''; }
-  };
-
-  const showChat = !!activeConv;
-
-  return (
-    <div className="flex h-[calc(100vh-8rem)] bg-gray-50 max-w-4xl mx-auto border-x border-gray-100 overflow-hidden">
-      <div className={`flex flex-col w-full md:w-80 shrink-0 bg-white border-r border-gray-200 ${showChat ? 'hidden md:flex' : 'flex'}`}>
-        <div className="p-4 border-b border-gray-200">
-          <h2 className="font-semibold text-gray-800 text-lg">Messages</h2>
-        </div>
-        <div className="flex-1 overflow-y-auto">
-          {loadingConvs ? (
-            <div className="flex items-center justify-center h-32 gap-2 text-gray-400">
-              <Loader2 size={18} className="animate-spin" />
-              <span className="text-sm">Loading...</span>
-            </div>
-          ) : conversations.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full py-16 text-gray-400 gap-2 px-6 text-center">
-              <MessageSquare size={40} className="text-gray-300" />
-              <p className="font-medium text-gray-600">No conversations yet</p>
-              <p className="text-xs">Messages from your orders will appear here.</p>
-            </div>
-          ) : (
-            conversations.map(conv => (
-              <button
-                key={conv._id}
-                onClick={() => setActiveConv(conv)}
-                className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left border-b border-gray-100 ${activeConv?._id === conv._id ? 'bg-orange-50' : ''}`}
-              >
-                <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 shrink-0 text-sm font-bold">
-                  {conv.participantAvatar
-                    ? <img src={conv.participantAvatar} className="w-10 h-10 rounded-full object-cover" alt="" />
-                    : conv.participantName.charAt(0).toUpperCase()
-                  }
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-gray-800 text-sm truncate">{conv.participantName}</span>
-                    <span className="text-xs text-gray-400 shrink-0 ml-1">{formatDate(conv.lastMessageAt)}</span>
-                  </div>
-                  <p className="text-xs text-gray-500 truncate mt-0.5">{conv.lastMessage}</p>
-                </div>
-                {conv.unread > 0 && (
-                  <span className="w-5 h-5 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center shrink-0">
-                    {conv.unread}
-                  </span>
-                )}
-              </button>
-            ))
-          )}
+  const FilterSidebar = () => (
+    <div className="space-y-6">
+      <div>
+        <h3 className="font-semibold text-navy mb-4">Categories</h3>
+        <div className="space-y-1">
+          <button
+            onClick={() => updateParam('category', '')}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+              !activeCategory ? 'bg-brand-light text-brand font-medium' : 'text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            <LayoutGrid size={18} />
+            All Services
+            <span className="ml-auto text-xs text-gray-400">{allServices.length}</span>
+          </button>
+          {categories.map(cat => (
+            <button
+              key={cat.id}
+              onClick={() => updateParam('category', cat.id)}
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors capitalize ${
+                activeCategory === cat.id ? 'bg-brand-light text-brand font-medium' : 'text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              <span className="capitalize">{cat.name}</span>
+              <span className="ml-auto text-xs text-gray-400">
+                {categoryCounts[cat.id] || 0}
+              </span>
+            </button>
+          ))}
         </div>
       </div>
 
-      <div className={`flex flex-col flex-1 ${showChat ? 'flex' : 'hidden md:flex'}`}>
-        {!activeConv ? (
-          <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-2">
-            <MessageSquare size={48} className="text-gray-300" />
-            <p className="text-sm">Select a conversation</p>
-          </div>
-        ) : (
-          <>
-            <div className="p-4 bg-white border-b border-gray-200 flex items-center gap-3 sticky top-0 z-10">
-              <button onClick={() => { setActiveConv(null); navigate('/messages'); }} className="md:hidden p-1 text-gray-500">
-                <ArrowLeft size={20} />
-              </button>
-              <div className="w-9 h-9 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 font-bold shrink-0">
-                {activeConv.participantAvatar
-                  ? <img src={activeConv.participantAvatar} className="w-9 h-9 rounded-full object-cover" alt="" />
-                  : <User size={18} />
-                }
-              </div>
-              <h2 className="font-semibold text-gray-800 text-sm">{activeConv.participantName}</h2>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              {loadingMsgs ? (
-                <div className="flex items-center justify-center h-full gap-2 text-gray-400">
-                  <Loader2 size={18} className="animate-spin" />
-                </div>
-              ) : messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-2">
-                  <p className="text-sm">Start the conversation!</p>
-                </div>
-              ) : (
-                messages.map(msg => {
-                  const isMine = msg.sender_id === myId;
-                  return (
-                    <div key={msg._id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm ${
-                        isMine ? 'bg-orange-500 text-white rounded-br-sm' : 'bg-white border border-gray-200 text-gray-800 rounded-bl-sm'
-                      }`}>
-                        <p>{msg.text}</p>
-                        <p className={`text-[10px] mt-1 ${isMine ? 'text-orange-200' : 'text-gray-400'}`}>
-                          {formatTime(msg.created_at)}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-              <div ref={bottomRef} />
-            </div>
-
-            <form onSubmit={handleSend} className="p-4 bg-white border-t border-gray-200 flex gap-2">
+      <div>
+        <h3 className="font-semibold text-navy mb-4">Delivery Time</h3>
+        <div className="space-y-2">
+          {deliveryOptions.map(opt => (
+            <label key={opt.value} className="flex items-center gap-3 cursor-pointer">
               <input
-                type="text"
-                value={newMessage}
-                onChange={e => setNewMessage(e.target.value)}
-                placeholder="Write a message..."
-                className="flex-1 px-4 py-2 bg-gray-100 border border-transparent rounded-full text-sm focus:outline-none focus:bg-white focus:border-orange-500 transition-all"
-                disabled={sending}
+                type="radio" name="delivery" value={opt.value}
+                checked={activeDelivery === opt.value}
+                onChange={(e) => updateParam('delivery', e.target.value)}
+                className="w-4 h-4 text-brand border-gray-300 focus:ring-brand"
               />
-              <button
-                type="submit"
-                disabled={!newMessage.trim() || sending}
-                className="p-2.5 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {sending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
-              </button>
-            </form>
-          </>
-        )}
+              <span className="text-sm text-gray-600">{opt.label}</span>
+            </label>
+          ))}
+        </div>
       </div>
+
+      <div>
+        <h3 className="font-semibold text-navy mb-4">Minimum Rating</h3>
+        <div className="space-y-2">
+          {ratingOptions.map(opt => (
+            <label key={opt.value} className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="radio" name="rating" value={opt.value}
+                checked={activeRating === opt.value}
+                onChange={(e) => updateParam('rating', e.target.value)}
+                className="w-4 h-4 text-brand border-gray-300 focus:ring-brand"
+              />
+              <span className="text-sm text-gray-600">{opt.label}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {hasFilters && (
+        <button onClick={clearFilters} className="btn-secondary w-full text-sm flex items-center justify-center gap-2">
+          <X size={16} /> Reset All Filters
+        </button>
+      )}
     </div>
   );
-}
+
+  return (
+    <main className="min-h-screen pb-20">
+      <div className="bg-white border-b border-gray-200">
+        <div className="section-container py-8">
+          <ScrollReveal>
+            <div className="text-sm text-gray-500 mb-2">
+              <Link to="/" className="text-brand hover:underline">Home</Link>
+              <span className="mx-2">/</span>
+              <span>Marketplace</span>
+            </div>
+            <h1 className="font-heading font-bold text-3xl text-navy">Browse Services</h1>
+          </ScrollReveal>
+
+          <ScrollReveal delay={0.1}>
+            <div className="mt-6 max-w-2xl">
+              <div className="flex">
+                <div className="flex-1 relative">
+                  <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search services, freelancers..."
+                    value={searchQuery}
+                    onChange={(e) => updateParam('q', e.target.value)}
+                    className="w-full h-[52px] pl-12 pr-4 border border-gray-200 rounded-l-full text-base focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
+                  />
+                </div>
+                <button className="btn-primary rounded-l-none rounded-r-full h-[52px] px-7">Search</button>
+              </div>
+            </div>
+          </ScrollReveal>
+
+          <ScrollReveal delay={0.15}>
+            <div className="flex flex-wrap gap-2 mt-4">
+              <button
+                onClick={() => updateParam('category', '')}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  !activeCategory ? 'bg-brand text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                All
+              </button>
+              {categories.slice(0, 6).map(cat => (
+                <button
+                  key={cat.id}
+                  onClick={() => updateParam('category', activeCategory === cat.id ? '' : cat.id)}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors capitalize ${
+                    activeCategory === cat.id ? 'bg-brand text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {cat.name}
+                </button>
+              ))}
+            </div>
+          </ScrollReveal>
+        </div>
+      </div>
+
+      {error && !loading && (
+        <div className="section-container pt-4">
+          <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-2.5 text-sm text-red-700 flex items-center justify-between">
+            <span>Unable to reach the server. Please try again.</span>
+            <button onClick={fetchServices} className="underline text-xs ml-4 shrink-0">Retry</button>
+          </div>
+        </div>
+      )}
+
+      <div className="section-container py-8">
+        <div className="flex gap-8">
+          {isDesktop && (
+            <aside className="w-[260px] shrink-0">
+              <div className="sticky top-24 card-surface p-5">
+                <FilterSidebar />
+              </div>
+            </aside>
+          )}
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between mb-6">
+              <p className="text-sm text-gray-500">
+                {loading
+                  ? 'Loading services...'
+                  : `Showing ${filteredServices.length} of ${allServices.length} services`}
+              </p>
+              <div className="flex items-center gap-2 relative">
+                {!isDesktop && (
+                  <button
+                    onClick={() => setMobileFilterOpen(true)}
+                    className="btn-secondary text-sm py-2 px-4 flex items-center gap-2"
+                  >
+                    <Filter size={16} /> Filters
+                  </button>
+                )}
+                <button
+                  onClick={() => setSortOpen(!sortOpen)}
+                  className="flex items-center gap-2 text-sm text-gray-600 hover:text-navy transition-colors bg-white border border-gray-200 rounded-lg px-4 py-2"
+                >
+                  {sortOptions.find(o => o.value === activeSort)?.label}
+                  <ChevronDown size={16} />
+                </button>
+                <AnimatePresence>
+                  {sortOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
+                      className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg py-2 z-20 min-w-[180px]"
+                    >
+                      {sortOptions.map(opt => (
+                        <button
+                          key={opt.value}
+                          onClick={() => { updateParam('sort', opt.value); setSortOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${
+                            activeSort === opt.value ? 'text-brand font-medium' : 'text-gray-600'
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+
+            {loading ? (
+              <div className="flex items-center justify-center min-h-[300px]">
+                <div className="text-center">
+                  <Loader2 size={36} className="text-brand animate-spin mx-auto mb-3" />
+                  <p className="text-gray-500 text-sm">Loading services...</p>
+                </div>
+              </div>
+            ) : filteredServices.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {filteredServices.map((service, index) => (
+                  <ServiceCard key={service.id} service={service} index={index} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-20">
+                <Search size={48} className="text-gray-300 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-700">
+                  {hasFilters ? 'No services match your filters' : 'No services yet'}
+                </h3>
+                <p className="text-gray-500 mt-2">
+                  {hasFilters
+                    ? 'Try adjusting your filters or search query'
+                    : 'Be the first to publish a service on WorkπServ!'}
+                </p>
+                {hasFilters && (
+                  <button onClick={clearFilters} className="btn-primary mt-4">Clear Filters</button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {mobileFilterOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/40 z-50"
+              onClick={() => setMobileFilterOpen(false)}
+            />
+            <motion.div
+              initial={{ y: '100%' }} animate={{ y: '20%' }} exit={{ y: '100%' }}
+              transition={{ type: 'tween', duration: 0.3 }}
+              className="fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-3xl p-6 overflow-y-auto"
+              style={{ maxHeight: '80vh' }}
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="font-semibold text-navy text-lg">Filters</h3>
+                <button onClick={() => setMobileFilterOpen(false)} className="p-2 rounded-lg hover:bg-gray-100">
+                  <X size={20} />
+                </button>
+              </div>
+              <FilterSidebar />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </main>
+  );
+  }
