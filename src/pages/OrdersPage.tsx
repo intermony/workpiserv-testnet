@@ -63,7 +63,7 @@ export default function OrdersPage() {
   const [acting, setActing]             = useState(false);
   const [actionError, setActionError]   = useState<string | null>(null);
 
-  const myId = user?._id || user?.id || '';
+  const myId = user?._id || '';
 
   // Action : livrer (freelance) ou confirmer/libérer les fonds (acheteur)
   const doOrderAction = async (orderId: string, action: 'deliver' | 'complete') => {
@@ -320,4 +320,4 @@ export default function OrdersPage() {
       </div>
     </main>
   );
-      }
+}
