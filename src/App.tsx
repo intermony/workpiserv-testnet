@@ -47,7 +47,7 @@ export default function App() {
   return (
     <AppLayout>
       <AnimatePresence mode="wait">
-        <Routes location={location} key={location.key}>
+        <Routes location={location} key={location.hash || '/'}>
           <Route path="/" element={<HomePage />} />
           <Route path="/marketplace" element={<MarketplacePage />} />
           <Route path="/service/:id" element={<ServiceDetailPage />} />
