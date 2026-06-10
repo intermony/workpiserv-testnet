@@ -1,9 +1,13 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Package, Shield, Loader2 } from 'lucide-react';
+import { Package, Shield, Loader2, Truck, CheckCircle2 } from 'lucide-react';
+import { usePiAuth } from '@/hooks/usePiAuth';
 import type { Order, OrderStatus } from '@/types';
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api.onrender.com';
+
+// Order enrichi avec les IDs bruts pour savoir si on est acheteur ou vendeur
+type OrderEx = Order & { buyerRawId: string; freelancerRawId: string };
 
 const statusConfig: Record<OrderStatus, { label: string; color: string; bg: string }> = {
   active:          { label: 'Active',          color: 'text-blue-600',   bg: 'bg-blue-50' },
@@ -15,9 +19,11 @@ const statusConfig: Record<OrderStatus, { label: string; color: string; bg: stri
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function normalizeOrder(o: any): Order {
+function normalizeOrder(o: any): OrderEx {
   return {
     id           : o._id || o.id || '',
+    buyerRawId      : o.buyerId?._id || o.buyerId || '',
+    freelancerRawId : o.freelancerId?._id || o.freelancerId || '',
     orderId      : o.orderId || `#${(o._id || o.id || '').slice(-6).toUpperCase()}`,
     serviceId    : o.serviceId?._id || o.serviceId || '',
     serviceTitle : o.serviceId?.title || o.serviceTitle || 'Service',
@@ -48,11 +54,37 @@ function normalizeOrder(o: any): Order {
 }
 
 export default function OrdersPage() {
-  const [orders, setOrders]             = useState<Order[]>([]);
+  const { user } = usePiAuth();
+  const [orders, setOrders]             = useState<OrderEx[]>([]);
   const [loading, setLoading]           = useState(true);
   const [error, setError]               = useState(false);
   const [activeStatus, setActiveStatus] = useState<OrderStatus | 'all'>('all');
   const [selectedId, setSelectedId]     = useState<string | null>(null);
+  const [acting, setActing]             = useState(false);
+  const [actionError, setActionError]   = useState<string | null>(null);
+
+  const myId = user?._id || user?.id || '';
+
+  // Action : livrer (freelance) ou confirmer/libérer les fonds (acheteur)
+  const doOrderAction = async (orderId: string, action: 'deliver' | 'complete') => {
+    setActing(true);
+    setActionError(null);
+    try {
+      const token = localStorage.getItem('workpiserv_token');
+      const res = await fetch(`${API_URL}/api/orders/${orderId}/${action}`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'failed');
+      const newStatus: OrderStatus = action === 'deliver' ? 'delivered' : 'completed';
+      setOrders(prev => prev.map(o => (o.id === orderId ? { ...o, status: newStatus } : o)));
+    } catch {
+      setActionError("Action failed. Please try again.");
+    } finally {
+      setActing(false);
+    }
+  };
 
   useEffect(() => {
     let token: string | null = null;
@@ -217,6 +249,45 @@ export default function OrdersPage() {
                       {statusConfig[activeOrder.status].label}
                     </span>
                   </div>
+
+                  {/* Actions selon le rôle */}
+                  {myId === activeOrder.freelancerRawId &&
+                    (activeOrder.status === 'active' || activeOrder.status === 'in_progress') && (
+                    <button
+                      onClick={() => doOrderAction(activeOrder.id, 'deliver')}
+                      disabled={acting}
+                      className="btn-primary w-full mt-4 py-3 flex items-center justify-center gap-2 disabled:opacity-60"
+                    >
+                      {acting ? <Loader2 size={16} className="animate-spin" /> : <Truck size={16} />}
+                      Mark as Delivered
+                    </button>
+                  )}
+
+                  {myId === activeOrder.buyerRawId && activeOrder.status === 'delivered' && (
+                    <div className="mt-4">
+                      <button
+                        onClick={() => doOrderAction(activeOrder.id, 'complete')}
+                        disabled={acting}
+                        className="btn-primary w-full py-3 flex items-center justify-center gap-2 disabled:opacity-60"
+                      >
+                        {acting ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
+                        Confirm & Release π {activeOrder.price}
+                      </button>
+                      <p className="text-xs text-gray-500 text-center mt-2">
+                        Only confirm once you've reviewed the delivered work — this releases the escrow funds to the freelancer.
+                      </p>
+                    </div>
+                  )}
+
+                  {activeOrder.status === 'completed' && (
+                    <div className="mt-4 flex items-center justify-center gap-2 text-sm text-green-600 bg-green-50 rounded-xl py-3">
+                      <CheckCircle2 size={16} /> Order completed — funds released
+                    </div>
+                  )}
+
+                  {actionError && (
+                    <p className="text-xs text-red-600 text-center mt-2">{actionError}</p>
+                  )}
                 </div>
 
                 {/* Deliverables */}
@@ -250,4 +321,3 @@ export default function OrdersPage() {
     </main>
   );
       }
-      
