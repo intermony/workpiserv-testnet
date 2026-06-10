@@ -77,7 +77,7 @@ export function usePiAuth(): UsePiAuthReturn {
           body: JSON.stringify({
             pi_uid      : result.user.uid,
             pi_username : result.user.username,
-            access_token: result.accessToken,
+            access_token: result.user.uid,
           }),
         });
 
