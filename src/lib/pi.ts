@@ -16,6 +16,7 @@ interface OrderData {
   amount: number;
   memo?: string;
   serviceId: string;
+  package?: string;
   requirements?: string;
 }
 
@@ -82,14 +83,14 @@ class PiSDK {
       {
         amount   : orderData.amount,
         memo     : orderData.memo || 'WorkPiServ Order',
-        metadata : { serviceId: orderData.serviceId }
+        metadata : { serviceId: orderData.serviceId, package: orderData.package || 'Standard' }
       },
       {
         onReadyForServerApproval: async (paymentId: string) => {
           const res = await fetch(`${API_URL}/api/payments/approve`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ paymentId, serviceId: orderData.serviceId, requirements: orderData.requirements || '' })
+            body: JSON.stringify({ paymentId, serviceId: orderData.serviceId, package: orderData.package || 'Standard', requirements: orderData.requirements || '' })
           });
           callbacks.onReadyForServerApproval?.(paymentId, await res.json());
         },
