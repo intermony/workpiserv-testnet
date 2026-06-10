@@ -125,7 +125,7 @@ export default function ServiceDetailPage() {
   const totalReviews = reviews.length;
 
   // ─── Achat avec paiement Pi (escrow) ─────────────────────────
-  const isOwnService = !!user && (user._id === service.freelancer.id || user.id === service.freelancer.id);
+  const isOwnService = !!user && user._id === service.freelancer.id;
 
   const handleBuy = async () => {
     setBuyError(null);
