@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Clock, ShieldCheck, RefreshCcw, Heart, ChevronDown,
@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import { ScrollReveal } from '@/components/shared/ScrollReveal';
 import { StarRating } from '@/components/shared/StarRating';
+import { usePiAuth } from '@/hooks/usePiAuth';
+import { piSDK, isPiBrowser } from '@/lib/pi';
 import type { Service, Review } from '@/types';
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api.onrender.com';
@@ -61,6 +63,8 @@ function normalizeReview(r: any): Review {
 
 export default function ServiceDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { user, loggedIn, login } = usePiAuth();
   const [service, setService]         = useState<Service | null>(null);
   const [reviews, setReviews]         = useState<Review[]>([]);
   const [loading, setLoading]         = useState(true);
@@ -69,6 +73,8 @@ export default function ServiceDetailPage() {
   const [activePackage, setActivePackage] = useState(0);
   const [openFaqs, setOpenFaqs]       = useState<string[]>([]);
   const [saved, setSaved]             = useState(false);
+  const [buying, setBuying]           = useState(false);
+  const [buyError, setBuyError]       = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -117,6 +123,48 @@ export default function ServiceDetailPage() {
   const toggleFaq = (q: string) => setOpenFaqs(prev => prev.includes(q) ? prev.filter(x => x !== q) : [...prev, q]);
   const ratingBreakdown = [5, 4, 3, 2, 1].map(stars => ({ stars, count: reviews.filter(r => Math.round(r.rating) === stars).length }));
   const totalReviews = reviews.length;
+
+  // ─── Achat avec paiement Pi (escrow) ─────────────────────────
+  const isOwnService = !!user && (user._id === service.freelancer.id || user.id === service.freelancer.id);
+
+  const handleBuy = async () => {
+    setBuyError(null);
+
+    if (!isPiBrowser()) {
+      setBuyError('Open WorkπServ in the Pi Browser to pay with Pi.');
+      return;
+    }
+    if (!loggedIn) {
+      try { await login(); } catch { setBuyError('Please sign in with Pi first.'); return; }
+    }
+
+    const amount = pkg?.price || service.price;
+    setBuying(true);
+    try {
+      await piSDK.createPayment(
+        {
+          amount,
+          memo      : `WorkPiServ — ${service.title}`.slice(0, 100),
+          serviceId : service.id,
+          package   : pkg?.name || 'Standard',
+        },
+        {
+          onReadyForServerCompletion: () => {
+            setBuying(false);
+            navigate('/orders');
+          },
+          onCancel : () => setBuying(false),
+          onError  : () => {
+            setBuying(false);
+            setBuyError('Payment failed. Please try again.');
+          },
+        }
+      );
+    } catch {
+      setBuying(false);
+      setBuyError('Could not start the payment. Please try again.');
+    }
+  };
 
   return (
     <main className="min-h-screen pb-20">
@@ -314,7 +362,21 @@ export default function ServiceDetailPage() {
                   ) : (
                     <div className="text-3xl font-bold text-brand mb-4">π {service.price}</div>
                   )}
-                  <button className="btn-primary w-full mt-6 py-3.5 text-base">Continue (π {pkg?.price || service.price})</button>
+                  <button
+                    onClick={handleBuy}
+                    disabled={buying || isOwnService}
+                    className="btn-primary w-full mt-6 py-3.5 text-base disabled:opacity-60"
+                  >
+                    {buying
+                      ? <Loader2 size={20} className="animate-spin mx-auto" />
+                      : `Continue (π ${pkg?.price || service.price})`}
+                  </button>
+                  {isOwnService && (
+                    <p className="text-xs text-gray-400 text-center mt-2">This is your own service.</p>
+                  )}
+                  {buyError && (
+                    <p className="text-xs text-red-600 text-center mt-2">{buyError}</p>
+                  )}
                   <div className="flex gap-3 mt-3">
                     <button className="btn-secondary flex-1 py-2.5 text-sm flex items-center justify-center gap-2"><MessageCircle size={16} /> Contact</button>
                     <button onClick={() => setSaved(!saved)} className={`btn-ghost py-2.5 px-4 ${saved ? 'text-red-500' : ''}`}>
