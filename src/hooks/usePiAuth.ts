@@ -13,6 +13,7 @@ interface PiUser {
   unreadMessages: number;
   newOrders: number;
   avatar: string;
+  isNewUser?: boolean;
 }
 
 interface UsePiAuthReturn {
@@ -21,9 +22,11 @@ interface UsePiAuthReturn {
   error: string | null;
   loggedIn: boolean;
   inPiBrowser: boolean;
+  isNewUser: boolean;
   login: () => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
+  clearNewUser: () => void;
 }
 
 async function fetchMe(): Promise<PiUser | null> {
@@ -45,8 +48,9 @@ export function usePiAuth(): UsePiAuthReturn {
       return saved ? JSON.parse(saved) : null;
     } catch { return null; }
   });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading]     = useState(false);
+  const [error, setError]         = useState<string | null>(null);
+  const [isNewUser, setIsNewUser] = useState(false);
 
   const inPiBrowser = isPiBrowser();
 
@@ -59,19 +63,41 @@ export function usePiAuth(): UsePiAuthReturn {
   }, []);
 
   const login = useCallback(async () => {
-    if (!inPiBrowser) return; // Modal handled in Header
-
+    if (!inPiBrowser) return;
     setLoading(true);
     setError(null);
 
     try {
       const result = await piSDK.authenticate();
       if (result?.user) {
-        // Fetch full profile from backend
-        const full = await fetchMe();
-        const userData = full || { ...result.user, balance: 0, type: 'both', unreadNotifications: 0, unreadMessages: 0, newOrders: 0, avatar: result.user.username.charAt(0) };
-        setUser(userData as PiUser);
-        localStorage.setItem('workpiserv_user', JSON.stringify(userData));
+        // Envoyer au backend et récupérer le token
+        const res = await fetch(`${API_URL}/api/auth/pi-login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            pi_uid      : result.user.uid,
+            pi_username : result.user.username,
+            access_token: result.accessToken,
+          }),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          // Détecter si c'est un nouveau Pioneer
+          const firstLoginKey = `wps_first_${result.user.uid}`;
+          const alreadySeen = localStorage.getItem(firstLoginKey);
+          if (!alreadySeen) {
+            setIsNewUser(true);
+            localStorage.setItem(firstLoginKey, '1');
+          }
+
+          localStorage.setItem('workpiserv_token', data.token);
+          localStorage.setItem('workpiserv_user', JSON.stringify(data.user));
+          setUser(data.user);
+        } else {
+          setError('Authentication failed. Please try again.');
+          setTimeout(() => setError(null), 5000);
+        }
       } else {
         setError('Authentication failed. Please try again.');
         setTimeout(() => setError(null), 5000);
@@ -87,6 +113,12 @@ export function usePiAuth(): UsePiAuthReturn {
   const logout = useCallback(() => {
     piSDK.logout();
     setUser(null);
+    localStorage.removeItem('workpiserv_token');
+    localStorage.removeItem('workpiserv_user');
+  }, []);
+
+  const clearNewUser = useCallback(() => {
+    setIsNewUser(false);
   }, []);
 
   return {
@@ -95,8 +127,10 @@ export function usePiAuth(): UsePiAuthReturn {
     error,
     loggedIn: !!localStorage.getItem('workpiserv_token') || user !== null,
     inPiBrowser,
+    isNewUser,
     login,
     logout,
     refreshUser,
+    clearNewUser,
   };
-  }
+         }
