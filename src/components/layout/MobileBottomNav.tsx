@@ -17,8 +17,8 @@ export function MobileBottomNav() {
       <div className="flex items-center justify-around h-16 pb-safe">
         {navItems.map((item) => {
           const isActive = item.href === '/'
-            ? location.pathname === '/'
-            : location.pathname.startsWith(item.href);
+            ? location.hash === '#/' || location.hash === '' || location.hash === '#'
+            : location.hash.startsWith(`#${item.href}`);
           return (
             <Link
               key={item.label}
@@ -36,4 +36,4 @@ export function MobileBottomNav() {
       </div>
     </nav>
   );
-        }
+}
