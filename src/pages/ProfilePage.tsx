@@ -40,7 +40,8 @@ export default function ProfilePage() {
 
   // ─── Wallet (stocké côté serveur, dans MongoDB) ─────────────
   // Le wallet vit dans le document User ; il arrive via /api/auth/me.
-  const serverWallet = (user as (typeof user & { wallet?: string }) | null)?.wallet ?? '';
+  const serverWallet =
+    (user as (typeof user & { pi_wallet_address?: string }) | null)?.pi_wallet_address ?? '';
 
   const [editing, setEditing]         = useState(false);
   const [draft, setDraft]             = useState('');
@@ -56,7 +57,7 @@ export default function ProfilePage() {
 
   const saveWallet = async () => {
     const value = draft.trim().toUpperCase();
-    if (value && !PI_ADDRESS_REGEX.test(value)) {
+    if (!PI_ADDRESS_REGEX.test(value)) {
       setWalletError('Adresse invalide — elle doit commencer par G et faire 56 caractères.');
       return;
     }
@@ -70,7 +71,7 @@ export default function ProfilePage() {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ wallet: value }),
+        body: JSON.stringify({ pi_wallet_address: value }),
       });
       if (!res.ok) throw new Error();
       await refreshUser();
@@ -277,4 +278,4 @@ export default function ProfilePage() {
     </main>
   );
     }
-    
+         
