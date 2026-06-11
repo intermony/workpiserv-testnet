@@ -8,29 +8,31 @@ import { ScrollReveal } from '@/components/shared/ScrollReveal';
 import { useIsDesktop } from '@/hooks/useMediaQuery';
 import type { Service } from '@/types';
 
+import { useLanguage } from '@/i18n';
+
 const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api.onrender.com';
 
 const sortOptions = [
-  { value: 'popular',    label: 'Most Popular' },
-  { value: 'newest',     label: 'Newest' },
-  { value: 'price_asc',  label: 'Price: Low to High' },
-  { value: 'price_desc', label: 'Price: High to Low' },
-  { value: 'rating',     label: 'Best Rating' },
+  { value: 'popular',    label: 'market.sort.popular' },
+  { value: 'newest',     label: 'market.sort.newest' },
+  { value: 'price_asc',  label: 'market.sort.priceAsc' },
+  { value: 'price_desc', label: 'market.sort.priceDesc' },
+  { value: 'rating',     label: 'market.sort.rating' },
 ];
 
 const deliveryOptions = [
-  { value: 'any', label: 'Any time' },
-  { value: '1',   label: 'Within 24 hours' },
-  { value: '3',   label: 'Within 3 days' },
-  { value: '7',   label: 'Within 7 days' },
-  { value: '14',  label: 'Within 14 days' },
+  { value: 'any', label: 'market.delivery.any' },
+  { value: '1',   label: 'market.delivery.d1' },
+  { value: '3',   label: 'market.delivery.d3' },
+  { value: '7',   label: 'market.delivery.d7' },
+  { value: '14',  label: 'market.delivery.d14' },
 ];
 
 const ratingOptions = [
-  { value: 'any', label: 'Any rating' },
-  { value: '4.5', label: '4.5 & up' },
-  { value: '4.0', label: '4.0 & up' },
-  { value: '3.0', label: '3.0 & up' },
+  { value: 'any', label: 'market.rating.any' },
+  { value: '4.5', label: 'market.rating.r45' },
+  { value: '4.0', label: 'market.rating.r40' },
+  { value: '3.0', label: 'market.rating.r30' },
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -69,6 +71,7 @@ export default function MarketplacePage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const isDesktop = useIsDesktop();
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  const { t } = useLanguage();
   const [sortOpen, setSortOpen]                 = useState(false);
   const [allServices, setAllServices]           = useState<Service[]>([]);
   const [loading, setLoading]                   = useState(true);
@@ -149,7 +152,7 @@ export default function MarketplacePage() {
   const FilterSidebar = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="font-semibold text-navy mb-4">Categories</h3>
+        <h3 className="font-semibold text-navy mb-4">{t('market.categories')}</h3>
         <div className="space-y-1">
           <button
             onClick={() => updateParam('category', '')}
@@ -179,7 +182,7 @@ export default function MarketplacePage() {
       </div>
 
       <div>
-        <h3 className="font-semibold text-navy mb-4">Delivery Time</h3>
+        <h3 className="font-semibold text-navy mb-4">{t('market.deliveryTime')}</h3>
         <div className="space-y-2">
           {deliveryOptions.map(opt => (
             <label key={opt.value} className="flex items-center gap-3 cursor-pointer">
@@ -189,14 +192,14 @@ export default function MarketplacePage() {
                 onChange={(e) => updateParam('delivery', e.target.value)}
                 className="w-4 h-4 text-brand border-gray-300 focus:ring-brand"
               />
-              <span className="text-sm text-gray-600">{opt.label}</span>
+              <span className="text-sm text-gray-600">{t(opt.label)}</span>
             </label>
           ))}
         </div>
       </div>
 
       <div>
-        <h3 className="font-semibold text-navy mb-4">Minimum Rating</h3>
+        <h3 className="font-semibold text-navy mb-4">{t('market.minRating')}</h3>
         <div className="space-y-2">
           {ratingOptions.map(opt => (
             <label key={opt.value} className="flex items-center gap-3 cursor-pointer">
@@ -206,7 +209,7 @@ export default function MarketplacePage() {
                 onChange={(e) => updateParam('rating', e.target.value)}
                 className="w-4 h-4 text-brand border-gray-300 focus:ring-brand"
               />
-              <span className="text-sm text-gray-600">{opt.label}</span>
+              <span className="text-sm text-gray-600">{t(opt.label)}</span>
             </label>
           ))}
         </div>
@@ -226,11 +229,11 @@ export default function MarketplacePage() {
         <div className="section-container py-8">
           <ScrollReveal>
             <div className="text-sm text-gray-500 mb-2">
-              <Link to="/" className="text-brand hover:underline">Home</Link>
+              <Link to="/" className="text-brand hover:underline">{t('nav.home')}</Link>
               <span className="mx-2">/</span>
-              <span>Marketplace</span>
+              <span>{t('nav.marketplace')}</span>
             </div>
-            <h1 className="font-heading font-bold text-3xl text-navy">Browse Services</h1>
+            <h1 className="font-heading font-bold text-3xl text-navy">{t('market.title')}</h1>
           </ScrollReveal>
 
           <ScrollReveal delay={0.1}>
@@ -240,13 +243,13 @@ export default function MarketplacePage() {
                   <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Search services, freelancers..."
+                    placeholder={t('header.search')}
                     value={searchQuery}
                     onChange={(e) => updateParam('q', e.target.value)}
                     className="w-full h-[52px] pl-12 pr-4 border border-gray-200 rounded-l-full text-base focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
                   />
                 </div>
-                <button className="btn-primary rounded-l-none rounded-r-full h-[52px] px-7">Search</button>
+                <button className="btn-primary rounded-l-none rounded-r-full h-[52px] px-7">{t('market.search')}</button>
               </div>
             </div>
           </ScrollReveal>
@@ -259,7 +262,7 @@ export default function MarketplacePage() {
                   !activeCategory ? 'bg-brand text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
-                All
+                {t('market.all')}
               </button>
               {categories.slice(0, 6).map(cat => (
                 <button
@@ -280,8 +283,8 @@ export default function MarketplacePage() {
       {error && !loading && (
         <div className="section-container pt-4">
           <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-2.5 text-sm text-red-700 flex items-center justify-between">
-            <span>Unable to reach the server. Please try again.</span>
-            <button onClick={fetchServices} className="underline text-xs ml-4 shrink-0">Retry</button>
+            <span>{t('market.serverError')}</span>
+            <button onClick={fetchServices} className="underline text-xs ml-4 shrink-0">{t('market.retry')}</button>
           </div>
         </div>
       )}
@@ -300,8 +303,8 @@ export default function MarketplacePage() {
             <div className="flex items-center justify-between mb-6">
               <p className="text-sm text-gray-500">
                 {loading
-                  ? 'Loading services...'
-                  : `Showing ${filteredServices.length} of ${allServices.length} services`}
+                  ? t('market.loadingServices')
+                  : t('market.showing').replace('{a}', String(filteredServices.length)).replace('{b}', String(allServices.length))}
               </p>
               <div className="flex items-center gap-2 relative">
                 {!isDesktop && (
@@ -316,7 +319,7 @@ export default function MarketplacePage() {
                   onClick={() => setSortOpen(!sortOpen)}
                   className="flex items-center gap-2 text-sm text-gray-600 hover:text-navy transition-colors bg-white border border-gray-200 rounded-lg px-4 py-2"
                 >
-                  {sortOptions.find(o => o.value === activeSort)?.label}
+                  {t(sortOptions.find(o => o.value === activeSort)?.label || '')}
                   <ChevronDown size={16} />
                 </button>
                 <AnimatePresence>
@@ -333,7 +336,7 @@ export default function MarketplacePage() {
                             activeSort === opt.value ? 'text-brand font-medium' : 'text-gray-600'
                           }`}
                         >
-                          {opt.label}
+                          {t(opt.label)}
                         </button>
                       ))}
                     </motion.div>
@@ -346,7 +349,7 @@ export default function MarketplacePage() {
               <div className="flex items-center justify-center min-h-[300px]">
                 <div className="text-center">
                   <Loader2 size={36} className="text-brand animate-spin mx-auto mb-3" />
-                  <p className="text-gray-500 text-sm">Loading services...</p>
+                  <p className="text-gray-500 text-sm">{t('market.loadingServices')}</p>
                 </div>
               </div>
             ) : filteredServices.length > 0 ? (
@@ -359,15 +362,15 @@ export default function MarketplacePage() {
               <div className="text-center py-20">
                 <Search size={48} className="text-gray-300 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-700">
-                  {hasFilters ? 'No services match your filters' : 'No services yet'}
+                  {hasFilters ? t('market.noMatch') : t('market.noServices')}
                 </h3>
                 <p className="text-gray-500 mt-2">
                   {hasFilters
-                    ? 'Try adjusting your filters or search query'
-                    : 'Be the first to publish a service on WorkπServ!'}
+                    ? t('market.tryAdjust')
+                    : t('market.beFirst')}
                 </p>
                 {hasFilters && (
-                  <button onClick={clearFilters} className="btn-primary mt-4">Clear Filters</button>
+                  <button onClick={clearFilters} className="btn-primary mt-4">{t('market.clearFilters')}</button>
                 )}
               </div>
             )}
@@ -390,7 +393,7 @@ export default function MarketplacePage() {
               style={{ maxHeight: '80vh' }}
             >
               <div className="flex items-center justify-between mb-6">
-                <h3 className="font-semibold text-navy text-lg">Filters</h3>
+                <h3 className="font-semibold text-navy text-lg">{t('market.filters')}</h3>
                 <button onClick={() => setMobileFilterOpen(false)} className="p-2 rounded-lg hover:bg-gray-100">
                   <X size={20} />
                 </button>
