@@ -5,6 +5,8 @@ import { useIsDesktop, useIsMobile } from '@/hooks/useMediaQuery';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePiAuth } from '@/hooks/usePiAuth';
 import { useLanguage, LanguageSwitcher } from '@/i18n';
+
+// @ts-ignore
 import { QRCodeSVG } from 'qrcode.react';
 
 const navItems = [
