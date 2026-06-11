@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, ShoppingCart, Package, MessageCircle, Bell, Search, Menu, X, LogOut, Smartphone } from 'lucide-react';
+import { Home, ShoppingCart, Package, MessageCircle, Bell, Search, Menu, X, LogOut, Smartphone, Copy, Check } from 'lucide-react';
 import { useIsDesktop, useIsMobile } from '@/hooks/useMediaQuery';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePiAuth } from '@/hooks/usePiAuth';
 import { useLanguage, LanguageSwitcher } from '@/i18n';
+import { QRCodeSVG } from 'qrcode.react';
 
 const navItems = [
   { key: 'nav.home',        icon: Home,          href: '/' },
@@ -25,9 +26,10 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [showPiModal, setShowPiModal] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  const { user, loading, error, loggedIn, inPiBrowser, login, logout } = usePiAuth();
+  // showChromeModal et setShowChromeModal proviennent maintenant du hook mis à jour
+  const { user, loading, error, loggedIn, inPiBrowser, showChromeModal: showPiModal, setShowChromeModal: setShowPiModal, login, logout } = usePiAuth();
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -39,8 +41,13 @@ export function Header() {
   useEffect(() => { setMobileDrawerOpen(false); }, [location.pathname]);
 
   const handleLoginClick = () => {
-    if (!inPiBrowser) { setShowPiModal(true); return; }
     login();
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText('https://workpiserv.com');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -193,23 +200,45 @@ export function Header() {
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black z-50" onClick={() => setShowPiModal(false)} />
             <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} transition={{ duration: 0.25 }} className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center">
-                <div className="w-16 h-16 bg-brand rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-white font-bold text-3xl">π</span>
+              <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl text-center relative">
+                
+                <button onClick={() => setShowPiModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
+                  <X size={20} />
+                </button>
+
+                <div className="w-14 h-14 bg-brand rounded-full flex items-center justify-center mx-auto mb-3">
+                  <span className="text-white font-bold text-2xl">π</span>
                 </div>
-                <h3 className="font-heading font-bold text-xl text-navy mb-2">{t('pimodal.title')}</h3>
-                <div className="space-y-2 mb-6">
-                  <p className="text-gray-600 text-sm">{t('pimodal.body')}</p>
+                
+                <h3 className="font-heading font-bold text-lg text-navy mb-1">Ouvrir dans Pi Browser</h3>
+                <p className="text-gray-600 text-xs mb-4">{t('pimodal.body')}</p>
+                
+                {/* 🎯 QR CODE ADDITION LOCAL */}
+                <div className="bg-gray-50 p-3 rounded-2xl inline-block mb-4 border border-gray-100">
+                  <QRCodeSVG value="https://workpiserv.com" size={140} level="H" includeMargin={true} />
                 </div>
-                <div className="space-y-3">
-                  <a href={PI_BROWSER_LINKS.android} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full bg-navy text-white py-3 px-4 rounded-full font-medium hover:bg-navy/90 transition-colors">
-                    <Smartphone size={18} />{t('pimodal.android')}
-                  </a>
-                  <a href={PI_BROWSER_LINKS.ios} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full border-2 border-navy text-navy py-3 px-4 rounded-full font-medium hover:bg-gray-50 transition-colors">
-                    <Smartphone size={18} />{t('pimodal.ios')}
-                  </a>
+
+                {/* CONSIGNE STRICTE DE SÉCURITÉ */}
+                <div className="bg-orange-50 text-orange-800 text-[11px] text-left p-3 rounded-xl space-y-1 mb-4 border border-orange-100/50">
+                  <div className="font-semibold flex items-center gap-1">🛡️ Sécurité Pi Network :</div>
+                  <div>• Ne partagez <span className="font-bold text-red-600">JAMAIS</span> vos 24 mots.</div>
+                  <div>• Connexion sécurisée en un clic via l'application.</div>
                 </div>
-                <button onClick={() => setShowPiModal(false)} className="mt-4 text-gray-400 text-sm hover:text-gray-600 transition-colors">{t('pimodal.demo')}</button>
+
+                <div className="space-y-2">
+                  <button onClick={handleCopy} className="flex items-center justify-center gap-2 w-full bg-brand text-white py-2.5 px-4 rounded-full font-medium hover:bg-brand/90 transition-colors text-sm shadow-md">
+                    {copied ? <><Check size={16} /> Lien copié !</> : <><Copy size={16} /> Copier le lien du site</>}
+                  </button>
+                  
+                  <div className="flex gap-2 pt-1">
+                    <a href={PI_BROWSER_LINKS.android} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1 border border-gray-200 text-gray-700 py-2 px-3 rounded-full text-xs font-medium hover:bg-gray-50 transition-colors">
+                      <Smartphone size={14} /> Android
+                    </a>
+                    <a href={PI_BROWSER_LINKS.ios} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1 border border-gray-200 text-gray-700 py-2 px-3 rounded-full text-xs font-medium hover:bg-gray-50 transition-colors">
+                      <Smartphone size={14} /> iOS
+                    </a>
+                  </div>
+                </div>
               </div>
             </motion.div>
           </>
