@@ -1,24 +1,26 @@
 import { Search, ShoppingCart, Package, CheckCircle } from 'lucide-react';
 import { ScrollReveal } from '@/components/shared/ScrollReveal';
+import { useLanguage } from '@/i18n';
 
 const steps = [
-  { number: '1', icon: Search, title: 'Browse', description: 'Explore thousands of services from talented freelancers across multiple categories.' },
-  { number: '2', icon: ShoppingCart, title: 'Order', description: 'Select your service, choose a package, and pay securely using Pi cryptocurrency.' },
-  { number: '3', icon: Package, title: 'Deliver', description: 'Your freelancer works on your project with milestone tracking and regular updates.' },
-  { number: '4', icon: CheckCircle, title: 'Release', description: 'Review the completed work and release payment from escrow when satisfied.' },
+  { number: '1', icon: Search, title: 'home.step1Title', description: 'home.step1Desc' },
+  { number: '2', icon: ShoppingCart, title: 'home.step2Title', description: 'home.step2Desc' },
+  { number: '3', icon: Package, title: 'home.step3Title', description: 'home.step3Desc' },
+  { number: '4', icon: CheckCircle, title: 'home.step4Title', description: 'home.step4Desc' },
 ];
 
 export function HowItWorks() {
+  const { t } = useLanguage();
   return (
     <section className="py-16 lg:py-24 bg-white">
       <div className="section-container">
         <ScrollReveal>
           <div className="text-center max-w-xl mx-auto mb-12">
             <h2 className="font-heading font-bold text-2xl lg:text-3xl text-navy">
-              How It Works
+              {t('home.howTitle')}
             </h2>
             <p className="mt-3 text-gray-500 text-lg">
-              Get your project done in 4 simple steps with Pi-powered security
+              {t('home.howSub')}
             </p>
           </div>
         </ScrollReveal>
@@ -40,9 +42,9 @@ export function HowItWorks() {
                   <div className="mt-4">
                     <Icon size={28} className="text-brand mx-auto" />
                   </div>
-                  <h3 className="mt-4 font-semibold text-navy text-lg">{step.title}</h3>
+                  <h3 className="mt-4 font-semibold text-navy text-lg">{t(step.title)}</h3>
                   <p className="mt-2 text-sm text-gray-500 max-w-[240px] mx-auto">
-                    {step.description}
+                    {t(step.description)}
                   </p>
                 </div>
               </ScrollReveal>
