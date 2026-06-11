@@ -41,6 +41,8 @@ const translations: Record<Lang, Record<string, string>> = {
     'common.add': "Add",
     'common.loading': "Loading...",
 
+    'pimodal.scan': "Scan with your phone to open in the Pi Browser",
+
     'home.badge': "✓ Mainnet · Pi Network Secured",
     'home.heroTitle1': "Get Your Work Done Safely",
     'home.heroTitle2': "with Pi π",
@@ -253,6 +255,8 @@ const translations: Record<Lang, Record<string, string>> = {
     'common.edit': "Modifier",
     'common.add': "Ajouter",
     'common.loading': "Chargement...",
+
+    'pimodal.scan': "Scannez avec votre téléphone pour ouvrir dans le Pi Browser",
 
     'home.badge': "✓ Mainnet · Sécurisé par Pi Network",
     'home.heroTitle1': "Faites réaliser votre travail en toute sécurité",
@@ -467,6 +471,8 @@ const translations: Record<Lang, Record<string, string>> = {
     'common.add': "إضافة",
     'common.loading': "جارٍ التحميل...",
 
+    'pimodal.scan': "امسح الرمز بهاتفك لفتح الموقع في متصفح Pi",
+
     'home.badge': "✓ الشبكة الرئيسية · مؤمَّن بواسطة Pi Network",
     'home.heroTitle1': "أنجِز عملك بأمان",
     'home.heroTitle2': "مع Pi π",
@@ -680,6 +686,8 @@ const translations: Record<Lang, Record<string, string>> = {
     'common.add': "添加",
     'common.loading': "加载中...",
 
+    'pimodal.scan': "用手机扫码，在 Pi 浏览器中打开",
+
     'home.badge': "✓ 主网 · Pi Network 安全保障",
     'home.heroTitle1': "安全地完成您的工作",
     'home.heroTitle2': "使用 Pi π",
@@ -892,6 +900,8 @@ const translations: Record<Lang, Record<string, string>> = {
     'common.edit': "Sửa",
     'common.add': "Thêm",
     'common.loading': "Đang tải...",
+
+    'pimodal.scan': "Quét bằng điện thoại để mở trong Pi Browser",
 
     'home.badge': "✓ Mainnet · Bảo mật bởi Pi Network",
     'home.heroTitle1': "Hoàn thành công việc an toàn",
