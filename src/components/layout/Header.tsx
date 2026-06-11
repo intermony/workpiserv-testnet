@@ -28,8 +28,7 @@ export function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // showChromeModal et setShowChromeModal proviennent maintenant du hook mis à jour
-  const { user, loading, error, loggedIn, inPiBrowser, showChromeModal: showPiModal, setShowChromeModal: setShowPiModal, login, logout } = usePiAuth();
+  const { user, loading, error, loggedIn, showChromeModal: showPiModal, setShowChromeModal: setShowPiModal, login, logout } = usePiAuth();
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -213,12 +212,10 @@ export function Header() {
                 <h3 className="font-heading font-bold text-lg text-navy mb-1">Ouvrir dans Pi Browser</h3>
                 <p className="text-gray-600 text-xs mb-4">{t('pimodal.body')}</p>
                 
-                {/* 🎯 QR CODE ADDITION LOCAL */}
                 <div className="bg-gray-50 p-3 rounded-2xl inline-block mb-4 border border-gray-100">
                   <QRCodeSVG value="https://workpiserv.com" size={140} level="H" includeMargin={true} />
                 </div>
 
-                {/* CONSIGNE STRICTE DE SÉCURITÉ */}
                 <div className="bg-orange-50 text-orange-800 text-[11px] text-left p-3 rounded-xl space-y-1 mb-4 border border-orange-100/50">
                   <div className="font-semibold flex items-center gap-1">🛡️ Sécurité Pi Network :</div>
                   <div>• Ne partagez <span className="font-bold text-red-600">JAMAIS</span> vos 24 mots.</div>
