@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ChevronDown, Loader2, CheckCircle } from 'lucide-react';
+import { useLanguage } from '@/i18n';
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api.onrender.com';
 
@@ -17,6 +18,7 @@ const CATEGORIES = [
 
 export default function CreateServicePage() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [loading, setLoading]   = useState(false);
   const [success, setSuccess]   = useState(false);
   const [error, setError]       = useState('');
@@ -57,10 +59,10 @@ export default function CreateServicePage() {
         setTimeout(() => navigate('/profile'), 2000);
       } else {
         const data = await res.json().catch(() => ({}));
-        setError((data as { message?: string }).message || 'Failed to create service. Please try again.');
+        setError((data as { message?: string }).message || t('create.failed'));
       }
     } catch {
-      setError('Network error. Please check your connection.');
+      setError(t('create.networkError'));
     } finally {
       setLoading(false);
     }
@@ -71,8 +73,8 @@ export default function CreateServicePage() {
       <main className="min-h-screen flex items-center justify-center px-4">
         <div className="text-center">
           <CheckCircle size={64} className="text-green-500 mx-auto mb-4" />
-          <h2 className="font-heading font-bold text-2xl text-navy mb-2">Service Created!</h2>
-          <p className="text-gray-500">Redirecting to your profile...</p>
+          <h2 className="font-heading font-bold text-2xl text-navy mb-2">{t('create.success')}</h2>
+          <p className="text-gray-500">{t('create.redirecting')}</p>
         </div>
       </main>
     );
@@ -84,14 +86,14 @@ export default function CreateServicePage() {
       <div className="bg-white border-b border-gray-200">
         <div className="section-container py-6">
           <div className="text-sm text-gray-500 mb-2">
-            <Link to="/" className="text-brand hover:underline">Home</Link>
+            <Link to="/" className="text-brand hover:underline">{t('nav.home')}</Link>
             <span className="mx-2">/</span>
-            <Link to="/profile" className="text-brand hover:underline">Profile</Link>
+            <Link to="/profile" className="text-brand hover:underline">{t('nav.profile')}</Link>
             <span className="mx-2">/</span>
-            <span className="text-gray-700">Create Service</span>
+            <span className="text-gray-700">{t('create.crumb')}</span>
           </div>
-          <h1 className="font-heading font-bold text-2xl text-navy">Create a New Service</h1>
-          <p className="text-gray-500 text-sm mt-1">Offer your skills and start earning Pi</p>
+          <h1 className="font-heading font-bold text-2xl text-navy">{t('create.title')}</h1>
+          <p className="text-gray-500 text-sm mt-1">{t('create.subtitle')}</p>
         </div>
       </div>
 
@@ -101,12 +103,12 @@ export default function CreateServicePage() {
           {/* Title */}
           <div className="card-surface p-5">
             <label className="block text-sm font-semibold text-navy mb-1.5">
-              Service Title <span className="text-brand">*</span>
+              {t('create.serviceTitle')} <span className="text-brand">*</span>
             </label>
             <p className="text-xs text-gray-400 mb-2">Be specific and clear — min. 10 characters</p>
             <input
               type="text"
-              placeholder="e.g. I will design a professional logo for your brand"
+              placeholder={t('create.titlePh')}
               value={title}
               onChange={e => setTitle(e.target.value)}
               maxLength={120}
@@ -118,7 +120,7 @@ export default function CreateServicePage() {
           {/* Category */}
           <div className="card-surface p-5">
             <label className="block text-sm font-semibold text-navy mb-1.5">
-              Category <span className="text-brand">*</span>
+              {t('create.category')} <span className="text-brand">*</span>
             </label>
             <div className="relative">
               <select
@@ -126,7 +128,7 @@ export default function CreateServicePage() {
                 onChange={e => setCategory(e.target.value)}
                 className="w-full h-12 px-4 pr-10 border border-gray-200 rounded-xl text-sm appearance-none focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all bg-white"
               >
-                <option value="">Select a category...</option>
+                <option value="">{t('create.selectCategory')}</option>
                 {CATEGORIES.map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
@@ -140,7 +142,7 @@ export default function CreateServicePage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-navy mb-1.5">
-                  Price (π) <span className="text-brand">*</span>
+                  {t('create.price')} <span className="text-brand">*</span>
                 </label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-brand font-bold text-sm">π</span>
@@ -155,7 +157,7 @@ export default function CreateServicePage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-navy mb-1.5">Delivery (days)</label>
+                <label className="block text-sm font-semibold text-navy mb-1.5">{t('create.delivery')}</label>
                 <div className="relative">
                   <select
                     value={deliveryDays}
@@ -175,11 +177,11 @@ export default function CreateServicePage() {
           {/* Description */}
           <div className="card-surface p-5">
             <label className="block text-sm font-semibold text-navy mb-1.5">
-              Description <span className="text-brand">*</span>
+              {t('create.description')} <span className="text-brand">*</span>
             </label>
-            <p className="text-xs text-gray-400 mb-2">Describe what you offer — min. 30 characters</p>
+            <p className="text-xs text-gray-400 mb-2">{t('create.descHint')}</p>
             <textarea
-              placeholder="Describe your service in detail: what you offer, what the client will receive, your experience..."
+              placeholder={t('create.descPh')}
               value={description}
               onChange={e => setDesc(e.target.value)}
               rows={6}
@@ -191,7 +193,7 @@ export default function CreateServicePage() {
 
           {/* Escrow note */}
           <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 text-sm text-purple-700">
-            🔒 All payments are protected by WorkπServ Escrow — you receive π only after the client confirms delivery.
+            {t('create.escrowNote')}
           </div>
 
           {/* Error */}
@@ -212,9 +214,9 @@ export default function CreateServicePage() {
             }`}
           >
             {loading ? (
-              <><Loader2 size={20} className="animate-spin" /> Publishing...</>
+              <><Loader2 size={20} className="animate-spin" /> {t('create.publishing')}</>
             ) : (
-              '+ Publish Service'
+              t('create.publish')
             )}
           </button>
 
