@@ -4,7 +4,10 @@
 const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api.onrender.com';
 
 export function isPiBrowser(): boolean {
-  return typeof window !== 'undefined' && !!window.Pi;
+  if (typeof window === 'undefined') return false;
+  // Le SDK (window.Pi) est chargé partout, y compris dans Chrome.
+  // Le vrai Pi Browser s'identifie par son user-agent.
+  return /PiBrowser/i.test(navigator.userAgent) && !!window.Pi;
 }
 
 interface PiAuthResult {
