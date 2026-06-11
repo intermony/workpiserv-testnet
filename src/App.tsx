@@ -5,6 +5,7 @@ import { Footer } from '@/components/layout/Footer';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 import { WelcomeModal } from '@/components/shared/WelcomeModal';
 import { usePiAuth } from '@/hooks/usePiAuth';
+import { LanguageProvider } from '@/i18n';
 import HomePage from '@/pages/HomePage';
 import MarketplacePage from '@/pages/MarketplacePage';
 import ServiceDetailPage from '@/pages/ServiceDetailPage';
@@ -48,6 +49,7 @@ export default function App() {
   const { user, isNewUser, clearNewUser } = usePiAuth();
 
   return (
+    <LanguageProvider>
     <AppLayout>
       {/* Welcome Modal — nouveaux Pioneers uniquement */}
       {isNewUser && user && (
@@ -80,5 +82,6 @@ export default function App() {
         </Routes>
       </AnimatePresence>
     </AppLayout>
+    </LanguageProvider>
   );
 }
