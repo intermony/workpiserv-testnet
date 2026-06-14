@@ -40,7 +40,7 @@ export function StatsBar() {
                 <div className="text-3xl font-bold text-brand font-heading">
                   <CountUp end={stat.value} duration={1.5} separator="," suffix={stat.suffix} />
                 </div>
-                <p className="mt-1 text-sm text-gray-500 uppercase tracking-wider font-medium">
+                <p className="mt-1 text-sm text-muted-foreground uppercase tracking-wider font-medium">
                   {t(stat.label)}
                 </p>
               </div>
