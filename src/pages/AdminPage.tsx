@@ -114,7 +114,7 @@ export default function AdminPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-3">
           <Shield size={48} className="text-gray-300 mx-auto" />
-          <p className="text-gray-500">Accès réservé à l'administrateur.</p>
+          <p className="text-muted-foreground">Accès réservé à l'administrateur.</p>
           <button onClick={() => navigate('/')} className="btn-primary text-sm">Retour à l'accueil</button>
         </div>
       </div>
@@ -131,19 +131,19 @@ export default function AdminPage() {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-navy">Panneau d'administration</h1>
-            <p className="text-sm text-gray-500">WorkπServ</p>
+            <p className="text-sm text-muted-foreground">WorkπServ</p>
           </div>
         </div>
-        <button onClick={refresh} disabled={loading} className="p-2 rounded-xl hover:bg-gray-100 transition-colors">
-          <RefreshCw size={18} className={`text-gray-500 ${loading ? 'animate-spin' : ''}`} />
+        <button onClick={refresh} disabled={loading} className="p-2 rounded-xl hover:bg-muted transition-colors">
+          <RefreshCw size={18} className={`text-muted-foreground ${loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-2xl">
+      <div className="flex items-center gap-2 bg-muted p-1 rounded-2xl">
         {([['stats','Statistiques',BarChart2],['users','Utilisateurs',Users],['services','Services',Package]] as const).map(([key,label,Icon]) => (
           <button key={key} onClick={() => { setTab(key); if (key === 'users') fetchUsers(); }}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-sm font-medium transition-all ${tab === key ? 'bg-brand text-white shadow' : 'text-gray-600 hover:bg-white'}`}>
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-sm font-medium transition-all ${tab === key ? 'bg-brand text-white shadow' : 'text-muted-foreground hover:bg-white'}`}>
             <Icon size={15} />{label}
           </button>
         ))}
@@ -160,9 +160,9 @@ export default function AdminPage() {
             { label: 'Commandes terminées', value: stats.completedOrders ?? '-' },
             { label: 'Commandes en attente', value: stats.pendingOrders ?? 0 },
           ].map((s, i) => (
-            <div key={i} className={`rounded-2xl p-4 ${s.highlight ? 'bg-brand/5 border border-brand/20' : 'bg-white border border-gray-100'}`}>
+            <div key={i} className={`rounded-2xl p-4 ${s.highlight ? 'bg-brand/5 border border-brand/20' : 'bg-card border border-border'}`}>
               <p className={`text-2xl font-bold ${s.highlight ? 'text-brand' : 'text-navy'}`}>{s.value}</p>
-              <p className="text-xs text-gray-500 mt-1">{s.label}</p>
+              <p className="text-xs text-muted-foreground mt-1">{s.label}</p>
             </div>
           ))}
         </div>
@@ -171,13 +171,13 @@ export default function AdminPage() {
       {/* Users */}
       {tab === 'users' && (
         <div className="space-y-2">
-          {users.length === 0 && !loading && <p className="text-center text-gray-400 py-8">Aucun utilisateur</p>}
+          {users.length === 0 && !loading && <p className="text-center text-muted-foreground py-8">Aucun utilisateur</p>}
           {users.map(u => {
             const name = u.displayName || u.username || u.pi_username || '?';
             const initial = name.charAt(0).toUpperCase();
             const isSelf = u.username === 'alibentaher' || u.pi_username === 'alibentaher';
             return (
-              <div key={u._id} className={`bg-white rounded-2xl p-4 border ${u.banned ? 'border-red-100 opacity-60' : 'border-gray-100'}`}>
+              <div key={u._id} className={`bg-card rounded-2xl p-4 border ${u.banned ? 'border-red-100 opacity-60' : 'border-border'}`}>
                 {/* Ligne 1 : avatar + infos complètes */}
                 <div className="flex items-center gap-3 mb-3">
                   {u.avatar
@@ -189,10 +189,10 @@ export default function AdminPage() {
                       {isSelf && <span className="text-[10px] font-bold bg-brand/10 text-brand px-2 py-0.5 rounded-full">ADMIN</span>}
                       {u.banned && <span className="text-[10px] font-bold bg-red-100 text-red-500 px-2 py-0.5 rounded-full">BANNI</span>}
                     </div>
-                    <p className="text-xs text-gray-400 mt-0.5">
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       Inscrit le : {u.createdAt ? new Date(u.createdAt).toLocaleDateString('fr-FR') : '—'}
                     </p>
-                    {u.displayName && <p className="text-xs text-gray-500 mt-0.5">{u.displayName}</p>}
+                    {u.displayName && <p className="text-xs text-muted-foreground mt-0.5">{u.displayName}</p>}
                   </div>
                 </div>
                 {/* Ligne 2 : boutons sur toute la largeur */}
@@ -200,14 +200,14 @@ export default function AdminPage() {
                   <div className="flex gap-2">
                     {/* Bouton Contact */}
                     <button onClick={() => openContact(u)}
-                      className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-navy/5 hover:bg-navy/10 text-navy text-xs font-medium transition-colors">
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#100D26]/5 hover:bg-[#100D26]/10 text-navy text-xs font-medium transition-colors">
                       <MessageCircle size={13} /> Écrire
                     </button>
                     {/* Bouton Bannir */}
                     {banConfirm === u._id ? (
                       <div className="flex gap-1">
                         <button onClick={() => banUser(u._id)} className="px-2 py-1.5 rounded-xl bg-red-500 text-white text-xs font-medium">Oui</button>
-                        <button onClick={() => setBanConfirm(null)} className="px-2 py-1.5 rounded-xl bg-gray-200 text-gray-600 text-xs">Non</button>
+                        <button onClick={() => setBanConfirm(null)} className="px-2 py-1.5 rounded-xl bg-muted text-muted-foreground text-xs">Non</button>
                       </div>
                     ) : (
                       <button onClick={() => setBanConfirm(u._id)}
@@ -225,7 +225,7 @@ export default function AdminPage() {
 
       {/* Services tab placeholder */}
       {tab === 'services' && (
-        <div className="text-center text-gray-400 py-12">
+        <div className="text-center text-muted-foreground py-12">
           <Package size={40} className="mx-auto mb-3 opacity-30" />
           <p>Modération des services — bientôt disponible</p>
         </div>
@@ -237,7 +237,7 @@ export default function AdminPage() {
           {/* Overlay */}
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={closeContact} />
           {/* Panel */}
-          <div className="relative w-full max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl p-6 space-y-4 mx-0 sm:mx-4">
+          <div className="relative w-full max-w-md bg-card rounded-t-3xl sm:rounded-3xl shadow-2xl p-6 space-y-4 mx-0 sm:mx-4">
             {/* Header modal */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -248,11 +248,11 @@ export default function AdminPage() {
                     </span>}
                 <div>
                   <p className="font-semibold text-navy">@{contact.user.username || contact.user.pi_username}</p>
-                  <p className="text-xs text-gray-400">Message privé</p>
+                  <p className="text-xs text-muted-foreground">Message privé</p>
                 </div>
               </div>
-              <button onClick={closeContact} className="p-2 rounded-xl hover:bg-gray-100 transition-colors">
-                <X size={18} className="text-gray-400" />
+              <button onClick={closeContact} className="p-2 rounded-xl hover:bg-muted transition-colors">
+                <X size={18} className="text-muted-foreground" />
               </button>
             </div>
 
@@ -261,19 +261,19 @@ export default function AdminPage() {
               <div className="flex flex-col items-center py-6 space-y-2">
                 <CheckCircle size={40} className="text-green-500" />
                 <p className="font-medium text-navy">Message envoyé ✅</p>
-                <p className="text-xs text-gray-400">Il apparaîtra dans sa messagerie WorkπServ</p>
+                <p className="text-xs text-muted-foreground">Il apparaîtra dans sa messagerie WorkπServ</p>
               </div>
             ) : (
               <>
                 <textarea
-                  className="w-full border border-gray-200 rounded-2xl p-3 text-sm resize-none focus:outline-none focus:border-brand h-32 transition-colors"
+                  className="w-full border border-border rounded-2xl p-3 text-sm resize-none focus:outline-none focus:border-brand h-32 transition-colors"
                   placeholder="Écrivez votre message ici... (il recevra une notification dans ses Messages)"
                   value={contact.message}
                   onChange={e => setContact(c => ({ ...c, message: e.target.value }))}
                 />
                 {contact.error && <p className="text-xs text-red-500">{contact.error}</p>}
                 <div className="flex gap-3">
-                  <button onClick={closeContact} className="flex-1 py-3 rounded-2xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 transition-colors">
+                  <button onClick={closeContact} className="flex-1 py-3 rounded-2xl border border-border text-muted-foreground text-sm font-medium hover:bg-background transition-colors">
                     Annuler
                   </button>
                   <button onClick={sendMessage} disabled={contact.sending || !contact.message.trim()}
