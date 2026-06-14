@@ -6,7 +6,7 @@ import { useLanguage } from '@/i18n';
 export function HeroSection() {
   const { t } = useLanguage();
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-[#FFF5F0] via-[#F8F0FF] to-[#F0F4FF] rounded-b-[32px]">
+    <section className="relative overflow-hidden bg-gradient-to-br from-[#1B1640] via-[#161236] to-[#13112E] rounded-b-[32px]">
       <div className="absolute top-10 left-10 w-[300px] h-[300px] bg-brand/8 rounded-full blur-[80px]" />
       <div className="absolute bottom-10 right-10 w-[250px] h-[250px] bg-escrow/6 rounded-full blur-[80px]" />
 
@@ -42,7 +42,7 @@ export function HeroSection() {
           </motion.h1>
 
           <motion.p
-            className="mt-5 text-lg text-gray-500 leading-relaxed max-w-md"
+            className="mt-5 text-lg text-muted-foreground leading-relaxed max-w-md"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.45 }}
