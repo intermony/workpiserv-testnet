@@ -101,7 +101,7 @@ export default function ServiceDetailPage() {
       <main className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Loader2 size={36} className="text-brand animate-spin mx-auto mb-3" />
-          <p className="text-gray-500 text-sm">{t('service.loading')}</p>
+          <p className="text-muted-foreground text-sm">{t('service.loading')}</p>
         </div>
       </main>
     );
@@ -171,16 +171,16 @@ export default function ServiceDetailPage() {
 
   return (
     <main className="min-h-screen pb-20">
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-card border-b border-border">
         <div className="section-container py-4">
-          <div className="text-sm text-gray-500 truncate">
+          <div className="text-sm text-muted-foreground truncate">
             <Link to="/" className="text-brand hover:underline">{t('nav.home')}</Link>
             <span className="mx-2">/</span>
             <Link to="/marketplace" className="text-brand hover:underline">{t('nav.marketplace')}</Link>
             <span className="mx-2">/</span>
-            <span className="capitalize text-gray-700">{service.category}</span>
+            <span className="capitalize text-foreground">{service.category}</span>
             <span className="mx-2">/</span>
-            <span className="text-gray-700 truncate">{service.title}</span>
+            <span className="text-foreground truncate">{service.title}</span>
           </div>
         </div>
       </div>
@@ -189,7 +189,7 @@ export default function ServiceDetailPage() {
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="flex-1 min-w-0">
             <ScrollReveal>
-              <div className="relative aspect-video rounded-2xl overflow-hidden bg-gray-100">
+              <div className="relative aspect-video rounded-2xl overflow-hidden bg-muted">
                 <AnimatePresence mode="wait">
                   <motion.img key={activeImage} src={gallery[activeImage]} alt={service.title}
                     className="w-full h-full object-cover" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
@@ -212,14 +212,14 @@ export default function ServiceDetailPage() {
               <div className="flex flex-wrap items-center gap-3 mt-3">
                 <span className="bg-brand-light text-brand text-xs font-medium px-3 py-1 rounded-full capitalize">{service.category}</span>
                 <span className="bg-escrow-light text-escrow text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1"><ShieldCheck size={12} /> Escrow Protected</span>
-                <span className="flex items-center gap-1 text-sm text-gray-500"><Clock size={14} /> {service.deliveryDays} {t('service.daysDelivery')}</span>
+                <span className="flex items-center gap-1 text-sm text-muted-foreground"><Clock size={14} /> {service.deliveryDays} {t('service.daysDelivery')}</span>
               </div>
             </ScrollReveal>
 
             <ScrollReveal delay={0.1} className="mt-4">
               <div className="flex items-center gap-3">
                 {service.freelancer.avatar ? (
-                  <img src={service.freelancer.avatar} alt={service.freelancer.name} className="w-12 h-12 rounded-full object-cover bg-gray-100" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  <img src={service.freelancer.avatar} alt={service.freelancer.name} className="w-12 h-12 rounded-full object-cover bg-muted" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                 ) : (
                   <div className="w-12 h-12 rounded-full bg-brand-light flex items-center justify-center text-brand font-bold text-lg">
                     {service.freelancer.name.charAt(0).toUpperCase()}
@@ -230,7 +230,7 @@ export default function ServiceDetailPage() {
                     <span className="font-semibold text-navy">{service.freelancer.name}</span>
                     {service.freelancer.verified && <span className="text-green-500"><Check size={14} /></span>}
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-gray-500 mt-0.5">
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
                     <StarRating rating={service.rating} size={12} showValue />
                     <span>{totalReviews} reviews</span>
                   </div>
@@ -241,24 +241,24 @@ export default function ServiceDetailPage() {
             <ScrollReveal className="mt-8">
               <div className="card-surface p-6 lg:p-8">
                 <h2 className="font-heading font-bold text-xl text-navy mb-4">{t('service.about')}</h2>
-                <p className="text-gray-600 leading-relaxed">{service.description}</p>
+                <p className="text-muted-foreground leading-relaxed">{service.description}</p>
                 {service.faqs && service.faqs.length > 0 && (
-                  <div className="mt-8 pt-6 border-t border-gray-200">
+                  <div className="mt-8 pt-6 border-t border-border">
                     <h3 className="font-heading font-bold text-lg text-navy mb-4">{t('service.faq')}</h3>
                     {service.faqs.map((faq) => {
                       const isOpen = openFaqs.includes(faq.question);
                       return (
-                        <div key={faq.question} className="border-b border-gray-200">
+                        <div key={faq.question} className="border-b border-border">
                           <button onClick={() => toggleFaq(faq.question)} className="w-full flex items-center justify-between py-4 text-left">
                             <span className="font-medium text-navy text-sm pr-4">{faq.question}</span>
                             <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                              <ChevronDown size={18} className="text-gray-400 shrink-0" />
+                              <ChevronDown size={18} className="text-muted-foreground shrink-0" />
                             </motion.div>
                           </button>
                           <AnimatePresence>
                             {isOpen && (
                               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden">
-                                <p className="pb-4 text-sm text-gray-500">{faq.answer}</p>
+                                <p className="pb-4 text-sm text-muted-foreground">{faq.answer}</p>
                               </motion.div>
                             )}
                           </AnimatePresence>
@@ -274,25 +274,25 @@ export default function ServiceDetailPage() {
               <div className="card-surface p-6 lg:p-8">
                 <h2 className="font-heading font-bold text-xl text-navy mb-6">{t('service.reviews')}</h2>
                 {totalReviews === 0 ? (
-                  <p className="text-center text-gray-400 py-8">{t('service.noReviews')}</p>
+                  <p className="text-center text-muted-foreground py-8">{t('service.noReviews')}</p>
                 ) : (
                   <>
                     <div className="flex flex-col sm:flex-row gap-8 mb-8">
                       <div className="text-center sm:text-left">
                         <div className="text-5xl font-bold text-navy">{service.rating.toFixed(1)}</div>
                         <StarRating rating={service.rating} size={24} className="mt-2 justify-center sm:justify-start" />
-                        <p className="text-sm text-gray-500 mt-1">{totalReviews} reviews</p>
+                        <p className="text-sm text-muted-foreground mt-1">{totalReviews} reviews</p>
                       </div>
                       <div className="flex-1 space-y-2">
                         {ratingBreakdown.map(item => {
                           const pct = totalReviews > 0 ? (item.count / totalReviews) * 100 : 0;
                           return (
                             <div key={item.stars} className="flex items-center gap-3">
-                              <span className="text-sm text-gray-600 w-8">{item.stars} ★</span>
-                              <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                              <span className="text-sm text-muted-foreground w-8">{item.stars} ★</span>
+                              <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                                 <motion.div className="h-full bg-amber-400 rounded-full" initial={{ width: 0 }} whileInView={{ width: `${pct}%` }} viewport={{ once: true }} transition={{ duration: 0.6, ease: 'easeOut' }} />
                               </div>
-                              <span className="text-xs text-gray-400 w-6 text-right">{item.count}</span>
+                              <span className="text-xs text-muted-foreground w-6 text-right">{item.count}</span>
                             </div>
                           );
                         })}
@@ -311,11 +311,11 @@ export default function ServiceDetailPage() {
                             )}
                             <div>
                               <span className="font-medium text-navy text-sm">{review.author}</span>
-                              <p className="text-xs text-gray-400">{review.date}</p>
+                              <p className="text-xs text-muted-foreground">{review.date}</p>
                             </div>
                           </div>
                           <div className="mt-2"><StarRating rating={review.rating} size={14} showValue /></div>
-                          <p className="mt-2 text-sm text-gray-600">{review.content}</p>
+                          <p className="mt-2 text-sm text-muted-foreground">{review.content}</p>
                           <span className="inline-block mt-2 bg-brand-light text-brand text-xs px-2.5 py-1 rounded-full">{review.package}</span>
                         </motion.div>
                       ))}
@@ -332,10 +332,10 @@ export default function ServiceDetailPage() {
                 <div className="card-surface p-6">
                   {service.packages && service.packages.length > 0 ? (
                     <>
-                      <div className="flex gap-1 bg-gray-100 rounded-lg p-1 mb-6">
+                      <div className="flex gap-1 bg-muted rounded-lg p-1 mb-6">
                         {service.packages.map((p, i) => (
                           <button key={p.name} onClick={() => setActivePackage(i)}
-                            className={`flex-1 py-2.5 px-3 rounded-md text-sm font-medium transition-all relative ${activePackage === i ? 'bg-brand text-white shadow-sm' : 'text-gray-600 hover:text-navy'}`}>
+                            className={`flex-1 py-2.5 px-3 rounded-md text-sm font-medium transition-all relative ${activePackage === i ? 'bg-brand text-white shadow-sm' : 'text-muted-foreground hover:text-navy'}`}>
                             {p.name}
                             {p.popular && <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-brand text-white text-[9px] px-1.5 py-0.5 rounded-full whitespace-nowrap">{t('service.popular')}</span>}
                           </button>
@@ -345,8 +345,8 @@ export default function ServiceDetailPage() {
                         {pkg && (
                           <motion.div key={pkg.name} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.2 }}>
                             <div className="text-3xl font-bold text-brand">π {pkg.price}</div>
-                            <p className="text-sm text-gray-500 mt-1">{pkg.description}</p>
-                            <div className="flex items-center gap-4 mt-3 text-sm text-gray-500">
+                            <p className="text-sm text-muted-foreground mt-1">{pkg.description}</p>
+                            <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
                               <span className="flex items-center gap-1"><Clock size={14} /> {pkg.deliveryDays} {t('service.days')}</span>
                               <span>{pkg.revisions} revisions</span>
                             </div>
@@ -354,7 +354,7 @@ export default function ServiceDetailPage() {
                               {pkg.features.map(f => (
                                 <li key={f.text} className="flex items-start gap-2.5 text-sm">
                                   {f.included ? <Check size={16} className="text-green-500 shrink-0 mt-0.5" /> : <X size={16} className="text-gray-300 shrink-0 mt-0.5" />}
-                                  <span className={f.included ? 'text-gray-700' : 'text-gray-400 line-through'}>{f.text}</span>
+                                  <span className={f.included ? 'text-foreground' : 'text-muted-foreground line-through'}>{f.text}</span>
                                 </li>
                               ))}
                             </ul>
@@ -375,7 +375,7 @@ export default function ServiceDetailPage() {
                       : `${t('service.continue')} (π ${pkg?.price || service.price})`}
                   </button>
                   {isOwnService && (
-                    <p className="text-xs text-gray-400 text-center mt-2">{t('service.own')}</p>
+                    <p className="text-xs text-muted-foreground text-center mt-2">{t('service.own')}</p>
                   )}
                   {buyError && (
                     <p className="text-xs text-red-600 text-center mt-2">{buyError}</p>
@@ -386,10 +386,10 @@ export default function ServiceDetailPage() {
                       <Heart size={18} className={saved ? 'fill-red-500' : ''} />
                     </button>
                   </div>
-                  <div className="flex items-center justify-center gap-4 mt-5 pt-5 border-t border-gray-100">
-                    <div className="flex items-center gap-1 text-xs text-gray-500"><ShieldCheck size={14} /> Escrow</div>
-                    <div className="flex items-center gap-1 text-xs text-gray-500"><RefreshCcw size={14} /> Free Cancel</div>
-                    <div className="flex items-center gap-1 text-xs text-gray-500"><Clock size={14} /> On Time</div>
+                  <div className="flex items-center justify-center gap-4 mt-5 pt-5 border-t border-border">
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground"><ShieldCheck size={14} /> Escrow</div>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground"><RefreshCcw size={14} /> Free Cancel</div>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground"><Clock size={14} /> On Time</div>
                   </div>
                 </div>
               </ScrollReveal>
