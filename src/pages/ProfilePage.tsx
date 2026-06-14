@@ -176,7 +176,7 @@ export default function ProfilePage() {
       <main className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Loader2 size={36} className="text-brand animate-spin mx-auto mb-3" />
-          <p className="text-gray-500 text-sm">{t('profile.loading')}</p>
+          <p className="text-muted-foreground text-sm">{t('profile.loading')}</p>
         </div>
       </main>
     );
@@ -186,18 +186,18 @@ export default function ProfilePage() {
   if (!isOwnProfile) {
     return (
       <main className="min-h-screen pb-24">
-        <div className="bg-white border-b border-gray-200">
+        <div className="bg-card border-b border-border">
           <div className="section-container py-8">
-            <div className="text-sm text-gray-500 mb-2">
+            <div className="text-sm text-muted-foreground mb-2">
               <Link to="/" className="text-brand hover:underline">{t('nav.home')}</Link>
               <span className="mx-2">/</span>
-              <span className="text-gray-700">{t('nav.profile')}</span>
+              <span className="text-foreground">{t('nav.profile')}</span>
             </div>
             <div className="flex items-center gap-4">
               <Avatar avatar="👤" />
               <div>
                 <h1 className="font-heading font-bold text-2xl text-navy">@{paramUsername}</h1>
-                <p className="text-sm text-gray-500">{t('profile.pioneer')}</p>
+                <p className="text-sm text-muted-foreground">{t('profile.pioneer')}</p>
               </div>
             </div>
           </div>
@@ -215,8 +215,8 @@ export default function ProfilePage() {
       <main className="min-h-screen flex items-center justify-center">
         <div className="text-center px-6">
           <UserIcon size={48} className="text-gray-300 mx-auto mb-4" />
-          <h2 className="font-semibold text-gray-700 mb-2">{t('profile.notSignedIn')}</h2>
-          <p className="text-sm text-gray-500 mb-4">
+          <h2 className="font-semibold text-foreground mb-2">{t('profile.notSignedIn')}</h2>
+          <p className="text-sm text-muted-foreground mb-4">
             {piSdkAvailable()
               ? t('profile.signInHint')
               : t('profile.openPiBrowser')}
@@ -230,14 +230,14 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="min-h-screen pb-24 bg-gray-50">
+    <main className="min-h-screen pb-24 bg-background">
       {/* En-tête */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-card border-b border-border">
         <div className="section-container py-8">
-          <div className="text-sm text-gray-500 mb-4">
+          <div className="text-sm text-muted-foreground mb-4">
             <Link to="/" className="text-brand hover:underline">{t('nav.home')}</Link>
             <span className="mx-2">/</span>
-            <span className="text-gray-700">{t('profile.title')}</span>
+            <span className="text-foreground">{t('profile.title')}</span>
           </div>
 
           <div className="flex items-center gap-4">
@@ -253,22 +253,22 @@ export default function ProfilePage() {
                 {u?.displayName || `@${user.username}`}
               </h1>
               {u?.displayName && (
-                <p className="text-sm text-gray-500 truncate">@{user.username}</p>
+                <p className="text-sm text-muted-foreground truncate">@{user.username}</p>
               )}
               {u?.title && (
-                <p className="text-sm text-gray-700 mt-0.5 truncate">{u.title}</p>
+                <p className="text-sm text-foreground mt-0.5 truncate">{u.title}</p>
               )}
               <div className="flex items-center flex-wrap gap-2 mt-1.5">
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-brand bg-brand-light px-2.5 py-1 rounded-full capitalize">
                   <Shield size={12} /> {user.type || 'Pioneer'}
                 </span>
                 {u?.location && (
-                  <span className="inline-flex items-center gap-1 text-xs text-gray-500">
+                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                     <MapPin size={12} /> {u.location}
                   </span>
                 )}
                 {(u?.rating ?? 0) > 0 && (
-                  <span className="inline-flex items-center gap-1 text-xs text-gray-600">
+                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                     <Star size={12} className="text-amber-500 fill-amber-500" /> {u?.rating}
                   </span>
                 )}
@@ -302,33 +302,33 @@ export default function ProfilePage() {
                 value={form.displayName}
                 onChange={e => setForm({ ...form, displayName: e.target.value })}
                 placeholder={t('profile.displayName')}
-                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
+                className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
               />
               <input
                 type="text"
                 value={form.title}
                 onChange={e => setForm({ ...form, title: e.target.value })}
                 placeholder={t('profile.titlePh')}
-                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
+                className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
               />
               <textarea
                 value={form.bio}
                 onChange={e => setForm({ ...form, bio: e.target.value })}
                 placeholder={t('profile.bioPh')}
                 rows={3}
-                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand resize-none"
+                className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand resize-none"
               />
               <input
                 type="text"
                 value={form.location}
                 onChange={e => setForm({ ...form, location: e.target.value })}
                 placeholder={t('profile.locationPh')}
-                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
+                className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
               />
               <select
                 value={form.type}
                 onChange={e => setForm({ ...form, type: e.target.value })}
-                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
+                className="w-full border border-border rounded-xl px-4 py-3 text-sm bg-card focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
               >
                 <option value="both">{t('header.both')}</option>
                 <option value="freelancer">{t('profile.typeFreelancer')}</option>
@@ -341,16 +341,16 @@ export default function ProfilePage() {
                 </button>
                 <button
                   onClick={() => setEditingProfile(false)}
-                  className="flex items-center justify-center gap-1 border border-gray-300 text-gray-600 text-sm font-medium px-4 rounded-full hover:bg-gray-50"
+                  className="flex items-center justify-center gap-1 border border-border text-muted-foreground text-sm font-medium px-4 rounded-full hover:bg-background"
                 >
                   <X size={14} /> {t('common.cancel')}
                 </button>
               </div>
             </div>
           ) : u?.bio ? (
-            <p className="text-sm text-gray-600 whitespace-pre-line">{u.bio}</p>
+            <p className="text-sm text-muted-foreground whitespace-pre-line">{u.bio}</p>
           ) : (
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               {t('profile.aboutEmpty')}
             </p>
           )}
@@ -358,7 +358,7 @@ export default function ProfilePage() {
         {/* Solde */}
         <section className="card-surface p-5 flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-500">{t('header.balance')}</p>
+            <p className="text-sm text-muted-foreground">{t('header.balance')}</p>
             <p className="font-heading font-bold text-2xl text-navy">
               {user.balance ?? 0} <span className="text-brand">π</span>
             </p>
@@ -414,11 +414,11 @@ export default function ProfilePage() {
                 spellCheck={false}
                 autoCapitalize="characters"
                 maxLength={56}
-                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
+                className="w-full border border-border rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
               />
               {/* Compteur de caractères */}
               <div className="flex justify-between items-center">
-                <span className={`text-xs font-mono ${draft.length === 56 ? 'text-green-600' : 'text-gray-400'}`}>
+                <span className={`text-xs font-mono ${draft.length === 56 ? 'text-green-600' : 'text-muted-foreground'}`}>
                   {draft.length}/56 {draft.length === 56 ? '✓' : ''}
                 </span>
                 {draft.length > 0 && !draft.startsWith('G') && (
@@ -444,26 +444,26 @@ export default function ProfilePage() {
                   {saving ? <Loader2 size={14} className="animate-spin mx-auto" /> : t('common.save')}
                 </button>
                 <button onClick={() => { setEditing(false); setWalletError(null); }}
-                  className="flex items-center justify-center gap-1 border border-gray-300 text-gray-600 text-sm font-medium px-4 rounded-full hover:bg-gray-50">
+                  className="flex items-center justify-center gap-1 border border-border text-muted-foreground text-sm font-medium px-4 rounded-full hover:bg-background">
                   <X size={14} /> {t('common.cancel')}
                 </button>
               </div>
             </div>
           ) : serverWallet ? (
             <div className="space-y-2">
-              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+              <div className="flex items-center gap-2 bg-background border border-border rounded-xl px-4 py-3">
                 <ShieldCheck size={16} className="text-green-500 shrink-0" />
-                <code className="text-xs text-gray-700 truncate flex-1">{serverWallet}</code>
+                <code className="text-xs text-foreground truncate flex-1">{serverWallet}</code>
                 <button onClick={copyWallet}
-                  className="text-gray-400 hover:text-brand transition-colors shrink-0"
+                  className="text-muted-foreground hover:text-brand transition-colors shrink-0"
                   aria-label="Copy wallet address">
                   {copied ? <Check size={16} className="text-green-600" /> : <Copy size={16} />}
                 </button>
               </div>
-              <p className="text-[11px] text-gray-400 text-center">{t('wallet.info.escrow')}</p>
+              <p className="text-[11px] text-muted-foreground text-center">{t('wallet.info.escrow')}</p>
             </div>
           ) : (
-            <p className="text-sm text-gray-500">{t('profile.walletEmpty')}</p>
+            <p className="text-sm text-muted-foreground">{t('profile.walletEmpty')}</p>
           )}
         </section>
 
@@ -480,7 +480,7 @@ export default function ProfilePage() {
               className="card-surface-hover p-4 flex flex-col items-center gap-2 text-center"
             >
               <item.icon size={22} className="text-brand" />
-              <span className="text-xs font-medium text-gray-700">{t(item.label)}</span>
+              <span className="text-xs font-medium text-foreground">{t(item.label)}</span>
             </Link>
           ))}
         </section>
@@ -499,13 +499,13 @@ export default function ProfilePage() {
       {photoModal && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setPhotoModal(false)} />
-          <div className="relative w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl p-6 space-y-4 mx-0 sm:mx-4">
+          <div className="relative w-full max-w-sm bg-card rounded-t-3xl sm:rounded-3xl shadow-2xl p-6 space-y-4 mx-0 sm:mx-4">
             <div className="flex items-center justify-between">
               <h3 className="font-heading font-semibold text-navy flex items-center gap-2">
                 <Camera size={18} className="text-brand" /> Changer la photo
               </h3>
-              <button onClick={() => setPhotoModal(false)} className="p-2 rounded-xl hover:bg-gray-100">
-                <X size={18} className="text-gray-400" />
+              <button onClick={() => setPhotoModal(false)} className="p-2 rounded-xl hover:bg-muted">
+                <X size={18} className="text-muted-foreground" />
               </button>
             </div>
             {/* Preview */}
@@ -523,7 +523,7 @@ export default function ProfilePage() {
               className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) uploadPhoto(f); }} />
             <div className="flex gap-3">
               <button onClick={() => setPhotoModal(false)}
-                className="flex-1 py-3 rounded-2xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50">
+                className="flex-1 py-3 rounded-2xl border border-border text-muted-foreground text-sm font-medium hover:bg-background">
                 Annuler
               </button>
               <button onClick={() => fileInputRef.current?.click()} disabled={photoUploading}
