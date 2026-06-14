@@ -74,7 +74,7 @@ export default function CreateServicePage() {
         <div className="text-center">
           <CheckCircle size={64} className="text-green-500 mx-auto mb-4" />
           <h2 className="font-heading font-bold text-2xl text-navy mb-2">{t('create.success')}</h2>
-          <p className="text-gray-500">{t('create.redirecting')}</p>
+          <p className="text-muted-foreground">{t('create.redirecting')}</p>
         </div>
       </main>
     );
@@ -83,17 +83,17 @@ export default function CreateServicePage() {
   return (
     <main className="min-h-screen pb-24">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-card border-b border-border">
         <div className="section-container py-6">
-          <div className="text-sm text-gray-500 mb-2">
+          <div className="text-sm text-muted-foreground mb-2">
             <Link to="/" className="text-brand hover:underline">{t('nav.home')}</Link>
             <span className="mx-2">/</span>
             <Link to="/profile" className="text-brand hover:underline">{t('nav.profile')}</Link>
             <span className="mx-2">/</span>
-            <span className="text-gray-700">{t('create.crumb')}</span>
+            <span className="text-foreground">{t('create.crumb')}</span>
           </div>
           <h1 className="font-heading font-bold text-2xl text-navy">{t('create.title')}</h1>
-          <p className="text-gray-500 text-sm mt-1">{t('create.subtitle')}</p>
+          <p className="text-muted-foreground text-sm mt-1">{t('create.subtitle')}</p>
         </div>
       </div>
 
@@ -105,16 +105,16 @@ export default function CreateServicePage() {
             <label className="block text-sm font-semibold text-navy mb-1.5">
               {t('create.serviceTitle')} <span className="text-brand">*</span>
             </label>
-            <p className="text-xs text-gray-400 mb-2">Be specific and clear — min. 10 characters</p>
+            <p className="text-xs text-muted-foreground mb-2">Be specific and clear — min. 10 characters</p>
             <input
               type="text"
               placeholder={t('create.titlePh')}
               value={title}
               onChange={e => setTitle(e.target.value)}
               maxLength={120}
-              className="w-full h-12 px-4 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
+              className="w-full h-12 px-4 border border-border rounded-xl text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
             />
-            <p className="text-xs text-gray-400 mt-1 text-right">{title.length}/120</p>
+            <p className="text-xs text-muted-foreground mt-1 text-right">{title.length}/120</p>
           </div>
 
           {/* Category */}
@@ -126,14 +126,14 @@ export default function CreateServicePage() {
               <select
                 value={category}
                 onChange={e => setCategory(e.target.value)}
-                className="w-full h-12 px-4 pr-10 border border-gray-200 rounded-xl text-sm appearance-none focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all bg-white"
+                className="w-full h-12 px-4 pr-10 border border-border rounded-xl text-sm appearance-none focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all bg-card"
               >
                 <option value="">{t('create.selectCategory')}</option>
                 {CATEGORIES.map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>
-              <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
             </div>
           </div>
 
@@ -152,7 +152,7 @@ export default function CreateServicePage() {
                     value={price}
                     onChange={e => setPrice(e.target.value)}
                     min="1"
-                    className="w-full h-12 pl-8 pr-4 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
+                    className="w-full h-12 pl-8 pr-4 border border-border rounded-xl text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
                   />
                 </div>
               </div>
@@ -162,13 +162,13 @@ export default function CreateServicePage() {
                   <select
                     value={deliveryDays}
                     onChange={e => setDelivery(e.target.value)}
-                    className="w-full h-12 px-4 pr-10 border border-gray-200 rounded-xl text-sm appearance-none focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all bg-white"
+                    className="w-full h-12 px-4 pr-10 border border-border rounded-xl text-sm appearance-none focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all bg-card"
                   >
                     {[1, 2, 3, 5, 7, 10, 14, 21, 30].map(d => (
                       <option key={d} value={d}>{d} day{d > 1 ? 's' : ''}</option>
                     ))}
                   </select>
-                  <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                 </div>
               </div>
             </div>
@@ -179,16 +179,16 @@ export default function CreateServicePage() {
             <label className="block text-sm font-semibold text-navy mb-1.5">
               {t('create.description')} <span className="text-brand">*</span>
             </label>
-            <p className="text-xs text-gray-400 mb-2">{t('create.descHint')}</p>
+            <p className="text-xs text-muted-foreground mb-2">{t('create.descHint')}</p>
             <textarea
               placeholder={t('create.descPh')}
               value={description}
               onChange={e => setDesc(e.target.value)}
               rows={6}
               maxLength={2000}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all resize-y"
+              className="w-full px-4 py-3 border border-border rounded-xl text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all resize-y"
             />
-            <p className="text-xs text-gray-400 mt-1 text-right">{description.length}/2000</p>
+            <p className="text-xs text-muted-foreground mt-1 text-right">{description.length}/2000</p>
           </div>
 
           {/* Escrow note */}
@@ -210,7 +210,7 @@ export default function CreateServicePage() {
             className={`w-full py-4 rounded-2xl font-semibold text-base transition-all flex items-center justify-center gap-2 ${
               isValid && !loading
                 ? 'bg-brand text-white hover:bg-brand/90'
-                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-muted text-muted-foreground cursor-not-allowed'
             }`}
           >
             {loading ? (
