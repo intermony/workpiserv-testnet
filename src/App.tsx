@@ -61,6 +61,12 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Remonter en haut de page à chaque changement de route
+  // (sinon, en cliquant un lien du footer, la page reste scrollée en bas)
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   return (
     <LanguageProvider>
     <AppLayout>
