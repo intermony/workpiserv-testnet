@@ -28,7 +28,7 @@ export function Footer() {
   const navigate = useNavigate();
   return (
     <footer className="bg-[#100D26] text-white">
-      <div className="section-container py-16 pb-8">
+      <div className="section-container py-16 pb-24 md:pb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand */}
           <div>
@@ -98,10 +98,10 @@ export function Footer() {
           <p className="text-xs text-muted-foreground">
             &copy; 2026 WorkπServ. {t('footer.rights')}
           </p>
-          <div className="flex items-center gap-4">
-            <button onClick={() => navigate('/privacy')} className="text-xs text-muted-foreground hover:text-gray-300 transition-colors">{t('footer.privacy')}</button>
-            <button onClick={() => navigate('/terms')} className="text-xs text-muted-foreground hover:text-gray-300 transition-colors">{t('footer.terms')}</button>
-            <button onClick={() => navigate('/cookies')} className="text-xs text-muted-foreground hover:text-gray-300 transition-colors">{t('footer.cookies')}</button>
+          <div className="flex items-center gap-5">
+            <button onClick={() => navigate('/privacy')} className="text-sm text-muted-foreground hover:text-white transition-colors py-1">{t('footer.privacy')}</button>
+            <button onClick={() => navigate('/terms')} className="text-sm text-muted-foreground hover:text-white transition-colors py-1">{t('footer.terms')}</button>
+            <button onClick={() => navigate('/cookies')} className="text-sm text-muted-foreground hover:text-white transition-colors py-1">{t('footer.cookies')}</button>
           </div>
         </div>
       </div>
