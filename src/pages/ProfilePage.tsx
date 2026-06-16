@@ -8,6 +8,7 @@ import {
 import { usePiAuth } from '@/hooks/usePiAuth';
 import { piSdkAvailable } from '@/lib/pi';
 import { useLanguage } from '@/i18n';
+import WithdrawCard from '@/components/WithdrawCard';
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api.onrender.com';
 
@@ -365,6 +366,9 @@ export default function ProfilePage() {
           </div>
           <Link to="/orders" className="btn-primary text-sm">{t('orders.title')}</Link>
         </section>
+
+        {/* Retrait vers le portefeuille Pi */}
+        <WithdrawCard balance={user.balance ?? 0} />
 
         {/* Wallet */}
         <section className="card-surface p-5 space-y-4">
