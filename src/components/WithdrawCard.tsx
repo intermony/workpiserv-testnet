@@ -152,7 +152,7 @@ export default function WithdrawCard({ balance }: { balance: number }) {
           value={amount}
           onChange={e => { setAmount(e.target.value); setError(null); setSuccess(null); }}
           placeholder={s.placeholder}
-          className="flex-1 rounded-2xl border border-border bg-background px-4 py-3 text-navy outline-none focus:border-brand"
+          className="flex-1 min-w-0 rounded-2xl border border-border bg-background px-4 py-3 text-navy outline-none focus:border-brand"
         />
         <button
           onClick={submit}
