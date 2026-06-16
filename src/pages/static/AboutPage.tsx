@@ -2,7 +2,7 @@ export default function AboutPage() {
   return (
     <div className="section-container py-16 max-w-3xl mx-auto">
       <h1 className="font-heading font-bold text-3xl text-navy mb-4">About WorkπServ</h1>
-      <p className="text-muted-foreground mb-6">WorkπServ is the first Arabic & global secure freelance marketplace powered by Pi Network. We connect talented freelancers with clients worldwide, enabling secure transactions through our smart Escrow system.</p>
+      <p className="text-muted-foreground mb-6">WorkπServ is the first global secure freelance marketplace powered by Pi Network. We connect talented freelancers with clients worldwide, enabling secure transactions through our smart Escrow system.</p>
       <h2 className="font-heading font-bold text-xl text-navy mb-3">Our Mission</h2>
       <p className="text-muted-foreground mb-6">To empower underbanked communities globally by providing a trusted platform where human skills — that AI cannot replace — can generate real income in Pi cryptocurrency.</p>
       <h2 className="font-heading font-bold text-xl text-navy mb-3">Our Values</h2>
