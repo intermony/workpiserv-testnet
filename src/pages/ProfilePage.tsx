@@ -356,33 +356,33 @@ export default function ProfilePage() {
                 value={form.displayName}
                 onChange={e => setForm({ ...form, displayName: e.target.value })}
                 placeholder={t('profile.displayName')}
-                className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
+                className="w-full border border-border rounded-xl px-4 py-3 text-sm bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
               />
               <input
                 type="text"
                 value={form.title}
                 onChange={e => setForm({ ...form, title: e.target.value })}
                 placeholder={t('profile.titlePh')}
-                className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
+                className="w-full border border-border rounded-xl px-4 py-3 text-sm bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
               />
               <textarea
                 value={form.bio}
                 onChange={e => setForm({ ...form, bio: e.target.value })}
                 placeholder={t('profile.bioPh')}
                 rows={3}
-                className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand resize-none"
+                className="w-full border border-border rounded-xl px-4 py-3 text-sm bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand resize-none"
               />
               <input
                 type="text"
                 value={form.location}
                 onChange={e => setForm({ ...form, location: e.target.value })}
                 placeholder={t('profile.locationPh')}
-                className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
+                className="w-full border border-border rounded-xl px-4 py-3 text-sm bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
               />
               <select
                 value={form.type}
                 onChange={e => setForm({ ...form, type: e.target.value })}
-                className="w-full border border-border rounded-xl px-4 py-3 text-sm bg-card focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
+                className="w-full border border-border rounded-xl px-4 py-3 text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
               >
                 <option value="both">{t('header.both')}</option>
                 <option value="freelancer">{t('profile.typeFreelancer')}</option>
@@ -471,7 +471,7 @@ export default function ProfilePage() {
                 spellCheck={false}
                 autoCapitalize="characters"
                 maxLength={56}
-                className="w-full border border-border rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
+                className="w-full border border-border rounded-xl px-4 py-3 text-sm font-mono bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
               />
               {/* Compteur de caractères */}
               <div className="flex justify-between items-center">
