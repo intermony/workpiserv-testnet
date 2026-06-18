@@ -9,6 +9,7 @@ import { usePiAuth } from '@/hooks/usePiAuth';
 import { piSdkAvailable } from '@/lib/pi';
 import { useLanguage } from '@/i18n';
 import WithdrawCard from '@/components/WithdrawCard';
+import RechargeCard from '@/components/RechargeCard';
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api.onrender.com';
 
@@ -425,6 +426,9 @@ export default function ProfilePage() {
           </div>
           <Link to="/orders" className="btn-primary text-sm">{t('orders.title')}</Link>
         </section>
+
+        {/* Recharge du solde interne (top-up Pi) */}
+        <RechargeCard balance={user.balance ?? 0} onCredited={refreshUser} />
 
         {/* Retrait vers le portefeuille Pi */}
         <WithdrawCard balance={user.balance ?? 0} />
