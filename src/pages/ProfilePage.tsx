@@ -15,6 +15,12 @@ const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api.onre
 // Adresse publique Pi (format Stellar) : commence par G, 56 caractères
 const PI_ADDRESS_REGEX = /^G[A-Z2-7]{55}$/;
 
+// Style commun des champs de saisie — dégradé mauve harmonisé avec le menu, texte clair lisible
+const FIELD_CLASS =
+  "w-full rounded-xl px-4 py-3 text-sm border border-[#3C3580] " +
+  "bg-gradient-to-br from-[#2E2769] to-[#241E52] text-[#ECE9FF] " +
+  "placeholder:text-[#9089C8] focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand";
+
 function Avatar({ avatar, size = 72 }: { avatar?: string; size?: number }) {
   if (avatar && avatar.startsWith('http')) {
     return (
@@ -356,33 +362,33 @@ export default function ProfilePage() {
                 value={form.displayName}
                 onChange={e => setForm({ ...form, displayName: e.target.value })}
                 placeholder={t('profile.displayName')}
-                className="w-full border border-border rounded-xl px-4 py-3 text-sm bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
+                className={FIELD_CLASS}
               />
               <input
                 type="text"
                 value={form.title}
                 onChange={e => setForm({ ...form, title: e.target.value })}
                 placeholder={t('profile.titlePh')}
-                className="w-full border border-border rounded-xl px-4 py-3 text-sm bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
+                className={FIELD_CLASS}
               />
               <textarea
                 value={form.bio}
                 onChange={e => setForm({ ...form, bio: e.target.value })}
                 placeholder={t('profile.bioPh')}
                 rows={3}
-                className="w-full border border-border rounded-xl px-4 py-3 text-sm bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand resize-none"
+                className={`${FIELD_CLASS} resize-none`}
               />
               <input
                 type="text"
                 value={form.location}
                 onChange={e => setForm({ ...form, location: e.target.value })}
                 placeholder={t('profile.locationPh')}
-                className="w-full border border-border rounded-xl px-4 py-3 text-sm bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
+                className={FIELD_CLASS}
               />
               <select
                 value={form.type}
                 onChange={e => setForm({ ...form, type: e.target.value })}
-                className="w-full border border-border rounded-xl px-4 py-3 text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
+                className={FIELD_CLASS}
               >
                 <option value="both">{t('header.both')}</option>
                 <option value="freelancer">{t('profile.typeFreelancer')}</option>
@@ -471,7 +477,7 @@ export default function ProfilePage() {
                 spellCheck={false}
                 autoCapitalize="characters"
                 maxLength={56}
-                className="w-full border border-border rounded-xl px-4 py-3 text-sm font-mono bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
+                className={`${FIELD_CLASS} font-mono`}
               />
               {/* Compteur de caractères */}
               <div className="flex justify-between items-center">
