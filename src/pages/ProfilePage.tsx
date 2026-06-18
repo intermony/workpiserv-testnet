@@ -230,6 +230,19 @@ export default function ProfilePage() {
     );
   }
 
+  // ─── Complétude du profil (moteur de confiance) ─────────────
+  const hasPhoto = !!(user.avatar && user.avatar.startsWith('http'));
+  const completionItems = [
+    { key: 'photo',    label: t('completion.photo'),    done: hasPhoto,          action: () => { setPhotoModal(true); setPhotoError(''); } },
+    { key: 'name',     label: t('completion.name'),     done: !!u?.displayName,   action: openProfileEditor },
+    { key: 'title',    label: t('completion.title'),    done: !!u?.title,         action: openProfileEditor },
+    { key: 'bio',      label: t('completion.bio'),      done: !!u?.bio,           action: openProfileEditor },
+    { key: 'location', label: t('completion.location'), done: !!u?.location,      action: openProfileEditor },
+    { key: 'wallet',   label: t('completion.wallet'),   done: !!serverWallet,     action: () => { setDraft(serverWallet); setEditing(true); setWalletError(null); } },
+  ];
+  const completionDone = completionItems.filter(i => i.done).length;
+  const completionPct  = Math.round((completionDone / completionItems.length) * 100);
+
   return (
     <main className="min-h-screen pb-24 bg-background">
       {/* En-tête */}
@@ -280,6 +293,46 @@ export default function ProfilePage() {
       </div>
 
       <div className="section-container py-6 space-y-4">
+        {/* ── Complétude du profil (moteur de confiance) ── */}
+        {completionPct < 100 ? (
+          <section className="card-surface p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="font-heading font-semibold text-navy flex items-center gap-2">
+                <ShieldCheck size={18} className="text-brand" /> {t('completion.heading')}
+              </h2>
+              <span className="font-heading font-bold text-lg text-brand">{completionPct}%</span>
+            </div>
+            <div className="h-2.5 w-full rounded-full bg-border overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-brand to-[#B49BFF] transition-all duration-500"
+                style={{ width: `${completionPct}%` }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">{t('completion.hint')}</p>
+            <div className="flex flex-wrap gap-2 pt-1">
+              {completionItems.filter(i => !i.done).map(i => (
+                <button
+                  key={i.key}
+                  onClick={i.action}
+                  className="inline-flex items-center gap-1 text-xs font-medium text-brand bg-brand-light px-3 py-1.5 rounded-full hover:opacity-80 transition-opacity"
+                >
+                  <PlusCircle size={12} /> {i.label}
+                </button>
+              ))}
+            </div>
+          </section>
+        ) : (
+          <section className="card-surface p-4 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-[#4ADE80]/15 flex items-center justify-center shrink-0">
+              <Check size={18} className="text-[#4ADE80]" />
+            </div>
+            <div>
+              <p className="font-heading font-semibold text-navy text-sm">{t('completion.done')}</p>
+              <p className="text-xs text-muted-foreground">{t('completion.doneHint')}</p>
+            </div>
+          </section>
+        )}
+
         {/* Infos du profil */}
         <section className="card-surface p-5">
           <div className="flex items-center justify-between mb-3">
@@ -492,23 +545,22 @@ export default function ProfilePage() {
         {/* Déconnexion */}
         <button
           onClick={logout}
-          className="w-full flex items-center justify-center gap-2 border border-red-200 text-red-600 font-medium text-sm py-3 rounded-full hover:bg-red-50 transition-colors"
+          className="w-full flex items-center justify-center gap-2 border border-[#F87171]/40 text-[#F87171] font-medium text-sm py-3 rounded-full hover:bg-[#F87171]/10 transition-colors"
         >
           <LogOut size={16} /> {t('header.logout')}
         </button>
       </div>
-    </main>
-  );
+
       {/* ── MODAL PHOTO DE PROFIL ── */}
       {photoModal && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setPhotoModal(false)} />
-          <div className="relative w-full max-w-sm bg-card rounded-t-3xl sm:rounded-3xl shadow-2xl p-6 space-y-4 mx-0 sm:mx-4">
+          <div className="relative w-full max-w-sm bg-card border border-border rounded-t-3xl sm:rounded-3xl shadow-2xl p-6 space-y-4 mx-0 sm:mx-4">
             <div className="flex items-center justify-between">
               <h3 className="font-heading font-semibold text-navy flex items-center gap-2">
-                <Camera size={18} className="text-brand" /> Changer la photo
+                <Camera size={18} className="text-brand" /> {t('profile.changePhoto')}
               </h3>
-              <button onClick={() => setPhotoModal(false)} className="p-2 rounded-xl hover:bg-muted">
+              <button onClick={() => setPhotoModal(false)} className="p-2 rounded-xl hover:bg-background">
                 <X size={18} className="text-muted-foreground" />
               </button>
             </div>
@@ -517,25 +569,27 @@ export default function ProfilePage() {
               <Avatar avatar={user?.avatar} size={96} />
             </div>
             {/* Tips */}
-            <div className="bg-blue-50 rounded-2xl p-3 text-xs text-blue-700 space-y-1">
-              <p>📐 Recommandé : image carrée (1:1)</p>
-              <p>📁 Formats : JPG, PNG, WEBP</p>
-              <p>📏 Taille max : 2 MB</p>
+            <div className="rounded-2xl border border-[#60A5FA]/30 bg-[#60A5FA]/10 p-3 text-xs text-[#93C5FD] space-y-1">
+              <p>{t('profile.photoTipSquare')}</p>
+              <p>{t('profile.photoTipFormat')}</p>
+              <p>{t('profile.photoTipSize')}</p>
             </div>
-            {photoError && <p className="text-xs text-red-500 flex items-center gap-1"><AlertTriangle size={12}/> {photoError}</p>}
+            {photoError && <p className="text-xs text-[#F87171] flex items-center gap-1"><AlertTriangle size={12}/> {photoError}</p>}
             <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp"
               className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) uploadPhoto(f); }} />
             <div className="flex gap-3">
               <button onClick={() => setPhotoModal(false)}
                 className="flex-1 py-3 rounded-2xl border border-border text-muted-foreground text-sm font-medium hover:bg-background">
-                Annuler
+                {t('common.cancel')}
               </button>
               <button onClick={() => fileInputRef.current?.click()} disabled={photoUploading}
                 className="flex-1 py-3 rounded-2xl bg-brand text-white text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-50">
-                {photoUploading ? <><Loader2 size={14} className="animate-spin" /> Upload...</> : <><Camera size={14} /> Choisir une photo</>}
+                {photoUploading ? <><Loader2 size={14} className="animate-spin" /> {t('profile.uploading')}</> : <><Camera size={14} /> {t('profile.choosePhoto')}</>}
               </button>
             </div>
           </div>
         </div>
       )}
+    </main>
+  );
 }
