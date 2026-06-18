@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, ShoppingCart, Package, MessageCircle, Bell, Search, Menu, X, LogOut, Smartphone } from 'lucide-react';
+import { Home, ShoppingCart, Package, MessageCircle, Bell, Search, Menu, X, LogOut, Smartphone, FileText } from 'lucide-react';
 import { useIsDesktop, useIsMobile } from '@/hooks/useMediaQuery';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePiAuth } from '@/hooks/usePiAuth';
@@ -40,34 +40,22 @@ export function Header() {
 
   useEffect(() => { setMobileDrawerOpen(false); }, [location.pathname]);
 
-  // Si la connexion aboutit (même tardivement), fermer la fenêtre Pi Browser
   useEffect(() => { if (loggedIn) setShowPiModal(false); }, [loggedIn]);
 
   const handleLoginClick = async () => {
-    // ── Cas 1 : Ordinateur de bureau ──
-    // Le Pi Browser n'existe pas sur PC → afficher le modal avec QR code
     if (!isMobileDevice()) { setShowPiModal(true); return; }
 
-    // ── Cas 2 : Mobile DANS Pi Browser ──
-    // On le sait dès l'instant 0 via le User-Agent, sans attendre le SDK.
-    // Ne JAMAIS afficher le modal "Ouvrez dans Pi Browser" à quelqu'un
-    // qui y est déjà — on tente le login directement, même si le SDK
-    // est lent à charger (réseau faible → on lui donne 12 secondes).
     if (isPiBrowserUA()) {
       const ready = await waitForPiSDK(12000);
       if (ready) await login();
-      // Si le SDK ne répond toujours pas : on ne fait rien, pas de modal.
       return;
     }
 
-    // ── Cas 3 : Mobile hors Pi Browser (Chrome, Safari, Firefox…) ──
-    // Vérification rapide (3s) au cas où un SDK tiers serait disponible
     const ready = await waitForPiSDK(3000);
     if (ready) {
       const ok = await login();
       if (!ok) setShowPiModal(true);
     } else {
-      // Pas de Pi Browser → afficher le modal (sans QR, juste les liens téléchargement)
       setShowPiModal(true);
     }
   };
@@ -151,12 +139,15 @@ export function Header() {
         </AnimatePresence>
       </header>
 
+      {/* ── MOBILE DRAWER ── */}
       <AnimatePresence>
         {mobileDrawerOpen && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black z-50" onClick={() => setMobileDrawerOpen(false)} />
-            <motion.div initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }} transition={{ type: 'tween', duration: 0.3 }} className="fixed left-0 top-0 bottom-0 w-[280px] bg-card z-50 shadow-xl">
-              <div className="p-4">
+            <motion.div initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }} transition={{ type: 'tween', duration: 0.3 }} className="fixed left-0 top-0 bottom-0 w-[280px] bg-card z-50 shadow-xl flex flex-col">
+              <div className="p-4 flex-1 overflow-y-auto">
+
+                {/* Header du drawer */}
                 <div className="flex items-center justify-between mb-4">
                   <Link to="/" className="flex items-center gap-2">
                     <div className="w-8 h-8 bg-brand rounded-full flex items-center justify-center"><span className="text-white font-bold text-sm">π</span></div>
@@ -165,20 +156,45 @@ export function Header() {
                   <button onClick={() => setMobileDrawerOpen(false)} className="p-2 rounded-lg hover:bg-muted"><X size={20} /></button>
                 </div>
 
+                {/* Sélecteur de langue */}
                 <div className="mb-4 flex justify-center">
                   <LanguageSwitcher />
                 </div>
 
+                {/* Navigation principale */}
                 <nav className="space-y-1">
                   {navItems.map((item) => {
                     const isActive = location.pathname === item.href || (item.href !== '/' && location.pathname.startsWith(item.href));
                     return (
-                      <Link key={item.key} to={item.href} className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${isActive ? 'text-brand bg-brand-light' : 'text-muted-foreground hover:bg-background'}`}>
+                      <Link
+                        key={item.key}
+                        to={item.href}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${isActive ? 'text-brand bg-brand-light' : 'text-muted-foreground hover:bg-background'}`}
+                      >
                         <item.icon size={20} /><span>{t(item.key)}</span>
                       </Link>
                     );
                   })}
                 </nav>
+
+                {/* ── WHITEPAPER — séparé visuellement ── */}
+                <div className="mt-3 pt-3 border-t border-border">
+                  <a
+                    href="/WorkPiServ_Whitepaper_v1.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-muted-foreground hover:bg-background transition-colors"
+                    onClick={() => setMobileDrawerOpen(false)}
+                  >
+                    <FileText size={20} className="text-brand" />
+                    <span>{t('footer.whitepaper')}</span>
+                    <span className="ml-auto text-[10px] font-bold uppercase tracking-wide bg-brand/10 text-brand px-2 py-0.5 rounded-full">
+                      PDF
+                    </span>
+                  </a>
+                </div>
+
+                {/* Profil / Login */}
                 <div className="mt-6 pt-6 border-t border-border">
                   {loggedIn && user ? (
                     <div className="space-y-3">
@@ -201,12 +217,18 @@ export function Header() {
                           {user.unreadMessages > 0 && <span className="flex-1 text-center py-1 bg-blue-50 text-blue-600 text-xs font-medium rounded-lg">{user.unreadMessages} {t('header.messages')}</span>}
                         </div>
                       )}
-                      <button onClick={() => { logout(); setMobileDrawerOpen(false); }} className="w-full flex items-center justify-center gap-2 py-2 border border-border rounded-xl text-muted-foreground hover:bg-background transition-colors">
+                      <button
+                        onClick={() => { logout(); setMobileDrawerOpen(false); }}
+                        className="w-full flex items-center justify-center gap-2 py-2 border border-border rounded-xl text-muted-foreground hover:bg-background transition-colors"
+                      >
                         <LogOut size={16} /><span>{t('header.logout')}</span>
                       </button>
                     </div>
                   ) : (
-                    <button onClick={() => { handleLoginClick(); setMobileDrawerOpen(false); }} className="btn-primary w-full text-center">
+                    <button
+                      onClick={() => { handleLoginClick(); setMobileDrawerOpen(false); }}
+                      className="btn-primary w-full text-center"
+                    >
                       {loading ? t('header.connecting') : t('header.login')}
                     </button>
                   )}
@@ -217,6 +239,7 @@ export function Header() {
         )}
       </AnimatePresence>
 
+      {/* ── PI BROWSER MODAL ── */}
       <AnimatePresence>
         {showPiModal && (
           <>
