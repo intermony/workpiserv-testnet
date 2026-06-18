@@ -149,6 +149,17 @@ class PiSDK {
   async topUpWallet(amount: number, callbacks: PaymentCallbacks) {
     if (!this.initialized) await this.init();
     if (!window.Pi) throw new Error('Pi SDK not initialized');
+
+    // createPayment exige une session Pi VIVANTE avec le scope 'payments'
+    // dans l'onglet courant. Sur la page profil chargée depuis un token
+    // existant, authenticate() n'est pas rejoué (usePiAuth ne fait qu'un
+    // refreshUser). On (re)joue donc l'auth ici : ça établit la session,
+    // garantit le scope, et déclenche le handler de paiement incomplet.
+    await window.Pi.authenticate(
+      ['username', 'payments', 'wallet_address'],
+      this.onIncompletePaymentFound.bind(this)
+    );
+
     const token = localStorage.getItem('workpiserv_token');
     return await (window.Pi as unknown as { createPayment: (data: unknown, cb: unknown) => Promise<unknown> }).createPayment(
       {
