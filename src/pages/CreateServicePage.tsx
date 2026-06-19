@@ -112,7 +112,7 @@ export default function CreateServicePage() {
               value={title}
               onChange={e => setTitle(e.target.value)}
               maxLength={120}
-              className="w-full h-12 px-4 border border-border rounded-xl text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
+              className="w-full h-12 px-4 border border-border rounded-xl text-sm bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
             />
             <p className="text-xs text-muted-foreground mt-1 text-right">{title.length}/120</p>
           </div>
@@ -152,7 +152,7 @@ export default function CreateServicePage() {
                     value={price}
                     onChange={e => setPrice(e.target.value)}
                     min="1"
-                    className="w-full h-12 pl-8 pr-4 border border-border rounded-xl text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
+                    className="w-full h-12 pl-8 pr-4 border border-border rounded-xl text-sm bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
                   />
                 </div>
               </div>
@@ -186,7 +186,7 @@ export default function CreateServicePage() {
               onChange={e => setDesc(e.target.value)}
               rows={6}
               maxLength={2000}
-              className="w-full px-4 py-3 border border-border rounded-xl text-sm focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all resize-y"
+              className="w-full px-4 py-3 border border-border rounded-xl text-sm bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all resize-y"
             />
             <p className="text-xs text-muted-foreground mt-1 text-right">{description.length}/2000</p>
           </div>
