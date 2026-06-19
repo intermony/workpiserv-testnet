@@ -10,6 +10,7 @@ import { piSdkAvailable } from '@/lib/pi';
 import { useLanguage } from '@/i18n';
 import WithdrawCard from '@/components/WithdrawCard';
 import RechargeCard from '@/components/RechargeCard';
+import AdminA2UCard from '@/components/AdminA2UCard';
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api.onrender.com';
 
@@ -432,6 +433,10 @@ export default function ProfilePage() {
 
         {/* Retrait vers le portefeuille Pi */}
         <WithdrawCard balance={user.balance ?? 0} />
+
+        {/* Outil admin : test A2U (validation Mainnet) — visible admin uniquement */}
+        {user?.role === 'admin' && <AdminA2UCard currentUid={user.pi_uid} />}
+
 
         {/* Wallet */}
         <section className="card-surface p-5 space-y-4">
