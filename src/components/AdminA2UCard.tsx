@@ -91,7 +91,7 @@ export default function AdminA2UCard({ currentUid }: { currentUid?: string }) {
       } else {
         setStates((p) => ({ ...p, [u._id]: { phase: 'error', msg: data.error || 'Échec' } }));
       }
-    } catch (e) {
+    } catch {
       setStates((p) => ({ ...p, [u._id]: { phase: 'error', msg: 'Réseau' } }));
     }
   };
