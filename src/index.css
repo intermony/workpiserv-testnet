@@ -92,3 +92,22 @@
     display: none;
   }
 }
+/* ===== Fix débordement horizontal (page admin & global) ===== */
+
+/* 1. La page ne défile jamais horizontalement */
+html, body, #root {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* 2. Laisse les enfants flex/grid rétrécir → corrige le décalage à gauche */
+#root * {
+  min-width: 0;
+}
+
+/* 3. Les longues chaînes (txid, hash) se coupent au lieu d'étirer la carte */
+code,
+.break-anywhere {
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
