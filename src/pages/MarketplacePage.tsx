@@ -246,7 +246,7 @@ export default function MarketplacePage() {
                     placeholder={t('header.search')}
                     value={searchQuery}
                     onChange={(e) => updateParam('q', e.target.value)}
-                    className="w-full h-[52px] pl-12 pr-4 border border-border rounded-l-full text-base focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
+                    className="w-full h-[52px] pl-12 pr-4 border border-border rounded-l-full text-base bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
                   />
                 </div>
                 <button className="btn-primary rounded-l-none rounded-r-full h-[52px] px-7">{t('market.search')}</button>
