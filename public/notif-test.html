@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Test Notifications — WorkπServ</title>
+<style>
+  :root { --navy:#0f1733; --card:#1a2348; --teal:#2dd4bf; --amber:#f59e0b; --muted:#94a3b8; --line:#2c3a66; }
+  * { box-sizing: border-box; }
+  body {
+    margin:0; background:var(--navy); color:#e8edf7;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding:18px; line-height:1.5;
+  }
+  h1 { font-size:20px; margin:0 0 4px; }
+  .sub { color:var(--muted); font-size:13px; margin-bottom:18px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:14px; }
+  .row { display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid var(--line); font-size:14px; }
+  .row:last-child { border-bottom:none; }
+  .ok { color:var(--teal); font-weight:600; }
+  .no { color:#fb7185; font-weight:600; }
+  .warn { color:var(--amber); font-weight:600; }
+  button {
+    width:100%; padding:14px; border:none; border-radius:14px; font-size:15px; font-weight:600;
+    background:var(--teal); color:#04201c; margin-top:10px; cursor:pointer;
+  }
+  button.secondary { background:transparent; color:var(--teal); border:1px solid var(--teal); }
+  button:disabled { opacity:.4; }
+  #verdict { font-size:15px; font-weight:600; padding:14px; border-radius:14px; text-align:center; margin-top:4px; }
+  .log { font-family: ui-monospace, monospace; font-size:11px; color:var(--muted); background:#0a1124; border-radius:12px; padding:10px; margin-top:10px; word-break:break-all; white-space:pre-wrap; }
+  .step { font-size:12px; color:var(--muted); margin:0 0 8px; }
+</style>
+</head>
+<body>
+  <h1>🔔 Test des notifications</h1>
+  <div class="sub">WorkπServ — diagnostic. Ouvre cette page <b>dans le Pi Browser</b>, puis suis les 2 étapes.</div>
+
+  <div class="card">
+    <div class="step">Support du navigateur (détecté automatiquement) :</div>
+    <div class="row"><span>Service Worker</span><span id="sw">…</span></div>
+    <div class="row"><span>API Notification</span><span id="notif">…</span></div>
+    <div class="row"><span>API Push (arrière-plan)</span><span id="push">…</span></div>
+    <div class="row"><span>Connexion sécurisée (HTTPS)</span><span id="https">…</span></div>
+    <div class="row"><span>Permission actuelle</span><span id="perm">…</span></div>
+  </div>
+
+  <div class="card">
+    <div class="step">Étape 1 — autoriser, puis Étape 2 — tester :</div>
+    <button id="btn1">1. Activer les notifications</button>
+    <button id="btn2" class="secondary" disabled>2. Tester une notification</button>
+  </div>
+
+  <div id="verdict" style="background:var(--card); color:var(--muted);">En attente du test…</div>
+
+  <div class="log" id="log"></div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const log = (m) => { $('log').textContent += m + "\n"; };
+  const setV = (txt, kind) => {
+    const v = $('verdict'); v.textContent = txt;
+    v.style.background = kind === 'ok' ? 'rgba(45,212,191,.15)' : kind === 'no' ? 'rgba(251,113,133,.15)' : 'rgba(245,158,11,.15)';
+    v.style.color = kind === 'ok' ? 'var(--teal)' : kind === 'no' ? '#fb7185' : 'var(--amber)';
+  };
+
+  // --- Détection automatique ---
+  const hasSW = 'serviceWorker' in navigator;
+  const hasNotif = 'Notification' in window;
+  const hasPush = 'PushManager' in window;
+  const isHttps = location.protocol === 'https:';
+
+  $('sw').innerHTML    = hasSW    ? '<span class="ok">✅ oui</span>' : '<span class="no">❌ non</span>';
+  $('notif').innerHTML = hasNotif ? '<span class="ok">✅ oui</span>' : '<span class="no">❌ non</span>';
+  $('push').innerHTML  = hasPush  ? '<span class="ok">✅ oui</span>' : '<span class="no">❌ non</span>';
+  $('https').innerHTML = isHttps  ? '<span class="ok">✅ oui</span>' : '<span class="no">❌ non</span>';
+  $('perm').innerHTML  = hasNotif ? '<span class="warn">' + Notification.permission + '</span>' : '<span class="no">—</span>';
+
+  log('UA: ' + navigator.userAgent);
+
+  if (!hasNotif || !hasSW) {
+    setV('❌ Le Pi Browser ne supporte PAS les notifications. Le push en arrière-plan est impossible ici.', 'no');
+    $('btn1').disabled = true;
+  }
+
+  let swReg = null;
+
+  // --- Étape 1 : permission + enregistrement du service worker ---
+  $('btn1').addEventListener('click', async () => {
+    try {
+      const perm = await Notification.requestPermission();
+      $('perm').innerHTML = '<span class="warn">' + perm + '</span>';
+      log('Permission: ' + perm);
+      if (perm !== 'granted') {
+        setV('⚠️ Permission refusée. Sans autorisation, aucune notification possible.', 'warn');
+        return;
+      }
+      if (hasSW) {
+        swReg = await navigator.serviceWorker.register('/notif-test-sw.js');
+        await navigator.serviceWorker.ready;
+        log('Service worker enregistré ✅');
+      }
+      $('btn2').disabled = false;
+      setV('✅ Permission accordée. Passe à l\u2019étape 2 pour voir si une notification apparaît vraiment.', 'ok');
+    } catch (e) {
+      log('Erreur étape 1: ' + e.message);
+      setV('❌ Erreur lors de la demande de permission : ' + e.message, 'no');
+    }
+  });
+
+  // --- Étape 2 : afficher réellement une notification ---
+  $('btn2').addEventListener('click', async () => {
+    try {
+      if (swReg && swReg.showNotification) {
+        await swReg.showNotification('WorkπServ ✅', {
+          body: 'Si tu vois cette notification, le push fonctionne sur le Pi Browser !',
+        });
+        log('showNotification appelé via service worker ✅');
+        setV('✅ Notification envoyée ! Si tu l\u2019as VUE apparaître, le push en arrière-plan est FAISABLE. 🎉', 'ok');
+      } else {
+        // fallback (rare sur mobile)
+        new Notification('WorkπServ ✅', { body: 'Test réussi !' });
+        log('Notification simple affichée (fallback) ✅');
+        setV('✅ Notification affichée (méthode simple).', 'ok');
+      }
+      log('PushManager présent: ' + hasPush);
+    } catch (e) {
+      log('Erreur étape 2: ' + e.message);
+      setV('❌ La notification n\u2019a pas pu s\u2019afficher : ' + e.message + '. Le push n\u2019est pas supporté ici.', 'no');
+    }
+  });
+</script>
+</body>
+</html>
