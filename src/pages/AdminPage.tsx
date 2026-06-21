@@ -226,10 +226,10 @@ export default function AdminPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 bg-muted p-1 rounded-2xl">
+      <div className="flex items-center gap-2 bg-muted p-1 rounded-2xl overflow-x-auto">
         {([['stats','Statistiques',BarChart2],['users','Utilisateurs',Users],['services','Services',Package],['withdrawals','Retraits',ArrowDownToLine]] as const).map(([key,label,Icon]) => (
           <button key={key} onClick={() => { setTab(key); if (key === 'users') fetchUsers(); if (key === 'services') fetchServices(); if (key === 'withdrawals') fetchWithdrawals(); }}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-sm font-medium transition-all ${tab === key ? 'bg-brand text-white shadow' : 'text-muted-foreground hover:bg-white'}`}>
+            className={`shrink-0 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${tab === key ? 'bg-brand text-white shadow' : 'text-muted-foreground hover:bg-card'}`}>
             <Icon size={15} />{label}
           </button>
         ))}
