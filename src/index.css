@@ -111,3 +111,10 @@ code,
   overflow-wrap: anywhere;
   word-break: break-all;
 }
+/* ===== Onglets admin : pas de chevauchement, défilement propre ===== */
+nav button,
+nav a,
+[role="tablist"] > * {
+  flex-shrink: 0;
+  white-space: nowrap;
+    }
