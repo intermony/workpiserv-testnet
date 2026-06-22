@@ -400,7 +400,7 @@ export default function ServiceDetailPage() {
                     <p className="text-xs text-red-600 text-center mt-2">{buyError}</p>
                   )}
                   <div className="flex gap-3 mt-3">
-                    <button className="btn-secondary flex-1 py-2.5 text-sm flex items-center justify-center gap-2"><MessageCircle size={16} /> {t('service.contact')}</button>
+                    <button onClick={() => { if (!service.freelancer.id) return; const p = new URLSearchParams({ to: service.freelancer.id, name: service.freelancer.name || 'Pioneer' }); if (service.freelancer.avatar) p.set('avatar', service.freelancer.avatar); navigate(`/messages?${p.toString()}`); }} className="btn-secondary flex-1 py-2.5 text-sm flex items-center justify-center gap-2"><MessageCircle size={16} /> {t('service.contact')}</button>
                     <button onClick={() => setSaved(!saved)} className={`btn-ghost py-2.5 px-4 ${saved ? 'text-red-500' : ''}`}>
                       <Heart size={18} className={saved ? 'fill-red-500' : ''} />
                     </button>

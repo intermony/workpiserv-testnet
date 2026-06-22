@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { MessageSquare, Send, User, ArrowLeft, Loader2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '@/i18n';
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api-testnet.onrender.com';
@@ -36,6 +36,7 @@ function getMyId(): string | null {
 
 export default function MessagesPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t } = useLanguage();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages]           = useState<Message[]>([]);
@@ -46,6 +47,22 @@ export default function MessagesPage() {
   const [sending, setSending]             = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const myId = getMyId();
+
+  // Ouvre directement une conversation avec un vendeur (bouton "Contact" d'une page service).
+  useEffect(() => {
+    const to = searchParams.get('to');
+    if (!to || loadingConvs || activeConv) return;
+    const existing = conversations.find(c => c.participantId === to);
+    setActiveConv(existing || {
+      _id: `new-${to}`,
+      participantId: to,
+      participantName: searchParams.get('name') || 'Pioneer',
+      participantAvatar: searchParams.get('avatar') || undefined,
+      lastMessage: '',
+      lastMessageAt: new Date().toISOString(),
+      unread: 0,
+    });
+  }, [searchParams, loadingConvs, conversations, activeConv]);
 
   useEffect(() => {
     const token = getToken();
