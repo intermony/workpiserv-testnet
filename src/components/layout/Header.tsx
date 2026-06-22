@@ -43,21 +43,25 @@ export function Header() {
   useEffect(() => { if (loggedIn) setShowPiModal(false); }, [loggedIn]);
 
   const handleLoginClick = async () => {
+    // Desktop → toujours le modal QR / téléchargement
     if (!isMobileDevice()) { setShowPiModal(true); return; }
 
-    if (isPiBrowserUA()) {
-      const ready = await waitForPiSDK(12000);
-      if (ready) await login();
+    // Le signal FIABLE qu'on est dans Pi Browser, c'est le SDK (window.Pi),
+    // PAS le user-agent : certaines versions du Pi Browser n'écrivent pas
+    // "PiBrowser" dans leur UA. On attend donc le SDK et on décide là-dessus.
+    // (UA confirmé = on laisse plus de temps au SDK.)
+    const ready = await waitForPiSDK(isPiBrowserUA() ? 12000 : 6000);
+
+    if (ready) {
+      // SDK présent → on EST dans Pi Browser. On login et on n'affiche
+      // JAMAIS le modal "ouvrez dans Pi Browser" (l'écran de consentement
+      // peut être encore ouvert, et le login peut se finaliser un peu après).
+      await login();
       return;
     }
 
-    const ready = await waitForPiSDK(3000);
-    if (ready) {
-      const ok = await login();
-      if (!ok) setShowPiModal(true);
-    } else {
-      setShowPiModal(true);
-    }
+    // SDK absent après l'attente → vraiment pas Pi Browser → on montre le modal.
+    setShowPiModal(true);
   };
 
   return (
