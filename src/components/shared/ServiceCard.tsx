@@ -97,7 +97,9 @@ export function ServiceCard({ service, index = 0 }: ServiceCardProps) {
 
             {/* Price & Delivery */}
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
-              <Price pi={service.price} className="text-brand font-bold text-lg" />
+              {service.priceCurrency === 'USD'
+                ? <Price usd={service.price} className="text-brand font-bold text-lg" />
+                : <Price pi={service.price} className="text-brand font-bold text-lg" />}
               <div className="flex items-center gap-1 text-muted-foreground text-xs">
                 <Clock size={12} />
                 <span>{service.deliveryDays} {t('service.days')}</span>
