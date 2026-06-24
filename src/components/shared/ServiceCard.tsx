@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Clock, Shield } from 'lucide-react';
 import type { Service } from '@/types';
 import { StarRating } from './StarRating';
+import Price from '@/components/shared/Price';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/i18n';
 
@@ -79,7 +80,7 @@ export function ServiceCard({ service, index = 0 }: ServiceCardProps) {
               ) : (
                 <span className="w-6 h-6 rounded-full bg-brand/10 text-brand text-xs font-bold flex items-center justify-center">{initial}</span>
               )}
-              <span className="text-sm text-gray-600 font-medium">{service.freelancer.name}</span>
+              <span className="text-sm text-muted-foreground font-medium">{service.freelancer.name}</span>
               {service.freelancer.verified && (
                 <span className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center">
                   <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
@@ -95,9 +96,9 @@ export function ServiceCard({ service, index = 0 }: ServiceCardProps) {
             </div>
 
             {/* Price & Delivery */}
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-              <span className="text-brand font-bold text-lg">π {service.price}</span>
-              <div className="flex items-center gap-1 text-gray-500 text-xs">
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
+              <Price pi={service.price} className="text-brand font-bold text-lg" />
+              <div className="flex items-center gap-1 text-muted-foreground text-xs">
                 <Clock size={12} />
                 <span>{service.deliveryDays} {t('service.days')}</span>
               </div>
