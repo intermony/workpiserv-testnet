@@ -6,6 +6,7 @@ export interface Service {
   rating: number;
   reviewCount: number;
   price: number;
+  priceCurrency?: 'PI' | 'USD'; // 'PI' = prix fixe en Pi ; 'USD' = prix de référence (montant Pi verrouillé à la commande)
   deliveryDays: number;
   image: string;
   escrow: boolean;
