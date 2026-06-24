@@ -26,6 +26,7 @@ export default function CreateServicePage() {
   const [title, setTitle]           = useState('');
   const [category, setCategory]     = useState('');
   const [price, setPrice]           = useState('');
+  const [priceCurrency, setPriceCurrency] = useState<'PI' | 'USD'>('PI');
   const [deliveryDays, setDelivery] = useState('3');
   const [description, setDesc]      = useState('');
 
@@ -49,6 +50,7 @@ export default function CreateServicePage() {
           title: title.trim(),
           category,
           price: Number(price),
+          priceCurrency,
           deliveryDays: Number(deliveryDays),
           description: description.trim(),
         }),
@@ -144,8 +146,21 @@ export default function CreateServicePage() {
                 <label className="block text-sm font-semibold text-navy mb-1.5">
                   {t('create.price')} <span className="text-brand">*</span>
                 </label>
+                {/* Devise : PI (montant fixe) ou USD (montant Pi verrouillé à la commande) */}
+                <div className="flex gap-1 mb-2">
+                  {(['PI', 'USD'] as const).map(c => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setPriceCurrency(c)}
+                      className={`flex-1 h-9 rounded-lg text-xs font-semibold transition-colors ${priceCurrency === c ? 'bg-brand text-white' : 'bg-muted text-muted-foreground'}`}
+                    >
+                      {c === 'PI' ? 'π Pi' : '$ USD'}
+                    </button>
+                  ))}
+                </div>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-brand font-bold text-sm">π</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-brand font-bold text-sm">{priceCurrency === 'USD' ? '$' : 'π'}</span>
                   <input
                     type="number"
                     placeholder="0"
@@ -155,6 +170,9 @@ export default function CreateServicePage() {
                     className="w-full h-12 pl-8 pr-4 border border-border rounded-xl text-sm bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
                   />
                 </div>
+                {priceCurrency === 'USD' && (
+                  <p className="text-[11px] text-muted-foreground mt-1">Le montant en Pi sera calculé et verrouillé au taux du moment lors de chaque commande.</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-semibold text-navy mb-1.5">{t('create.delivery')}</label>
