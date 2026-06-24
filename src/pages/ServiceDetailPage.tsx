@@ -34,6 +34,7 @@ function normalizeService(s: any): Service {
     rating      : s.rating || 0,
     reviewCount : s.reviews || s.reviewCount || 0,
     price       : s.price,
+    priceCurrency: s.priceCurrency || 'PI',
     deliveryDays: s.deliveryDays || 3,
     image       : s.image || '/images/service-default.jpg',
     escrow      : true,
@@ -151,15 +152,33 @@ export default function ServiceDetailPage() {
       if (!ok) { setBuyError(t('service.openPi')); return; }
     }
 
-    const amount = pkg?.price || service.price;
     setBuying(true);
     try {
+      // Prix en USD → on pré-crée la commande (le serveur VERROUILLE le montant
+      // en Pi au taux courant) puis on paie ce montant exact. order_id permet au
+      // backend de vérifier le verrou à l'approbation. Les prix en Pi passent
+      // directement, sans changement.
+      let orderId: string | undefined;
+      let payAmount = pkg?.price || service.price;
+      if (service.priceCurrency === 'USD') {
+        const token = localStorage.getItem('workpiserv_token');
+        const r = await fetch(`${API_URL}/api/orders`, {
+          method : 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body   : JSON.stringify({ serviceId: service.id, package: pkg?.name || 'Standard' }),
+        });
+        const o = await r.json();
+        if (!r.ok) { setBuying(false); setBuyError(o.error || t('service.payStart')); return; }
+        orderId   = o._id;
+        payAmount = o.amount; // montant en Pi verrouillé par le serveur
+      }
       await piSDK.createPayment(
         {
-          amount,
+          amount    : payAmount,
           memo      : `WorkPiServ — ${service.title}`.slice(0, 100),
           serviceId : service.id,
           package   : pkg?.name || 'Standard',
+          orderId,
         },
         {
           onReadyForServerCompletion: () => {
@@ -354,7 +373,9 @@ export default function ServiceDetailPage() {
                       <AnimatePresence mode="wait">
                         {pkg && (
                           <motion.div key={pkg.name} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.2 }}>
-                            <Price pi={pkg.price} className="text-3xl font-bold text-brand" />
+                            {service.priceCurrency === 'USD'
+                              ? <Price usd={pkg.price} className="text-3xl font-bold text-brand" />
+                              : <Price pi={pkg.price} className="text-3xl font-bold text-brand" />}
                             <p className="text-sm text-muted-foreground mt-1">{pkg.description}</p>
                             <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
                               <span className="flex items-center gap-1"><Clock size={14} /> {pkg.deliveryDays} {t('service.days')}</span>
@@ -373,7 +394,9 @@ export default function ServiceDetailPage() {
                       </AnimatePresence>
                     </>
                   ) : (
-                    <div className="mb-4"><Price pi={service.price} className="text-3xl font-bold text-brand" /></div>
+                    <div className="mb-4">{service.priceCurrency === 'USD'
+                      ? <Price usd={service.price} className="text-3xl font-bold text-brand" />
+                      : <Price pi={service.price} className="text-3xl font-bold text-brand" />}</div>
                   )}
                   <div className="flex items-center justify-center gap-1.5 text-xs text-escrow bg-escrow-light rounded-full px-3 py-1.5">
                     <ShieldCheck size={13} />
@@ -386,7 +409,7 @@ export default function ServiceDetailPage() {
                   >
                     {buying
                       ? <Loader2 size={20} className="animate-spin mx-auto" />
-                      : `${t('service.continue')} (π ${pkg?.price || service.price})`}
+                      : `${t('service.continue')} (${service.priceCurrency === 'USD' ? '$' : 'π '}${pkg?.price || service.price})`}
                   </button>
                   <p className="text-[11px] text-muted-foreground text-center mt-2 flex items-center justify-center gap-1">
                     <ShieldCheck size={11} className="text-escrow" />
