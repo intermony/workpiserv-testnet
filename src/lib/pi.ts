@@ -52,6 +52,7 @@ interface OrderData {
   serviceId: string;
   package?: string;
   requirements?: string;
+  orderId?: string; // commande pré-créée (prix en USD) → transmise à /approve pour vérifier le verrou de taux
 }
 
 interface PaymentCallbacks {
@@ -124,7 +125,7 @@ class PiSDK {
           const res = await fetch(`${API_URL}/api/payments/approve`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ paymentId, serviceId: orderData.serviceId, package: orderData.package || 'Standard', requirements: orderData.requirements || '' })
+            body: JSON.stringify({ paymentId, serviceId: orderData.serviceId, package: orderData.package || 'Standard', requirements: orderData.requirements || '', order_id: orderData.orderId })
           });
           callbacks.onReadyForServerApproval?.(paymentId, await res.json());
         },
@@ -132,7 +133,7 @@ class PiSDK {
           const res = await fetch(`${API_URL}/api/payments/complete`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ paymentId, txid })
+            body: JSON.stringify({ paymentId, txid, order_id: orderData.orderId })
           });
           callbacks.onReadyForServerCompletion?.(paymentId, txid, await res.json());
         },
