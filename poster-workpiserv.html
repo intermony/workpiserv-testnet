@@ -44,7 +44,7 @@ body{
   top:-80px;left:50%;
   transform:translateX(-50%);
   width:420px;height:220px;
-  background:radial-gradient(ellipse,rgba(242,98,46,.28) 0%,transparent 68%);
+  background:radial-gradient(ellipse,rgba(124,58,237,.30) 0%,transparent 68%);
   pointer-events:none;
   z-index:0;
 }
@@ -99,9 +99,9 @@ body{
   display:inline-flex;
   align-items:center;
   gap:6px;
-  background:rgba(242,98,46,.12);
-  border:1px solid rgba(242,98,46,.3);
-  color:var(--brand2);
+  background:rgba(46,204,113,.10);
+  border:1px solid rgba(46,204,113,.45);
+  color:#2ECC71;
   font-family:'Poppins',sans-serif;
   font-size:12px;
   font-weight:700;
@@ -112,7 +112,7 @@ body{
 
 /* ── MISSION BAND ── */
 .mission{
-  background:linear-gradient(100deg,#D94B1E 0%,var(--brand) 55%,#E8703A 100%);
+  background:linear-gradient(100deg,#3B1E6E 0%,#5B2EA6 50%,#4A2585 100%);
   padding:20px 28px;
   text-align:center;
   position:relative;
@@ -172,18 +172,20 @@ body{
   background:var(--card);
   border:1px solid var(--border);
   border-radius:14px;
-  padding:11px 6px;
+  padding:11px 4px;
   text-align:center;
   transition:border-color .2s, transform .15s;
 }
 .pc:hover{border-color:var(--brand);transform:translateY(-2px);}
-.pc .em{font-size:26px;display:block;margin-bottom:5px;}
+.pc .em{font-size:30px;display:block;margin-bottom:6px;line-height:1;}
 .pc .nfr{
   font-size:10.5px;
   font-weight:600;
   color:var(--text);
   display:block;
   line-height:1.2;
+  word-break:break-word;
+  hyphens:auto;
 }
 .pc .nar{
   font-family:'Noto Sans Arabic',sans-serif;
@@ -317,9 +319,11 @@ body{
   font-weight:600;
   color:var(--text);
 }
-.badge.or{border-color:rgba(242,98,46,.5);color:var(--brand2);}
-.badge.lv{border-color:rgba(180,155,255,.4);color:var(--lav);}
-.badge.gd{border-color:rgba(255,209,102,.4);color:var(--gold);}
+.badge.or,.badge.lv,.badge.gd{
+  background:rgba(46,204,113,.10);
+  border-color:rgba(46,204,113,.45);
+  color:#2ECC71;
+}
 
 /* ── CTA FOOTER ── */
 .cta{
