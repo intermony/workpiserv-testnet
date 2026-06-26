@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WorkπServ — Affiche Mission</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600&family=Noto+Sans+Arabic:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0F0D2A; --card:#1A1740; --card2:#1E1B45;
+  --brand:#F2622E; --brand2:#FF8C5A;
+  --lav:#B49BFF; --gold:#FFD166;
+  --text:#E2DEFF; --muted:#9089C8;
+  --border:#2C2659;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+  background:#07061A;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:32px 12px 48px;
+  font-family:'Inter',sans-serif;
+}
+
+/* ── POSTER SHELL ── */
+.poster{
+  width:100%;
+  max-width:560px;
+  background:linear-gradient(170deg,#13102F 0%,#0F0D2A 55%,#160D2A 100%);
+  border:1px solid var(--border);
+  border-radius:28px;
+  overflow:hidden;
+  position:relative;
+  box-shadow:0 0 80px rgba(242,98,46,.13), 0 0 200px rgba(180,155,255,.07);
+}
+
+/* top glow */
+.poster::before{
+  content:'';
+  position:absolute;
+  top:-80px;left:50%;
+  transform:translateX(-50%);
+  width:420px;height:220px;
+  background:radial-gradient(ellipse,rgba(242,98,46,.28) 0%,transparent 68%);
+  pointer-events:none;
+  z-index:0;
+}
+/* bottom glow */
+.poster::after{
+  content:'';
+  position:absolute;
+  bottom:-80px;right:10%;
+  width:280px;height:200px;
+  background:radial-gradient(ellipse,rgba(180,155,255,.16) 0%,transparent 68%);
+  pointer-events:none;
+  z-index:0;
+}
+
+/* ── HEADER ── */
+.hd{
+  text-align:center;
+  padding:40px 28px 22px;
+  position:relative;
+  z-index:1;
+}
+.logo{
+  font-family:'Poppins',sans-serif;
+  font-weight:900;
+  font-size:54px;
+  color:#fff;
+  letter-spacing:-1.5px;
+  line-height:1;
+  text-shadow:0 2px 30px rgba(242,98,46,.35);
+}
+.logo .pi{color:var(--brand);}
+.tagline{
+  font-family:'Poppins',sans-serif;
+  font-size:13px;
+  font-weight:600;
+  color:var(--muted);
+  margin-top:7px;
+  letter-spacing:.4px;
+}
+.tagline-ar{
+  font-family:'Noto Sans Arabic',sans-serif;
+  font-size:12px;
+  font-weight:600;
+  color:var(--muted);
+  direction:rtl;
+  margin-top:4px;
+  opacity:.85;
+}
+
+/* Pi badge */
+.pi-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background:rgba(242,98,46,.12);
+  border:1px solid rgba(242,98,46,.3);
+  color:var(--brand2);
+  font-family:'Poppins',sans-serif;
+  font-size:12px;
+  font-weight:700;
+  padding:5px 14px;
+  border-radius:99px;
+  margin-top:14px;
+}
+
+/* ── MISSION BAND ── */
+.mission{
+  background:linear-gradient(100deg,#D94B1E 0%,var(--brand) 55%,#E8703A 100%);
+  padding:20px 28px;
+  text-align:center;
+  position:relative;
+  z-index:1;
+}
+.mission-fr{
+  font-family:'Poppins',sans-serif;
+  font-weight:800;
+  font-size:19px;
+  color:#fff;
+  line-height:1.25;
+}
+.mission-ar{
+  font-family:'Noto Sans Arabic',sans-serif;
+  font-weight:800;
+  font-size:17px;
+  color:rgba(255,255,255,.88);
+  direction:rtl;
+  margin-top:5px;
+  line-height:1.4;
+}
+
+/* ── NOBODY ── */
+.nobody{
+  text-align:center;
+  padding:20px 28px 6px;
+  position:relative;
+  z-index:1;
+}
+.nobody-fr{
+  font-family:'Poppins',sans-serif;
+  font-weight:700;
+  font-size:13px;
+  color:var(--lav);
+  letter-spacing:2.5px;
+  text-transform:uppercase;
+}
+.nobody-ar{
+  font-family:'Noto Sans Arabic',sans-serif;
+  font-weight:700;
+  font-size:14px;
+  color:var(--lav);
+  direction:rtl;
+  margin-top:4px;
+}
+
+/* ── PROFESSIONS GRID ── */
+.professions{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+  padding:14px 16px 18px;
+  position:relative;
+  z-index:1;
+}
+.pc{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:11px 6px;
+  text-align:center;
+  transition:border-color .2s, transform .15s;
+}
+.pc:hover{border-color:var(--brand);transform:translateY(-2px);}
+.pc .em{font-size:26px;display:block;margin-bottom:5px;}
+.pc .nfr{
+  font-size:10.5px;
+  font-weight:600;
+  color:var(--text);
+  display:block;
+  line-height:1.2;
+}
+.pc .nar{
+  font-family:'Noto Sans Arabic',sans-serif;
+  font-size:10.5px;
+  color:var(--muted);
+  direction:rtl;
+  display:block;
+  margin-top:2px;
+}
+
+/* ── SEPARATOR ── */
+.sep{
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--border) 30%,var(--border) 70%,transparent);
+  margin:4px 20px 18px;
+  position:relative;
+  z-index:1;
+}
+
+/* ── HOW IT WORKS ── */
+.how{
+  padding:0 16px 16px;
+  position:relative;
+  z-index:1;
+}
+.how-hd{
+  text-align:center;
+  margin-bottom:13px;
+}
+.how-hd .fr{
+  font-family:'Poppins',sans-serif;
+  font-weight:700;
+  font-size:15px;
+  color:#fff;
+}
+.how-hd .ar{
+  font-family:'Noto Sans Arabic',sans-serif;
+  font-size:13px;
+  color:var(--muted);
+  direction:rtl;
+  margin-top:2px;
+}
+.steps{
+  display:flex;
+  gap:8px;
+}
+.stp{
+  flex:1;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:14px 8px;
+  text-align:center;
+}
+.stp .num{
+  width:26px;height:26px;
+  background:var(--brand);
+  border-radius:50%;
+  font-family:'Poppins',sans-serif;
+  font-weight:700;
+  font-size:13px;
+  color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 8px;
+}
+.stp .em{font-size:24px;display:block;margin-bottom:6px;}
+.stp .sfr{
+  font-size:10.5px;
+  font-weight:600;
+  color:var(--text);
+  display:block;
+  line-height:1.3;
+}
+.stp .sar{
+  font-family:'Noto Sans Arabic',sans-serif;
+  font-size:10px;
+  color:var(--muted);
+  direction:rtl;
+  display:block;
+  margin-top:3px;
+  line-height:1.4;
+}
+
+/* ── ESCROW HIGHLIGHT ── */
+.escrow-block{
+  margin:0 16px 16px;
+  background:rgba(180,155,255,.07);
+  border:1px solid rgba(180,155,255,.22);
+  border-radius:16px;
+  padding:14px 16px;
+  text-align:center;
+  position:relative;
+  z-index:1;
+}
+.esc-fr{
+  font-family:'Poppins',sans-serif;
+  font-size:12.5px;
+  font-weight:600;
+  color:var(--lav);
+  line-height:1.4;
+}
+.esc-ar{
+  font-family:'Noto Sans Arabic',sans-serif;
+  font-size:12px;
+  color:var(--lav);
+  direction:rtl;
+  margin-top:4px;
+  opacity:.85;
+  line-height:1.5;
+}
+
+/* ── BADGES ── */
+.badges{
+  display:flex;
+  gap:8px;
+  padding:0 16px 16px;
+  justify-content:center;
+  flex-wrap:wrap;
+  position:relative;
+  z-index:1;
+}
+.badge{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:99px;
+  padding:7px 14px;
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  font-size:12px;
+  font-weight:600;
+  color:var(--text);
+}
+.badge.or{border-color:rgba(242,98,46,.5);color:var(--brand2);}
+.badge.lv{border-color:rgba(180,155,255,.4);color:var(--lav);}
+.badge.gd{border-color:rgba(255,209,102,.4);color:var(--gold);}
+
+/* ── CTA FOOTER ── */
+.cta{
+  background:linear-gradient(135deg,var(--card) 0%,#12102E 100%);
+  border-top:1px solid var(--border);
+  padding:22px 28px;
+  text-align:center;
+  position:relative;
+  z-index:1;
+}
+.url{
+  font-family:'Poppins',sans-serif;
+  font-weight:900;
+  font-size:26px;
+  color:var(--brand);
+  letter-spacing:-.3px;
+  text-shadow:0 0 24px rgba(242,98,46,.4);
+}
+.cta-sub{
+  font-size:12px;
+  color:var(--muted);
+  margin-top:5px;
+  font-weight:500;
+}
+.cta-ar{
+  font-family:'Noto Sans Arabic',sans-serif;
+  font-size:12px;
+  color:var(--muted);
+  direction:rtl;
+  margin-top:3px;
+}
+.testnet-pill{
+  display:inline-block;
+  background:rgba(180,155,255,.1);
+  border:1px solid rgba(180,155,255,.25);
+  color:var(--lav);
+  font-size:11px;
+  font-weight:600;
+  padding:5px 13px;
+  border-radius:99px;
+  margin-top:12px;
+}
+.made-with{
+  font-size:11px;
+  color:rgba(144,137,200,.5);
+  margin-top:10px;
+}
+</style>
+</head>
+<body>
+<div class="poster">
+
+  <!-- HEADER -->
+  <div class="hd">
+    <div class="logo">Work<span class="pi">π</span>Serv</div>
+    <div class="tagline">Le marché freelance des Pionniers Pi</div>
+    <div class="tagline-ar">سوق العمل الحرّ للـ Pioneers Pi</div>
+    <div class="pi-badge">π Payé en Pi &nbsp;·&nbsp; 🛡️ Protégé par Escrow</div>
+  </div>
+
+  <!-- MISSION -->
+  <div class="mission">
+    <div class="mission-fr">Toutes les compétences ont leur place ici</div>
+    <div class="mission-ar">كلّ مهارة لها مكانها هنا</div>
+  </div>
+
+  <!-- NOBODY EXCLUDED -->
+  <div class="nobody">
+    <div class="nobody-fr">✦ On n'exclut personne ✦</div>
+    <div class="nobody-ar">✦ لا نُقصي أحداً — كلّ حِرفة محترمة ✦</div>
+  </div>
+
+  <!-- PROFESSIONS -->
+  <div class="professions">
+    <div class="pc"><span class="em">🔧</span><span class="nfr">Plombier</span><span class="nar">سبّاك</span></div>
+    <div class="pc"><span class="em">⚡</span><span class="nfr">Électricien</span><span class="nar">كهربائي</span></div>
+    <div class="pc"><span class="em">🪡</span><span class="nfr">Couturier</span><span class="nar">خيّاط</span></div>
+    <div class="pc"><span class="em">🪚</span><span class="nfr">Menuisier</span><span class="nar">نجّار</span></div>
+    <div class="pc"><span class="em">✂️</span><span class="nfr">Coiffeur</span><span class="nar">حلّاق</span></div>
+    <div class="pc"><span class="em">🔩</span><span class="nfr">Mécanicien</span><span class="nar">ميكانيكي</span></div>
+    <div class="pc"><span class="em">🎨</span><span class="nfr">Peintre</span><span class="nar">دهّان</span></div>
+    <div class="pc"><span class="em">🌾</span><span class="nfr">Agriculteur</span><span class="nar">فلّاح</span></div>
+    <div class="pc"><span class="em">📚</span><span class="nfr">Tuteur</span><span class="nar">معلّم</span></div>
+    <div class="pc"><span class="em">👨‍🍳</span><span class="nfr">Cuisinier</span><span class="nar">طبّاخ</span></div>
+    <div class="pc"><span class="em">🏺</span><span class="nfr">Artisan</span><span class="nar">حرفيّ</span></div>
+    <div class="pc"><span class="em">🛒</span><span class="nfr">Commerçant</span><span class="nar">تاجر</span></div>
+    <div class="pc"><span class="em">💻</span><span class="nfr">Développeur</span><span class="nar">مطوّر</span></div>
+    <div class="pc"><span class="em">✍️</span><span class="nfr">Rédacteur</span><span class="nar">كاتب</span></div>
+    <div class="pc"><span class="em">🌐</span><span class="nfr">Traducteur</span><span class="nar">مترجم</span></div>
+    <div class="pc"><span class="em">🎯</span><span class="nfr">Designer</span><span class="nar">مصمّم</span></div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- HOW IT WORKS -->
+  <div class="how">
+    <div class="how-hd">
+      <div class="fr">Comment ça marche</div>
+      <div class="ar">كيف يعمل WorkπServ</div>
+    </div>
+    <div class="steps">
+      <div class="stp">
+        <div class="num">1</div>
+        <span class="em">📋</span>
+        <span class="sfr">Publiez votre service</span>
+        <span class="sar">انشر خدمتك</span>
+      </div>
+      <div class="stp">
+        <div class="num">2</div>
+        <span class="em">🛡️</span>
+        <span class="sfr">Paiement sécurisé en Escrow</span>
+        <span class="sar">الدفع محمي بـ Escrow</span>
+      </div>
+      <div class="stp">
+        <div class="num">3</div>
+        <span class="em">✅</span>
+        <span class="sfr">Livrez & recevez vos π</span>
+        <span class="sar">سلّم واستلم Pi</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ESCROW BLOCK -->
+  <div class="escrow-block">
+    <div class="esc-fr">🛡️ Le Pi est bloqué jusqu'à confirmation — l'acheteur paie, le vendeur livre, l'Escrow libère.</div>
+    <div class="esc-ar">الـ Pi محفوظ حتى التأكيد — المشتري يدفع، المستقلّ يسلّم، ثم يُحرَّر الـ Escrow.</div>
+  </div>
+
+  <!-- BADGES -->
+  <div class="badges">
+    <div class="badge or">π &nbsp;Payé en Pi</div>
+    <div class="badge lv">🛡️ Escrow Protégé</div>
+    <div class="badge gd">🤝 10% Commission</div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta">
+    <div class="url">workpiserv.com</div>
+    <div class="cta-sub">Ouvrez dans Pi Browser · Inscription gratuite · Pour tous les Pionniers</div>
+    <div class="cta-ar">افتح في Pi Browser · التسجيل مجاني · للجميع</div>
+    <div class="testnet-pill">🧪 Actuellement sur Testnet · حالياً على Testnet</div>
+    <div class="made-with">support@workpiserv.com &nbsp;·&nbsp; Trust first 🥇</div>
+  </div>
+
+</div>
+</body>
+</html>

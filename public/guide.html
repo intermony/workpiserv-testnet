@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WorkπServ — Guide / دليل / Guide / Hướng dẫn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&family=Noto+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#161236; --bg2:#1E1A42; --card:#221C4D;
+    --text:#E2DEFF; --muted:#9089C8;
+    --brand:#F2622E; --brand2:#E05520; --lav:#B49BFF;
+    --border:#2C2659;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(120% 60% at 85% 0%, rgba(242,98,46,.12), transparent 55%),
+      radial-gradient(90% 50% at 0% 100%, rgba(180,155,255,.12), transparent 55%),
+      var(--bg);
+    color:var(--text); font-family:'Inter',sans-serif; line-height:1.6;
+    min-height:100vh; padding:0 0 60px;
+  }
+  body[dir="rtl"]{ font-family:'Noto Sans Arabic','Inter',sans-serif; }
+  .wrap{ max-width:780px; margin:0 auto; padding:0 20px; }
+
+  header{ padding:28px 0 18px; position:sticky; top:0; z-index:5;
+    background:linear-gradient(var(--bg) 70%, rgba(22,18,54,0)); }
+  .brand{ font-family:'Poppins'; font-weight:800; font-size:26px; letter-spacing:.3px; }
+  .brand .pi{ color:var(--brand); }
+  .tagline{ color:var(--muted); font-size:14px; margin-top:2px; }
+
+  .langbar{ display:flex; gap:6px; flex-wrap:nowrap; margin-top:16px; }
+  .langbar button{
+    font-family:'Poppins'; font-weight:700; font-size:13px; cursor:pointer;
+    color:var(--text); background:var(--card); border:1px solid var(--border);
+    padding:6px 0; border-radius:99px; transition:all .15s;
+    flex:1; text-align:center; min-width:0;
+  }
+  .langbar button:hover{ border-color:var(--brand); color:#fff; }
+  .langbar button.active{ background:var(--brand); border-color:var(--brand); color:#fff; }
+
+  h1{ font-family:'Poppins'; font-weight:800; font-size:30px; color:#fff;
+    margin:22px 0 6px; line-height:1.15; }
+  .intro{ color:var(--text); opacity:.92; margin-bottom:10px; }
+  .testnet{ display:inline-block; background:rgba(180,155,255,.14); color:var(--lav);
+    font-size:13px; font-weight:600; padding:5px 12px; border-radius:99px; margin:6px 0 26px; }
+
+  section{ background:var(--bg2); border:1px solid var(--border); border-radius:16px;
+    padding:22px 22px; margin-bottom:16px; }
+  section h2{ font-family:'Poppins'; font-weight:700; font-size:19px; color:#fff;
+    margin-bottom:10px; display:flex; align-items:center; gap:10px; }
+  section h2 .n{ flex:none; width:30px; height:30px; border-radius:50%;
+    background:var(--brand); color:#fff; font-size:15px;
+    display:flex; align-items:center; justify-content:center; }
+  section p{ color:var(--text); opacity:.92; margin-bottom:8px; }
+  section ul{ margin:6px 0 4px; padding-inline-start:22px; }
+  section li{ margin-bottom:6px; color:var(--text); opacity:.92; }
+  .warn{ border-color:var(--brand); background:rgba(242,98,46,.08); }
+  .warn h2 .n{ background:var(--brand); }
+  strong,b{ color:#fff; }
+  .lav{ color:var(--lav); font-weight:600; }
+  .brandtxt{ color:var(--brand); font-weight:600; }
+
+  .steps{ list-style:none; padding:0; }
+  .steps li{ display:flex; gap:12px; align-items:flex-start; margin-bottom:10px; }
+  .steps .dot{ flex:none; margin-top:7px; width:8px; height:8px; border-radius:50%; background:var(--brand); }
+  body[dir="rtl"] section ul{ padding-inline-start:22px; }
+
+  .flow{ display:flex; flex-direction:column; gap:8px; }
+  .flow .row{ display:flex; gap:12px; align-items:baseline; padding:8px 0; border-bottom:1px solid var(--border); }
+  .flow .row:last-child{ border-bottom:0; }
+  .flow .st{ font-family:'Poppins'; font-weight:600; color:var(--lav); flex:none; min-width:120px; }
+
+  footer{ text-align:center; color:var(--muted); font-size:13px; margin-top:28px; }
+  footer a{ color:var(--brand); text-decoration:none; }
+  a.mail{ color:var(--brand); text-decoration:none; font-weight:600; }
+</style>
+</head>
+<body dir="ltr">
+  <div class="wrap">
+    <header>
+      <div class="brand">Work<span class="pi">π</span>Serv</div>
+      <div class="tagline" id="tagline"></div>
+      <div class="langbar">
+        <button data-lang="en" class="active" onclick="setLang('en')">EN</button>
+        <button data-lang="ar" onclick="setLang('ar')">AR</button>
+        <button data-lang="fr" onclick="setLang('fr')">FR</button>
+        <button data-lang="vi" onclick="setLang('vi')">VI</button>
+      </div>
+    </header>
+
+    <h1 id="title"></h1>
+    <p class="intro" id="intro"></p>
+    <div class="testnet" id="testnet"></div>
+
+    <div id="content"></div>
+
+    <footer id="footer"></footer>
+  </div>
+
+<script>
+const T = {
+  en: {
+    dir:'ltr', tagline:'The freelance marketplace for Pioneers — paid in Pi, protected by Escrow.',
+    title:'How to use WorkπServ',
+    intro:'A simple guide for everyone — whether you offer a skill or hire one.',
+    testnet:'🧪 Currently on Testnet — you test with test-Pi, no real Pi yet.',
+    sections:[
+      {warn:true, h:'Open in Pi Browser first', html:`<p>WorkπServ works <strong>only inside the Pi Browser</strong> (it uses your Pi account to log in and pay).</p><ul><li>Open the <strong>Pi</strong> app on your phone.</li><li>Tap the <strong>Pi Browser</strong> icon.</li><li>Go to <span class="brandtxt">workpiserv.com</span>.</li></ul><p>In Chrome or a normal browser you'll only see a detection screen — that's normal.</p>`},
+      {h:'Sign in', html:`<p>On the home page tap <strong>Sign in with Pi</strong> and approve the prompt. No passwords, no sensitive data shared.</p>`},
+      {h:'Offer your skill (post a “gig”)', html:`<p>WorkπServ is for <strong>every skill</strong> — not just digital. Plumbers, electricians, tailors, carpenters, hairdressers, mechanics, painters, farmers, tutors, cooks, artisans, designers, writers, translators… <span class="lav">we exclude no one.</span></p><p>To create a service:</p><ul><li><strong>Title</strong> — clear and specific (e.g. “I will repair home plumbing”).</li><li><strong>Category</strong> — pick what fits your trade.</li><li><strong>Price</strong> — in Pi or USD (USD shows the live Pi equivalent).</li><li><strong>Delivery time</strong> — how many days you need.</li><li><strong>Description</strong> — explain honestly what's included.</li></ul><p>Tap <strong>Publish</strong> — your gig appears in the Marketplace.</p>`},
+      {h:'Find & order a service', html:`<p>Open the <strong>Marketplace</strong>, browse or search, and tap a service to see details. Each one shows the price, delivery time and an <span class="lav">🛡️ Escrow Protected</span> badge.</p><p>Tap <strong>Order</strong> and confirm the Pi payment. Your Pi is now <strong>held safely in Escrow</strong> — not sent to the freelancer yet.</p>`},
+      {h:'How Escrow protects you', html:`<p>Follow your order on the <strong>Orders</strong> page:</p><div class="flow"><div class="row"><span class="st">Pending payment</span><span>Waiting for the Pi payment to confirm.</span></div><div class="row"><span class="st">In progress</span><span>Payment confirmed — Pi locked in Escrow, work begins.</span></div><div class="row"><span class="st">Delivered</span><span>Freelancer marked the work delivered.</span></div><div class="row"><span class="st">Completed</span><span>Buyer approved — Escrow released. Done ✅</span></div></div><p style="margin-top:10px">The freelancer is paid only <strong>after the buyer confirms</strong> — both sides protected.</p>`},
+      {h:'Deliver & confirm', html:`<p><strong>Freelancer:</strong> when done, open <strong>Orders</strong> and tap <strong>Deliver</strong>.</p><p><strong>Buyer:</strong> when satisfied, open <strong>Orders</strong> and tap <strong>Confirm</strong> — this releases the Escrow. Only confirm once you're happy.</p>`},
+      {h:'Fees — transparent', html:`<p>A flat <strong>10% commission</strong>, only on completed orders. For a gig at <strong>π 10</strong>, the freelancer gets <strong>π 9</strong> and WorkπServ keeps <strong>π 1</strong>. No hidden fees, free to browse, sign up and publish.</p>`},
+      {h:'Your wallet & messages', html:`<p><strong>Wallet:</strong> see your balance, top-up, or withdraw (short security delay, admin-confirmed).</p><p><strong>Messages:</strong> chat with buyers/freelancers on the platform — keep all deals inside WorkπServ.</p>`},
+      {h:'Stay safe', html:`<ul><li>Always use the <strong>Pi Browser</strong>.</li><li>Keep payments & chat <strong>inside WorkπServ</strong>.</li><li>Buyers: confirm only after checking the work.</li><li>Never share your Pi passphrase — we'll never ask for it.</li></ul>`},
+    ],
+    footer:`Need help? <a class="mail" href="mailto:support@workpiserv.com">support@workpiserv.com</a><br>Trust first 🥇 — because people's money is sacred.`
+  },
+
+  ar: {
+    dir:'rtl', tagline:'سوق الخدمات الحرّة للـPioneers — الدفع بالـPi، بحماية Escrow.',
+    title:'كيف تستعمل WorkπServ',
+    intro:'دليل بسيط للجميع — سواء تعرض مهارة أو تطلبها.',
+    testnet:'🧪 حالياً على Testnet — تجرّب بـPi تجريبي، بلا Pi حقيقي بعد.',
+    sections:[
+      {warn:true, h:'افتحه أولاً في Pi Browser', html:`<p>يعمل WorkπServ <strong>فقط داخل Pi Browser</strong> (يستعمل حسابك في Pi للدخول والدفع).</p><ul><li>افتح تطبيق <strong>Pi</strong> في هاتفك.</li><li>اضغط أيقونة <strong>Pi Browser</strong>.</li><li>اذهب إلى <span class="brandtxt">workpiserv.com</span>.</li></ul><p>في Chrome أو متصفّح عادي ستظهر شاشة الكشف فقط — وهذا طبيعي.</p>`},
+      {h:'تسجيل الدخول', html:`<p>في الصفحة الرئيسية اضغط <strong>تسجيل الدخول بـPi</strong> ووافق على الطلب. بلا كلمات سرّ، وبلا مشاركة بيانات حسّاسة.</p>`},
+      {h:'اعرض مهارتك (انشر «gig»)', html:`<p>WorkπServ لكلّ <strong>مهارة</strong> — لا الرقمية فقط. سبّاكون، كهربائيون، خيّاطون، نجّارون، حلّاقون، ميكانيكيون، دهّانون، فلّاحون، معلّمون، طبّاخون، حرفيّون، مصمّمون، كتّاب، مترجمون… <span class="lav">لا نُقصي أحداً.</span></p><p>لإنشاء خدمة:</p><ul><li><strong>العنوان</strong> — واضح ومحدّد (مثلاً: «أصلح سباكة المنزل»).</li><li><strong>الفئة</strong> — اختر ما يناسب حرفتك.</li><li><strong>السعر</strong> — بالـPi أو الدولار (الدولار يعرض المقابل بالـPi).</li><li><strong>مدة التسليم</strong> — كم يوماً تحتاج.</li><li><strong>الوصف</strong> — اشرح بصدق ما يشمله.</li></ul><p>اضغط <strong>نشر</strong> — تظهر خدمتك في السوق.</p>`},
+      {h:'ابحث واطلب خدمة', html:`<p>افتح <strong>السوق</strong>، تصفّح أو ابحث، واضغط على خدمة لرؤية التفاصيل. كلّ خدمة تُظهر السعر ومدة التسليم وشارة <span class="lav">🛡️ محميّة بـEscrow</span>.</p><p>اضغط <strong>اطلب</strong> وأكّد الدفع بـPi. الآن الـPi <strong>محفوظ بأمان في Escrow</strong> — لم يُرسَل للمستقلّ بعد.</p>`},
+      {h:'كيف يحميك Escrow', html:`<p>تابع طلبك في صفحة <strong>الطلبات</strong>:</p><div class="flow"><div class="row"><span class="st">بانتظار الدفع</span><span>بانتظار تأكيد الدفع بـPi.</span></div><div class="row"><span class="st">قيد التنفيذ</span><span>تأكّد الدفع — الـPi مقفل في Escrow، والعمل بدأ.</span></div><div class="row"><span class="st">تمّ التسليم</span><span>المستقلّ سلّم العمل.</span></div><div class="row"><span class="st">مكتمل</span><span>المشتري وافق — حُرّر Escrow. تمّ ✅</span></div></div><p style="margin-top:10px">يُدفع للمستقلّ <strong>فقط بعد تأكيد المشتري</strong> — حماية للطرفين.</p>`},
+      {h:'التسليم والتأكيد', html:`<p><strong>المستقلّ:</strong> عند الانتهاء، افتح <strong>الطلبات</strong> واضغط <strong>تسليم</strong>.</p><p><strong>المشتري:</strong> عند الرضا، افتح <strong>الطلبات</strong> واضغط <strong>تأكيد</strong> — هذا يحرّر Escrow. أكّد فقط حين ترضى.</p>`},
+      {h:'العمولة — شفّافة', html:`<p>عمولة <strong>10% ثابتة</strong>، على الطلبات المكتملة فقط. لخدمة بـ<strong>10 π</strong>، يأخذ المستقلّ <strong>9 π</strong> وتحتفظ المنصة بـ<strong>1 π</strong>. بلا رسوم خفية، والتصفّح والتسجيل والنشر مجاني.</p>`},
+      {h:'محفظتك ورسائلك', html:`<p><strong>المحفظة:</strong> اطّلع على رصيدك، اشحن، أو اسحب (تأخير أمني قصير، بتأكيد الأدمن).</p><p><strong>الرسائل:</strong> تحدّث مع المشترين/المستقلّين داخل المنصة — أبقِ كل التعاملات داخل WorkπServ.</p>`},
+      {h:'ابقَ آمناً', html:`<ul><li>استعمل دائماً <strong>Pi Browser</strong>.</li><li>أبقِ الدفع والمحادثة <strong>داخل WorkπServ</strong>.</li><li>المشترون: أكّدوا بعد فحص العمل فقط.</li><li>لا تشارك عبارة استرداد Pi أبداً — لن نطلبها منك.</li></ul>`},
+    ],
+    footer:`تحتاج مساعدة؟ <a class="mail" href="mailto:support@workpiserv.com">support@workpiserv.com</a><br>الثقة أولاً 🥇 — لأن مال الناس مقدّس.`
+  },
+
+  fr: {
+    dir:'ltr', tagline:'Le marché freelance des Pionniers — payé en Pi, protégé par Escrow.',
+    title:'Comment utiliser WorkπServ',
+    intro:'Un guide simple pour tous — que vous offriez une compétence ou en cherchiez une.',
+    testnet:'🧪 Actuellement sur Testnet — vous testez avec des Pi de test, pas de vrais Pi.',
+    sections:[
+      {warn:true, h:'Ouvrez d\'abord dans Pi Browser', html:`<p>WorkπServ fonctionne <strong>uniquement dans le Pi Browser</strong> (il utilise votre compte Pi pour la connexion et le paiement).</p><ul><li>Ouvrez l'application <strong>Pi</strong> sur votre téléphone.</li><li>Touchez l'icône <strong>Pi Browser</strong>.</li><li>Allez sur <span class="brandtxt">workpiserv.com</span>.</li></ul><p>Dans Chrome ou un navigateur normal, vous ne verrez qu'un écran de détection — c'est normal.</p>`},
+      {h:'Se connecter', html:`<p>Sur l'accueil, touchez <strong>Se connecter avec Pi</strong> et approuvez. Aucun mot de passe, aucune donnée sensible partagée.</p>`},
+      {h:'Offrez votre compétence (publiez un « gig »)', html:`<p>WorkπServ est pour <strong>toutes les compétences</strong> — pas seulement le digital. Plombiers, électriciens, couturiers, menuisiers, coiffeurs, mécaniciens, peintres, agriculteurs, professeurs, cuisiniers, artisans, designers, rédacteurs, traducteurs… <span class="lav">on n'exclut personne.</span></p><p>Pour créer un service :</p><ul><li><strong>Titre</strong> — clair et précis (ex. « Je répare la plomberie de votre maison »).</li><li><strong>Catégorie</strong> — celle qui correspond à votre métier.</li><li><strong>Prix</strong> — en Pi ou USD (l'USD affiche l'équivalent Pi en direct).</li><li><strong>Délai de livraison</strong> — le nombre de jours nécessaires.</li><li><strong>Description</strong> — expliquez honnêtement ce qui est inclus.</li></ul><p>Touchez <strong>Publier</strong> — votre gig apparaît dans le Marché.</p>`},
+      {h:'Trouver & commander un service', html:`<p>Ouvrez le <strong>Marché</strong>, parcourez ou cherchez, et touchez un service pour les détails. Chacun affiche le prix, le délai et un badge <span class="lav">🛡️ Protégé par Escrow</span>.</p><p>Touchez <strong>Commander</strong> et confirmez le paiement Pi. Votre Pi est désormais <strong>gardé en sécurité dans l'Escrow</strong> — pas encore envoyé au freelance.</p>`},
+      {h:'Comment l\'Escrow vous protège', html:`<p>Suivez votre commande sur la page <strong>Commandes</strong> :</p><div class="flow"><div class="row"><span class="st">En attente de paiement</span><span>En attente de la confirmation du paiement Pi.</span></div><div class="row"><span class="st">En cours</span><span>Paiement confirmé — Pi verrouillé dans l'Escrow, le travail commence.</span></div><div class="row"><span class="st">Livré</span><span>Le freelance a marqué le travail livré.</span></div><div class="row"><span class="st">Terminé</span><span>L'acheteur a approuvé — Escrow libéré. Fini ✅</span></div></div><p style="margin-top:10px">Le freelance n'est payé qu'<strong>après confirmation de l'acheteur</strong> — les deux côtés protégés.</p>`},
+      {h:'Livrer & confirmer', html:`<p><strong>Freelance :</strong> une fois terminé, ouvrez <strong>Commandes</strong> et touchez <strong>Livrer</strong>.</p><p><strong>Acheteur :</strong> satisfait, ouvrez <strong>Commandes</strong> et touchez <strong>Confirmer</strong> — cela libère l'Escrow. Confirmez seulement si vous êtes satisfait.</p>`},
+      {h:'Frais — transparents', html:`<p>Une commission fixe de <strong>10%</strong>, uniquement sur les commandes terminées. Pour un gig à <strong>π 10</strong>, le freelance reçoit <strong>π 9</strong> et WorkπServ garde <strong>π 1</strong>. Pas de frais cachés ; parcourir, s'inscrire et publier est gratuit.</p>`},
+      {h:'Votre portefeuille & messages', html:`<p><strong>Portefeuille :</strong> consultez votre solde, rechargez, ou retirez (court délai de sécurité, confirmé par un admin).</p><p><strong>Messages :</strong> discutez avec acheteurs/freelances sur la plateforme — gardez tous les échanges dans WorkπServ.</p>`},
+      {h:'Restez en sécurité', html:`<ul><li>Utilisez toujours le <strong>Pi Browser</strong>.</li><li>Gardez paiements & chat <strong>dans WorkπServ</strong>.</li><li>Acheteurs : confirmez seulement après avoir vérifié le travail.</li><li>Ne partagez jamais votre phrase secrète Pi — nous ne la demanderons jamais.</li></ul>`},
+    ],
+    footer:`Besoin d'aide ? <a class="mail" href="mailto:support@workpiserv.com">support@workpiserv.com</a><br>Trust first 🥇 — car l'argent des gens est sacré.`
+  },
+
+  vi: {
+    dir:'ltr', tagline:'Chợ freelance cho Pioneers — thanh toán bằng Pi, bảo vệ bởi Escrow.',
+    title:'Cách sử dụng WorkπServ',
+    intro:'Hướng dẫn đơn giản cho mọi người — dù bạn cung cấp kỹ năng hay thuê một kỹ năng.',
+    testnet:'🧪 Hiện đang trên Testnet — bạn thử nghiệm bằng Pi thử, chưa dùng Pi thật.',
+    sections:[
+      {warn:true, h:'Mở trong Pi Browser trước', html:`<p>WorkπServ chỉ hoạt động <strong>bên trong Pi Browser</strong> (dùng tài khoản Pi của bạn để đăng nhập và thanh toán).</p><ul><li>Mở ứng dụng <strong>Pi</strong> trên điện thoại.</li><li>Nhấn biểu tượng <strong>Pi Browser</strong>.</li><li>Vào <span class="brandtxt">workpiserv.com</span>.</li></ul><p>Trên Chrome hay trình duyệt thường, bạn chỉ thấy màn hình nhận diện — điều đó là bình thường.</p>`},
+      {h:'Đăng nhập', html:`<p>Ở trang chủ, nhấn <strong>Đăng nhập bằng Pi</strong> và chấp nhận. Không mật khẩu, không chia sẻ dữ liệu nhạy cảm.</p>`},
+      {h:'Cung cấp kỹ năng (đăng một “gig”)', html:`<p>WorkπServ dành cho <strong>mọi kỹ năng</strong> — không chỉ kỹ thuật số. Thợ ống nước, thợ điện, thợ may, thợ mộc, thợ cắt tóc, thợ máy, thợ sơn, nông dân, gia sư, đầu bếp, nghệ nhân, nhà thiết kế, người viết, biên dịch… <span class="lav">chúng tôi không loại trừ ai.</span></p><p>Để tạo dịch vụ:</p><ul><li><strong>Tiêu đề</strong> — rõ ràng, cụ thể (vd: “Tôi sửa ống nước trong nhà”).</li><li><strong>Danh mục</strong> — chọn đúng nghề của bạn.</li><li><strong>Giá</strong> — bằng Pi hoặc USD (USD hiển thị giá Pi tương đương theo thời gian thực).</li><li><strong>Thời gian giao</strong> — số ngày bạn cần.</li><li><strong>Mô tả</strong> — giải thích trung thực những gì bao gồm.</li></ul><p>Nhấn <strong>Đăng</strong> — gig của bạn xuất hiện trong Chợ.</p>`},
+      {h:'Tìm & đặt dịch vụ', html:`<p>Mở <strong>Chợ</strong>, duyệt hoặc tìm, nhấn vào một dịch vụ để xem chi tiết. Mỗi dịch vụ hiển thị giá, thời gian giao và huy hiệu <span class="lav">🛡️ Được bảo vệ bởi Escrow</span>.</p><p>Nhấn <strong>Đặt hàng</strong> và xác nhận thanh toán Pi. Pi của bạn giờ được <strong>giữ an toàn trong Escrow</strong> — chưa gửi cho freelancer.</p>`},
+      {h:'Escrow bảo vệ bạn thế nào', html:`<p>Theo dõi đơn trên trang <strong>Đơn hàng</strong>:</p><div class="flow"><div class="row"><span class="st">Chờ thanh toán</span><span>Đợi xác nhận thanh toán Pi.</span></div><div class="row"><span class="st">Đang thực hiện</span><span>Đã thanh toán — Pi khóa trong Escrow, công việc bắt đầu.</span></div><div class="row"><span class="st">Đã giao</span><span>Freelancer đã đánh dấu hoàn thành.</span></div><div class="row"><span class="st">Hoàn tất</span><span>Người mua đã duyệt — Escrow được giải phóng. Xong ✅</span></div></div><p style="margin-top:10px">Freelancer chỉ được trả <strong>sau khi người mua xác nhận</strong> — bảo vệ cả hai bên.</p>`},
+      {h:'Giao & xác nhận', html:`<p><strong>Freelancer:</strong> khi xong, mở <strong>Đơn hàng</strong> và nhấn <strong>Giao</strong>.</p><p><strong>Người mua:</strong> khi hài lòng, mở <strong>Đơn hàng</strong> và nhấn <strong>Xác nhận</strong> — việc này giải phóng Escrow. Chỉ xác nhận khi bạn hài lòng.</p>`},
+      {h:'Phí — minh bạch', html:`<p>Hoa hồng cố định <strong>10%</strong>, chỉ trên đơn hoàn tất. Với gig <strong>π 10</strong>, freelancer nhận <strong>π 9</strong> và WorkπServ giữ <strong>π 1</strong>. Không phí ẩn; duyệt, đăng ký và đăng dịch vụ đều miễn phí.</p>`},
+      {h:'Ví & tin nhắn của bạn', html:`<p><strong>Ví:</strong> xem số dư, nạp, hoặc rút (có độ trễ bảo mật ngắn, được admin xác nhận).</p><p><strong>Tin nhắn:</strong> trò chuyện với người mua/freelancer trên nền tảng — giữ mọi giao dịch trong WorkπServ.</p>`},
+      {h:'Giữ an toàn', html:`<ul><li>Luôn dùng <strong>Pi Browser</strong>.</li><li>Giữ thanh toán & trò chuyện <strong>trong WorkπServ</strong>.</li><li>Người mua: chỉ xác nhận sau khi kiểm tra công việc.</li><li>Không bao giờ chia sẻ cụm từ bí mật Pi — chúng tôi sẽ không bao giờ hỏi.</li></ul>`},
+    ],
+    footer:`Cần trợ giúp? <a class="mail" href="mailto:support@workpiserv.com">support@workpiserv.com</a><br>Trust first 🥇 — vì tiền của mọi người là thiêng liêng.`
+  }
+};
+
+function setLang(code){
+  const d = T[code];
+  document.documentElement.lang = code;
+  document.documentElement.dir = d.dir;
+  document.body.dir = d.dir;
+  document.getElementById('tagline').textContent = d.tagline;
+  document.getElementById('title').textContent = d.title;
+  document.getElementById('intro').textContent = d.intro;
+  document.getElementById('testnet').textContent = d.testnet;
+
+  const c = document.getElementById('content');
+  c.innerHTML = d.sections.map((s, i) => `
+    <section class="${s.warn ? 'warn' : ''}">
+      <h2><span class="n">${s.warn ? '⚠️' : (i)}</span> ${s.h}</h2>
+      ${s.html}
+    </section>`).join('');
+
+  document.getElementById('footer').innerHTML = d.footer;
+
+  document.querySelectorAll('.langbar button').forEach(b =>
+    b.classList.toggle('active', b.dataset.lang === code));
+}
+
+setLang('en');
+</script>
+</body>
+</html>
