@@ -68,6 +68,8 @@ export default function AdminPage() {
   const [withdrawals, setWithdrawals] = useState<WithdrawalRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [banConfirm, setBanConfirm] = useState<string | null>(null);
+  const [a2uStatus, setA2uStatus] = useState<string | null>(null);
+  const [a2uLoading, setA2uLoading] = useState(false);
 
   const [contact, setContact] = useState<ContactModal>({
     open: false, user: null, message: '', sending: false, sent: false, error: ''
@@ -178,6 +180,26 @@ export default function AdminPage() {
   const openContact = (u: UserRow) => setContact({ open: true, user: u, message: '', sending: false, sent: false, error: '' });
   const closeContact = () => setContact(c => ({ ...c, open: false }));
 
+  const cancelPendingA2U = async () => {
+    setA2uLoading(true);
+    setA2uStatus(null);
+    try {
+      const r = await fetch(`${API}/api/admin/cancel-pending-a2u`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
+      });
+      const data = await r.json();
+      if (r.ok) {
+        setA2uStatus(data.action === 'cancelled' ? '✅ Paiement annulé — relance les A2U !' : data.action === 'completed' ? '✅ Paiement complété !' : data.message || '✅ OK');
+      } else {
+        setA2uStatus('❌ ' + (data.error || 'Erreur inconnue'));
+      }
+    } catch {
+      setA2uStatus('❌ Erreur réseau');
+    }
+    setA2uLoading(false);
+  };
+
   const sendMessage = async () => {
     if (!contact.message.trim() || !contact.user) return;
     setContact(c => ({ ...c, sending: true, error: '' }));
@@ -251,6 +273,21 @@ export default function AdminPage() {
               <p className="text-xs text-muted-foreground mt-1">{s.label}</p>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Bouton déblocage A2U — visible admin uniquement, déjà dans AdminPage */}
+      {tab === 'stats' && (
+        <div className="bg-card border border-border rounded-2xl p-4 space-y-2">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">🔧 Outils A2U</p>
+          <button
+            onClick={cancelPendingA2U}
+            disabled={a2uLoading}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-brand/10 text-brand text-sm font-medium hover:bg-brand/20 transition-colors disabled:opacity-50">
+            {a2uLoading ? <RefreshCw size={14} className="animate-spin" /> : null}
+            {a2uLoading ? 'En cours...' : '🔓 Débloquer paiement A2U pending'}
+          </button>
+          {a2uStatus && <p className="text-xs text-center font-medium mt-1">{a2uStatus}</p>}
         </div>
       )}
 
