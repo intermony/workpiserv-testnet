@@ -77,8 +77,8 @@ const T: Record<Lang, Locale> = {
         p: "Les services sont fournis directement entre utilisateurs ; WorkπServ facilite la mise en relation et le séquestre mais ne garantit pas la qualité d'un travail. Les crypto-actifs comportent des risques (volatilité, irréversibilité des transactions). Tu utilises la plateforme à tes propres risques.",
       },
       {
-        h: '7. Droit applicable',
-        p: "Les présentes conditions sont régies par le droit applicable en Tunisie, sans préjudice des règles impératives de protection des consommateurs de ta juridiction.",
+        h: '7. Cadre juridique',
+        p: "WorkπServ est en phase de test et n'est pas encore exploité par une société constituée. Avant le passage en Mainnet, une entité juridique sera créée dans une juridiction favorable aux crypto-actifs, et des conditions définitives (dont le droit applicable) seront publiées à ce moment-là. En attendant, il t'appartient de respecter les lois de ton pays concernant les crypto-actifs et l'utilisation de ce service.",
       },
     ],
     checkbox: "J'ai lu et j'accepte les conditions et avertissements ci-dessus.",
@@ -119,8 +119,8 @@ const T: Record<Lang, Locale> = {
         p: 'Services are provided directly between users; WorkπServ facilitates matching and escrow but does not guarantee the quality of any work. Crypto-assets carry risks (volatility, irreversible transactions). You use the platform at your own risk.',
       },
       {
-        h: '7. Governing law',
-        p: 'These terms are governed by the law applicable in Tunisia, without prejudice to the mandatory consumer-protection rules of your own jurisdiction.',
+        h: '7. Legal framework',
+        p: 'WorkπServ is in a testing phase and is not yet operated by an incorporated company. Before the Mainnet switch, a legal entity will be established in a crypto-friendly jurisdiction, and definitive terms (including governing law) will be published at that time. In the meantime, you are responsible for complying with your own country\'s laws regarding crypto-assets and the use of this service.',
       },
     ],
     checkbox: 'I have read and accept the terms and disclaimers above.',
@@ -161,8 +161,8 @@ const T: Record<Lang, Locale> = {
         p: 'تُقدَّم الخدمات مباشرةً بين المستخدمين؛ تُيسِّر WorkπServ التواصل والضمان لكنها لا تضمن جودة أي عمل. تنطوي الأصول المشفّرة على مخاطر (تقلّب الأسعار، وعدم قابلية المعاملات للإلغاء). أنت تستخدم المنصّة على مسؤوليتك الخاصة.',
       },
       {
-        h: '٧. القانون الواجب التطبيق',
-        p: 'تخضع هذه الشروط للقانون المعمول به في تونس، دون الإخلال بالقواعد الإلزامية لحماية المستهلك في الولاية القضائية التابع لها.',
+        h: '٧. الإطار القانوني',
+        p: 'منصّة WorkπServ في طور التجربة وليست بعدُ مُشغّلة من قِبَل شركة مُسجّلة. قبل الانتقال إلى الشبكة الرئيسية (Mainnet)، سيُنشأ كيانٌ قانوني في ولاية قضائية داعمة للأصول المشفّرة، وستُنشَر عندئذٍ شروطٌ نهائية (بما في ذلك القانون الواجب التطبيق). وفي غضون ذلك، تقع على عاتقك مسؤولية الامتثال لقوانين بلدك المتعلّقة بالأصول المشفّرة وباستخدام هذه الخدمة.',
       },
     ],
     checkbox: 'لقد قرأتُ الشروط والتنبيهات أعلاه وأوافق عليها.',
