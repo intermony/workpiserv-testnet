@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, createContext, useContext, createElement, type ReactNode } from 'react';
 import { piSDK, isPiBrowser, piSdkAvailable } from '@/lib/pi';
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api-testnet.onrender.com';
@@ -45,7 +45,12 @@ async function fetchMe(): Promise<PiUser | null> {
   } catch { return null; }
 }
 
-export function usePiAuth(): UsePiAuthReturn {
+// ── État d'auth PARTAGÉ via Context : une seule source de vérité pour toute l'app.
+//    (Avant, chaque composant appelant usePiAuth avait sa propre copie d'état, donc
+//     un logout dans un composant ne se propageait pas aux autres → désynchronisation.)
+const AuthContext = createContext<UsePiAuthReturn | null>(null);
+
+function useProvideAuth(): UsePiAuthReturn {
   const [user, setUser] = useState<PiUser | null>(() => {
     try {
       const saved = localStorage.getItem('workpiserv_user');
@@ -127,6 +132,7 @@ export function usePiAuth(): UsePiAuthReturn {
       // Token existant — rafraîchir le profil
       refreshUser();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const logout = useCallback(() => {
@@ -152,4 +158,17 @@ export function usePiAuth(): UsePiAuthReturn {
     refreshUser,
     clearNewUser,
   };
-  }
+}
+
+// Enveloppe l'app : fournit l'état d'auth partagé à TOUS les composants enfants.
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const auth = useProvideAuth();
+  return createElement(AuthContext.Provider, { value: auth }, children);
+}
+
+// Hook consommé partout (Header, pages, App…) : lit l'état PARTAGÉ.
+export function usePiAuth(): UsePiAuthReturn {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('usePiAuth doit être utilisé à l\'intérieur de <AuthProvider>');
+  return ctx;
+}
