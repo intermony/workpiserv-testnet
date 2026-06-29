@@ -6,7 +6,7 @@ import { Footer } from '@/components/layout/Footer';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 import { WelcomeModal } from '@/components/shared/WelcomeModal';
 import ConsentGate from '@/components/ConsentGate';
-import { usePiAuth } from '@/hooks/usePiAuth';
+import { usePiAuth, AuthProvider } from '@/hooks/usePiAuth';
 import { LanguageProvider } from '@/i18n';
 import AdminPage from '@/pages/AdminPage';
 import HomePage from '@/pages/HomePage';
@@ -47,7 +47,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function App() {
+function AppContent() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isNewUser, clearNewUser, logout, refreshUser } = usePiAuth();
@@ -79,7 +79,7 @@ export default function App() {
     <LanguageProvider>
     <AppLayout>
       {/* Porte de consentement — bloque l'app tant que les CGU ne sont pas acceptées.
-          « Je ne suis pas d'accord » déconnecte immédiatement le Pioneer. */}
+          « Je ne suis pas d'accord » déconnecte immédiatement le Pioneer (état partagé). */}
       {mustAcceptTerms && (
         <ConsentGate
           apiBaseUrl={import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api-testnet.onrender.com'}
@@ -121,5 +121,14 @@ export default function App() {
       </AnimatePresence>
     </AppLayout>
     </LanguageProvider>
+  );
+}
+
+export default function App() {
+  // AuthProvider = état d'auth partagé par toute l'app (Header, pages, porte de consentement).
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
