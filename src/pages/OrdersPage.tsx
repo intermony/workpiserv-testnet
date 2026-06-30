@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Package, Shield, Loader2, Truck, CheckCircle2 } from 'lucide-react';
+import { Package, Shield, Loader2, Truck, CheckCircle2, AlertTriangle, RotateCcw, Ban } from 'lucide-react';
 import { usePiAuth } from '@/hooks/usePiAuth';
 import Price from '@/components/shared/Price';
 import { useLanguage } from '@/i18n';
@@ -18,6 +18,9 @@ const statusConfig: Record<OrderStatus, { labelKey: string; color: string; bg: s
   delivered:       { labelKey: 'orders.status.delivered',       color: 'text-[#4ADE80]', bg: 'bg-[#4ADE80]/10' },
   completed:       { labelKey: 'orders.status.completed',       color: 'text-[#4ADE80]', bg: 'bg-[#4ADE80]/10' },
   cancelled:       { labelKey: 'orders.status.cancelled',       color: 'text-[#F87171]', bg: 'bg-[#F87171]/10' },
+  disputed:        { labelKey: 'orders.status.disputed',        color: 'text-[#FBBF24]', bg: 'bg-[#FBBF24]/10' },
+  refunding:       { labelKey: 'orders.status.refunding',       color: 'text-[#FBBF24]', bg: 'bg-[#FBBF24]/10' },
+  refunded:        { labelKey: 'orders.status.refunded',        color: 'text-[#F87171]', bg: 'bg-[#F87171]/10' },
 };
 
 // Tolère les anciens statuts inconnus (ex. "pending" des premières versions)
@@ -71,6 +74,9 @@ export default function OrdersPage() {
   const [selectedId, setSelectedId]     = useState<string | null>(null);
   const [acting, setActing]             = useState(false);
   const [actionError, setActionError]   = useState<string | null>(null);
+  const [disputeFor, setDisputeFor]       = useState<string | null>(null);
+  const [disputeReason, setDisputeReason] = useState('');
+  const [cancelConfirm, setCancelConfirm] = useState<string | null>(null);
 
   const myId = user?._id || '';
 
@@ -90,6 +96,29 @@ export default function OrdersPage() {
       setOrders(prev => prev.map(o => (o.id === orderId ? { ...o, status: newStatus } : o)));
     } catch {
       setActionError(t('orders.actionFailed'));
+    } finally {
+      setActing(false);
+    }
+  };
+
+  // Actions litige / remboursement (réponses serveur variables : 200/202/400).
+  // On affiche le message serveur (ex. « il reste X jours pour livrer »).
+  const postAction = async (orderId: string, path: string, body?: object, optimisticStatus?: OrderStatus) => {
+    setActing(true); setActionError(null);
+    try {
+      const token = localStorage.getItem('workpiserv_token');
+      const res = await fetch(`${API_URL}/api/orders/${orderId}/${path}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || t('orders.actionFailed'));
+      if (optimisticStatus) setOrders(prev => prev.map(o => (o.id === orderId ? { ...o, status: optimisticStatus } : o)));
+      return true;
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : t('orders.actionFailed'));
+      return false;
     } finally {
       setActing(false);
     }
@@ -156,11 +185,12 @@ export default function OrdersPage() {
 
           {/* Status tabs */}
           <div className="flex gap-2 mt-6 overflow-x-auto pb-1">
-            {(['all', 'active', 'in_progress', 'delivered', 'completed', 'pending_payment', 'cancelled'] as const).map(key => {
+            {(['all', 'active', 'in_progress', 'delivered', 'completed', 'disputed', 'refunded', 'pending_payment', 'cancelled'] as const).map(key => {
               const count = key === 'all' ? orders.length : orders.filter(o => o.status === key).length;
               const labels: Record<string, string> = {
                 all: 'orders.status.all', active: 'orders.status.active', in_progress: 'orders.status.in_progress',
                 delivered: 'orders.status.delivered', completed: 'orders.status.completed',
+                disputed: 'orders.status.disputed', refunded: 'orders.status.refunded',
                 pending_payment: 'orders.status.pending', cancelled: 'orders.status.cancelled',
               };
               return (
@@ -285,6 +315,95 @@ export default function OrdersPage() {
                       <p className="text-xs text-muted-foreground text-center mt-2">
                         {t('orders.confirmHint')}
                       </p>
+                    </div>
+                  )}
+
+                  {/* Litige — ouvrable par l'acheteur OU le freelance (commande en cours / livrée) */}
+                  {(myId === activeOrder.buyerRawId || myId === activeOrder.freelancerRawId) &&
+                    (activeOrder.status === 'in_progress' || activeOrder.status === 'delivered') && (
+                    <div className="mt-3">
+                      {disputeFor === activeOrder.id ? (
+                        <div className="space-y-2 bg-[#FBBF24]/5 border border-[#FBBF24]/30 rounded-xl p-3">
+                          <textarea
+                            value={disputeReason}
+                            onChange={(e) => setDisputeReason(e.target.value)}
+                            placeholder={t('orders.disputeReasonPlaceholder')}
+                            className="w-full bg-background text-foreground placeholder:text-muted-foreground border border-border rounded-lg p-2 text-sm resize-none h-20 focus:outline-none focus:border-brand"
+                          />
+                          <div className="flex gap-2">
+                            <button
+                              onClick={async () => { const ok = await postAction(activeOrder.id, 'dispute', { reason: disputeReason }, 'disputed'); if (ok) { setDisputeFor(null); setDisputeReason(''); } }}
+                              disabled={acting}
+                              className="btn-primary flex-1 py-2 text-sm disabled:opacity-60"
+                            >
+                              {acting ? <Loader2 size={14} className="animate-spin mx-auto" /> : t('orders.submitDispute')}
+                            </button>
+                            <button onClick={() => { setDisputeFor(null); setDisputeReason(''); }} className="flex-1 py-2 text-sm rounded-lg border border-border text-muted-foreground">
+                              {t('orders.formCancel')}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button onClick={() => setDisputeFor(activeOrder.id)} className="w-full py-2.5 rounded-xl border border-[#FBBF24]/40 text-[#B45309] dark:text-[#FBBF24] text-sm font-medium flex items-center justify-center gap-2 hover:bg-[#FBBF24]/10 transition-colors">
+                          <AlertTriangle size={16} /> {t('orders.openDispute')}
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Acheteur — remboursement si jamais livré (le backend vérifie le délai de 7 j) */}
+                  {myId === activeOrder.buyerRawId && activeOrder.status === 'in_progress' && (
+                    <button
+                      onClick={async () => { const ok = await postAction(activeOrder.id, 'request-refund'); if (ok) setOrders(prev => prev.map(o => (o.id === activeOrder.id ? { ...o, status: 'refunding' } : o))); }}
+                      disabled={acting}
+                      className="w-full mt-3 py-2.5 rounded-xl border border-border text-muted-foreground text-sm font-medium flex items-center justify-center gap-2 hover:bg-background disabled:opacity-60 transition-colors"
+                    >
+                      <RotateCcw size={16} /> {t('orders.requestRefund')}
+                    </button>
+                  )}
+
+                  {/* Freelance — annuler & rembourser l'acheteur */}
+                  {myId === activeOrder.freelancerRawId &&
+                    (activeOrder.status === 'in_progress' || activeOrder.status === 'delivered') && (
+                    <div className="mt-3">
+                      {cancelConfirm === activeOrder.id ? (
+                        <div className="bg-[#F87171]/5 border border-[#F87171]/30 rounded-xl p-3 space-y-2">
+                          <p className="text-sm text-foreground">{t('orders.cancelConfirm')}</p>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={async () => { const ok = await postAction(activeOrder.id, 'cancel', undefined, 'refunding'); if (ok) setCancelConfirm(null); }}
+                              disabled={acting}
+                              className="flex-1 py-2 text-sm rounded-lg bg-[#F87171] text-white font-medium disabled:opacity-60"
+                            >
+                              {acting ? <Loader2 size={14} className="animate-spin mx-auto" /> : t('orders.confirmYes')}
+                            </button>
+                            <button onClick={() => setCancelConfirm(null)} className="flex-1 py-2 text-sm rounded-lg border border-border text-muted-foreground">
+                              {t('orders.confirmNo')}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button onClick={() => setCancelConfirm(activeOrder.id)} className="w-full py-2.5 rounded-xl border border-[#F87171]/40 text-[#DC2626] dark:text-[#F87171] text-sm font-medium flex items-center justify-center gap-2 hover:bg-[#F87171]/10 transition-colors">
+                          <Ban size={16} /> {t('orders.cancelOrder')}
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Bannières d'état */}
+                  {activeOrder.status === 'disputed' && (
+                    <div className="mt-4 text-sm text-[#B45309] dark:text-[#FBBF24] bg-[#FBBF24]/10 rounded-xl py-3 px-4 flex items-center gap-2">
+                      <AlertTriangle size={16} className="shrink-0" /> {t('orders.disputedBanner')}
+                    </div>
+                  )}
+                  {activeOrder.status === 'refunding' && (
+                    <div className="mt-4 text-sm text-muted-foreground bg-muted rounded-xl py-3 px-4 flex items-center gap-2">
+                      <Loader2 size={16} className="animate-spin shrink-0" /> {t('orders.refundingBanner')}
+                    </div>
+                  )}
+                  {activeOrder.status === 'refunded' && (
+                    <div className="mt-4 text-sm text-[#DC2626] dark:text-[#F87171] bg-[#F87171]/10 rounded-xl py-3 px-4 flex items-center gap-2">
+                      <RotateCcw size={16} className="shrink-0" /> {t('orders.refundedBanner')}
                     </div>
                   )}
 

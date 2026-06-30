@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, RefreshCw, BarChart2, Users, Package, X, Send, MessageCircle, Ban, CheckCircle, Eye, EyeOff, ArrowDownToLine } from 'lucide-react';
+import { Shield, RefreshCw, BarChart2, Users, Package, X, Send, MessageCircle, Ban, CheckCircle, Eye, EyeOff, ArrowDownToLine, Scale, RotateCcw } from 'lucide-react';
 import { usePiAuth } from '@/hooks/usePiAuth';
 
-const API = import.meta.env.VITE_API_URL || 'https://workpiserv-api-testnet.onrender.com';
+const API = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api-testnet.onrender.com';
 
 interface UserRow {
   _id: string;
@@ -57,15 +57,27 @@ interface WithdrawalRow {
   createdAt?: string;
 }
 
+interface DisputeRow {
+  _id: string;
+  amount: number;
+  status: string;
+  disputeReason?: string;
+  createdAt?: string;
+  buyerId?: { username?: string; avatar?: string };
+  freelancerId?: { username?: string; avatar?: string };
+  serviceId?: { title?: string };
+}
+
 export default function AdminPage() {
   const { user, loggedIn } = usePiAuth();
   const navigate = useNavigate();
 
-  const [tab, setTab] = useState<'stats' | 'users' | 'services' | 'withdrawals'>('stats');
+  const [tab, setTab] = useState<'stats' | 'users' | 'services' | 'withdrawals' | 'disputes'>('stats');
   const [stats, setStats] = useState<Stats | null>(null);
   const [users, setUsers] = useState<UserRow[]>([]);
   const [services, setServices] = useState<ServiceRow[]>([]);
   const [withdrawals, setWithdrawals] = useState<WithdrawalRow[]>([]);
+  const [disputes, setDisputes] = useState<DisputeRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [banConfirm, setBanConfirm] = useState<string | null>(null);
   const [a2uStatus, setA2uStatus] = useState<string | null>(null);
@@ -120,6 +132,16 @@ export default function AdminPage() {
     setLoading(false);
   }, []);
 
+  const fetchDisputes = useCallback(async () => {
+    setLoading(true);
+    try {
+      const r = await fetch(`${API}/api/admin/disputes`, { headers: { Authorization: `Bearer ${token()}` } });
+      if (!r.ok) throw new Error();
+      setDisputes(await r.json());
+    } catch { /* silent */ }
+    setLoading(false);
+  }, []);
+
   // Veto : bloque un retrait pendant la fenêtre de 48h (le backend rembourse le solde).
   const blockWithdrawal = async (id: string) => {
     try {
@@ -145,9 +167,34 @@ export default function AdminPage() {
     } catch { /* silent */ }
   };
 
+  // Arbitrage : rembourser l'acheteur (A2U). La commande passe en remboursement.
+  const refundOrder = async (id: string) => {
+    try {
+      const r = await fetch(`${API}/api/admin/orders/${id}/refund`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
+        body: JSON.stringify({ reason: 'Arbitrage admin' }),
+      });
+      if (!r.ok) throw new Error();
+      setDisputes(d => d.map(x => x._id === id ? { ...x, status: 'refunding' } : x));
+    } catch { /* silent */ }
+  };
+
+  // Arbitrage : libérer les fonds au freelance (split 90/10).
+  const releaseOrder = async (id: string) => {
+    try {
+      const r = await fetch(`${API}/api/admin/orders/${id}/release`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
+      });
+      if (!r.ok) throw new Error();
+      setDisputes(d => d.map(x => x._id === id ? { ...x, status: 'completed' } : x));
+    } catch { /* silent */ }
+  };
+
   useEffect(() => { if (loggedIn && isAdmin) { fetchStats(); fetchUsers(); fetchServices(); } }, [loggedIn, isAdmin]);
 
-  const refresh = () => { fetchStats(); if (tab === 'users') fetchUsers(); if (tab === 'services') fetchServices(); if (tab === 'withdrawals') fetchWithdrawals(); };
+  const refresh = () => { fetchStats(); if (tab === 'users') fetchUsers(); if (tab === 'services') fetchServices(); if (tab === 'withdrawals') fetchWithdrawals(); if (tab === 'disputes') fetchDisputes(); };
 
   const banUser = async (userId: string, currentlyBanned: boolean) => {
     try {
@@ -249,8 +296,8 @@ export default function AdminPage() {
 
       {/* Tabs */}
       <div className="flex items-center gap-2 bg-muted p-1 rounded-2xl overflow-x-auto">
-        {([['stats','Statistiques',BarChart2],['users','Utilisateurs',Users],['services','Services',Package],['withdrawals','Retraits',ArrowDownToLine]] as const).map(([key,label,Icon]) => (
-          <button key={key} onClick={() => { setTab(key); if (key === 'users') fetchUsers(); if (key === 'services') fetchServices(); if (key === 'withdrawals') fetchWithdrawals(); }}
+        {([['stats','Statistiques',BarChart2],['users','Utilisateurs',Users],['services','Services',Package],['withdrawals','Retraits',ArrowDownToLine],['disputes','Litiges',Scale]] as const).map(([key,label,Icon]) => (
+          <button key={key} onClick={() => { setTab(key); if (key === 'users') fetchUsers(); if (key === 'services') fetchServices(); if (key === 'withdrawals') fetchWithdrawals(); if (key === 'disputes') fetchDisputes(); }}
             className={`shrink-0 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${tab === key ? 'bg-brand text-white shadow' : 'text-muted-foreground hover:bg-card'}`}>
             <Icon size={15} />{label}
           </button>
@@ -416,6 +463,44 @@ export default function AdminPage() {
                     <button onClick={() => releaseWithdrawal(w._id)}
                       className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-medium bg-[#4ADE80]/10 text-[#4ADE80] hover:bg-[#4ADE80]/20 transition-colors">
                       <CheckCircle size={13} /> Payer maintenant
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {tab === 'disputes' && (
+        <div className="space-y-2">
+          {disputes.length === 0 && !loading && <p className="text-center text-muted-foreground py-8">Aucun litige</p>}
+          {disputes.map(o => {
+            const pending = o.status === 'disputed';
+            return (
+              <div key={o._id} className={`bg-card rounded-2xl p-4 border ${pending ? 'border-[#FBBF24]/30' : 'border-border'}`}>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-semibold text-navy truncate pr-2">{o.serviceId?.title || 'Service'}</span>
+                  <span className="font-semibold text-navy shrink-0">{o.amount} π</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Acheteur {o.buyerId?.username ? `@${o.buyerId.username}` : '—'} · Freelance {o.freelancerId?.username ? `@${o.freelancerId.username}` : '—'}
+                </p>
+                <p className="text-xs mt-1">
+                  <span className={`font-medium ${pending ? 'text-[#FBBF24]' : 'text-[#60A5FA]'}`}>
+                    {pending ? 'En litige' : 'Remboursement en cours'}
+                  </span>
+                </p>
+                {o.disputeReason && <p className="text-xs text-muted-foreground mt-1 italic">« {o.disputeReason} »</p>}
+                {pending && (
+                  <div className="flex gap-2 mt-3">
+                    <button onClick={() => refundOrder(o._id)}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-medium bg-[#F87171]/10 text-[#F87171] hover:bg-[#F87171]/20 transition-colors">
+                      <RotateCcw size={13} /> Rembourser l'acheteur
+                    </button>
+                    <button onClick={() => releaseOrder(o._id)}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-medium bg-[#4ADE80]/10 text-[#4ADE80] hover:bg-[#4ADE80]/20 transition-colors">
+                      <CheckCircle size={13} /> Libérer au freelance
                     </button>
                   </div>
                 )}
