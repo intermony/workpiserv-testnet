@@ -96,7 +96,7 @@ export interface Order {
   deliverables?: Deliverable[];
 }
 
-export type OrderStatus = 'active' | 'pending_payment' | 'in_progress' | 'delivered' | 'completed' | 'cancelled';
+export type OrderStatus = 'active' | 'pending_payment' | 'in_progress' | 'delivered' | 'completed' | 'cancelled' | 'disputed' | 'refunding' | 'refunded';
 
 export interface TimelineEvent {
   title: string;
