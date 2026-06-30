@@ -6,7 +6,8 @@ export default defineConfig({
   // ⚠️ TESTNET : doit correspondre EXACTEMENT au nom du repo GitHub.
   // L'app sera servie sur https://intermony.github.io/workpiserv-testnet/
   // (Le repo MAINNET, sur le domaine racine workpiserv.com, garde base: '/'.)
-  base: '/workpiserv-testnet/',
+  // vite.config.ts
+ base: '/workpiserv-testnet/',
   plugins: [react()],
   server: {
     port: 3000,
