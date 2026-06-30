@@ -3,9 +3,8 @@ import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
 
 export default defineConfig({
-  // ⚠️ TESTNET : doit correspondre EXACTEMENT au nom du repo GitHub.
-  // L'app sera servie sur https://intermony.github.io/workpiserv-testnet/
-  base: '/workpiserv-testnet/',
+  // TESTNET sur sous-domaine custom (testnet.workpiserv.com) → servi à la racine.
+  base: '/',
   plugins: [react()],
   server: {
     port: 3000,
