@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, RefreshCw, BarChart2, Users, Package, X, Send, MessageCircle, Ban, CheckCircle, Eye, EyeOff, ArrowDownToLine, Scale, RotateCcw } from 'lucide-react';
+import { Shield, RefreshCw, BarChart2, Users, Package, X, Send, MessageCircle, Ban, CheckCircle, Eye, EyeOff, ArrowDownToLine, Scale, RotateCcw, ShieldAlert } from 'lucide-react';
 import { usePiAuth } from '@/hooks/usePiAuth';
-
-const API = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api-testnet.onrender.com';
-
+import FlaggedUsersTab from '@/admin/FlaggedUsersTab';
+import SolvencyCard from '@/admin/SolvencyCard';
+import { API_BASE_URL as API } from '@/config/network';
 interface UserRow {
   _id: string;
   username: string;
@@ -72,7 +72,7 @@ export default function AdminPage() {
   const { user, loggedIn } = usePiAuth();
   const navigate = useNavigate();
 
-  const [tab, setTab] = useState<'stats' | 'users' | 'services' | 'withdrawals' | 'disputes'>('stats');
+  const [tab, setTab] = useState<'stats' | 'users' | 'services' | 'withdrawals' | 'disputes' | 'fraud'>('stats');
   const [stats, setStats] = useState<Stats | null>(null);
   const [users, setUsers] = useState<UserRow[]>([]);
   const [services, setServices] = useState<ServiceRow[]>([]);
@@ -296,7 +296,7 @@ export default function AdminPage() {
 
       {/* Tabs */}
       <div className="flex items-center gap-2 bg-muted p-1 rounded-2xl overflow-x-auto">
-        {([['stats','Statistiques',BarChart2],['users','Utilisateurs',Users],['services','Services',Package],['withdrawals','Retraits',ArrowDownToLine],['disputes','Litiges',Scale]] as const).map(([key,label,Icon]) => (
+        {([['stats','Statistiques',BarChart2],['users','Utilisateurs',Users],['services','Services',Package],['withdrawals','Retraits',ArrowDownToLine],['disputes','Litiges',Scale],['fraud','Fraude',ShieldAlert]] as const).map(([key,label,Icon]) => (
           <button key={key} onClick={() => { setTab(key); if (key === 'users') fetchUsers(); if (key === 'services') fetchServices(); if (key === 'withdrawals') fetchWithdrawals(); if (key === 'disputes') fetchDisputes(); }}
             className={`shrink-0 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${tab === key ? 'bg-brand text-white shadow' : 'text-muted-foreground hover:bg-card'}`}>
             <Icon size={15} />{label}
@@ -305,6 +305,10 @@ export default function AdminPage() {
       </div>
 
       {/* Stats */}
+      {tab === 'stats' && (
+        <SolvencyCard apiBase={API} token={token} />
+      )}
+
       {tab === 'stats' && stats && (
         <div className="grid grid-cols-2 gap-3">
           {[
@@ -509,6 +513,8 @@ export default function AdminPage() {
           })}
         </div>
       )}
+
+      {tab === 'fraud' && <FlaggedUsersTab apiBase={API} token={token} />}
 
       {/* ── MODAL DE CONTACT ── */}
       {contact.open && contact.user && (
