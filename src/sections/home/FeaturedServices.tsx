@@ -6,8 +6,7 @@ import { ServiceCard } from '@/components/shared/ServiceCard';
 import type { Service } from '@/types';
 import { useLanguage } from '@/i18n';
 
-const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api.onrender.com';
-
+import { API_BASE_URL as API_URL } from '@/config/network';
 // Même mapper API → Service que MarketplacePage (cohérence garantie).
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function normalizeApiService(s: any): Service {

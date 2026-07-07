@@ -5,8 +5,7 @@ import { ScrollReveal } from '@/components/shared/ScrollReveal';
 import { categories } from '@/data/categories';
 import { useLanguage } from '@/i18n';
 
-const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api.onrender.com';
-
+import { API_BASE_URL as API_URL } from '@/config/network';
 const iconMap: Record<string, React.ElementType> = {
   Palette, Code, Megaphone, Pen, Clapperboard, Mic,
 };

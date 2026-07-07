@@ -3,8 +3,7 @@ import CountUp from 'react-countup';
 import { ScrollReveal } from '@/components/shared/ScrollReveal';
 import { useLanguage } from '@/i18n';
 
-const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api.onrender.com';
-
+import { API_BASE_URL as API_URL } from '@/config/network';
 interface Stats {
   services: number;
   freelancers: number;
