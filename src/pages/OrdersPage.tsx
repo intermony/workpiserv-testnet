@@ -6,8 +6,7 @@ import Price from '@/components/shared/Price';
 import { useLanguage } from '@/i18n';
 import type { Order, OrderStatus } from '@/types';
 
-const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api-testnet.onrender.com';
-
+import { API_BASE_URL as API_URL } from '@/config/network';
 // Order enrichi avec les IDs bruts pour savoir si on est acheteur ou vendeur
 type OrderEx = Order & { buyerRawId: string; freelancerRawId: string };
 

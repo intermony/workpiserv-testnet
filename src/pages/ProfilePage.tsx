@@ -12,8 +12,7 @@ import WithdrawCard from '@/components/WithdrawCard';
 import RechargeCard from '@/components/RechargeCard';
 import AdminA2UCard from '@/components/AdminA2UCard';
 
-const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api-testnet.onrender.com';
-
+import { API_BASE_URL as API_URL } from '@/config/network';
 // Adresse publique Pi (format Stellar) : commence par G, 56 caractères
 const PI_ADDRESS_REGEX = /^G[A-Z2-7]{55}$/;
 
@@ -48,7 +47,7 @@ function Avatar({ avatar, size = 72 }: { avatar?: string; size?: number }) {
 
 export default function ProfilePage() {
   const { username: paramUsername } = useParams<{ username?: string }>();
-  const { user, loading, loggedIn, login, logout, refreshUser } = usePiAuth();
+  const { user, loading, loggedIn, login, logout, refreshUser, error: authError } = usePiAuth();
   const { t } = useLanguage();
 
   // ─── Champs étendus renvoyés par /api/auth/me ──────────────
@@ -232,6 +231,9 @@ export default function ProfilePage() {
           </p>
           {piSdkAvailable() && (
             <button onClick={() => login()} className="btn-primary">{t('profile.signIn')}</button>
+          )}
+          {authError && (
+            <p className="text-sm text-red-400 mt-3">{t(authError)}</p>
           )}
         </div>
       </main>

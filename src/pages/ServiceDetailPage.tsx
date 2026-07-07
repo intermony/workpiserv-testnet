@@ -13,8 +13,7 @@ import { piSDK, piSdkAvailable } from '@/lib/pi';
 import { useLanguage } from '@/i18n';
 import type { Service, Review } from '@/types';
 
-const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api-testnet.onrender.com';
-
+import { API_BASE_URL as API_URL } from '@/config/network';
 // Mention transparente de la commission (affichée au moment de commander), multilingue.
 const COMMISSION_NOTE: Record<string, (net: string) => string> = {
   en: (net) => `Platform commission 10% — the freelancer receives π ${net}`,

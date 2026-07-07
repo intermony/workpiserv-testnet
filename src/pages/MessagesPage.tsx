@@ -3,8 +3,7 @@ import { MessageSquare, Send, User, ArrowLeft, Loader2 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '@/i18n';
 
-const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api-testnet.onrender.com';
-
+import { API_BASE_URL as API_URL } from '@/config/network';
 interface Conversation {
   _id: string;
   participantId: string;

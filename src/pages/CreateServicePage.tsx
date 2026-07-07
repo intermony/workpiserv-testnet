@@ -3,8 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { ChevronDown, Loader2, CheckCircle } from 'lucide-react';
 import { useLanguage } from '@/i18n';
 
-const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api-testnet.onrender.com';
-
+import { API_BASE_URL as API_URL } from '@/config/network';
 const CATEGORIES = [
   { id: 'design',      name: 'Design' },
   { id: 'development', name: 'Development' },

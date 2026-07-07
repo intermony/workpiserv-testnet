@@ -10,8 +10,7 @@ import type { Service } from '@/types';
 
 import { useLanguage } from '@/i18n';
 
-const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api-testnet.onrender.com';
-
+import { API_BASE_URL as API_URL } from '@/config/network';
 const sortOptions = [
   { value: 'popular',    label: 'market.sort.popular' },
   { value: 'newest',     label: 'market.sort.newest' },
