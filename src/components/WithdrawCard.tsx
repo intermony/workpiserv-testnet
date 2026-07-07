@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { ArrowDownToLine, Clock, Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import { useLanguage } from '@/i18n';
 
-const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api.onrender.com';
+import { API_BASE_URL as API_URL } from '@/config/network';
 const MIN_WITHDRAWAL = 0.5; // indicatif côté client ; le backend fait foi
 
 type WStatus = 'requested' | 'processing' | 'submitted' | 'completed' | 'failed' | 'blocked';

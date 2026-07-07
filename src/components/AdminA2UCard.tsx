@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Send, Loader2, CheckCircle2, XCircle, Users, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { useLanguage } from '@/i18n';
 
-const API_URL = import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api-testnet.onrender.com';
+import { API_BASE_URL as API_URL } from '@/config/network';
 const TEST_AMOUNT = 0.1;
 
 interface PioneerRow {

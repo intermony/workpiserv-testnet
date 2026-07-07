@@ -25,8 +25,11 @@
  */
 
 import { useState } from 'react';
+import { PI_SANDBOX } from '@/config/network';
 
 export const TERMS_VERSION = '2026-06-29'; // doit = CURRENT_TERMS_VERSION (backend)
+// Réseau détecté au build : 'false' (ou absent) => Mainnet ; 'true' => Testnet.
+const IS_MAINNET = !PI_SANDBOX;
 
 type Lang = 'fr' | 'en' | 'ar';
 
@@ -54,7 +57,7 @@ const T: Record<Lang, Locale> = {
     sections: [
       {
         h: '1. Nature du service',
-        p: "WorkπServ est une place de marché de services entre Pioneers, réglée en Pi. La plateforme est en phase de test (Testnet) : les Pi échangés n'ont pas de valeur réelle tant que le passage en Mainnet n'est pas annoncé.",
+        p: IS_MAINNET ? "WorkπServ est une place de marché de services entre Pioneers, réglée en Pi. La plateforme fonctionne sur le réseau principal (Mainnet) : les Pi échangés ont une valeur réelle et les transactions sont définitives. Engage-toi en connaissance de cause." : "WorkπServ est une place de marché de services entre Pioneers, réglée en Pi. La plateforme est en phase de test (Testnet) : les Pi échangés n'ont pas de valeur réelle tant que le passage en Mainnet n'est pas annoncé.",
       },
       {
         h: '2. Détention des fonds en escrow',
@@ -78,7 +81,7 @@ const T: Record<Lang, Locale> = {
       },
       {
         h: '7. Cadre juridique',
-        p: "WorkπServ est en phase de test et n'est pas encore exploité par une société constituée. Avant le passage en Mainnet, une entité juridique sera créée dans une juridiction favorable aux crypto-actifs, et des conditions définitives (dont le droit applicable) seront publiées à ce moment-là. En attendant, il t'appartient de respecter les lois de ton pays concernant les crypto-actifs et l'utilisation de ce service.",
+        p: IS_MAINNET ? "WorkπServ n'est pas encore exploité par une société constituée ; une entité juridique est en cours de création dans une juridiction favorable aux crypto-actifs, et des conditions définitives (dont le droit applicable) seront publiées à ce moment-là. En attendant, il t'appartient de respecter les lois de ton pays concernant les crypto-actifs et l'utilisation de ce service." : "WorkπServ est en phase de test et n'est pas encore exploité par une société constituée. Avant le passage en Mainnet, une entité juridique sera créée dans une juridiction favorable aux crypto-actifs, et des conditions définitives (dont le droit applicable) seront publiées à ce moment-là. En attendant, il t'appartient de respecter les lois de ton pays concernant les crypto-actifs et l'utilisation de ce service.",
       },
     ],
     checkbox: "J'ai lu et j'accepte les conditions et avertissements ci-dessus.",
@@ -96,7 +99,7 @@ const T: Record<Lang, Locale> = {
     sections: [
       {
         h: '1. Nature of the service',
-        p: "WorkπServ is a marketplace for services between Pioneers, settled in Pi. The platform is in a testing phase (Testnet): the Pi exchanged has no real value until a Mainnet switch is announced.",
+        p: IS_MAINNET ? "WorkπServ is a marketplace for services between Pioneers, settled in Pi. The platform runs on the main network (Mainnet): the Pi exchanged has real value and transactions are final. Proceed with full awareness." : "WorkπServ is a marketplace for services between Pioneers, settled in Pi. The platform is in a testing phase (Testnet): the Pi exchanged has no real value until a Mainnet switch is announced.",
       },
       {
         h: '2. Funds held in escrow',
@@ -120,7 +123,7 @@ const T: Record<Lang, Locale> = {
       },
       {
         h: '7. Legal framework',
-        p: 'WorkπServ is in a testing phase and is not yet operated by an incorporated company. Before the Mainnet switch, a legal entity will be established in a crypto-friendly jurisdiction, and definitive terms (including governing law) will be published at that time. In the meantime, you are responsible for complying with your own country\'s laws regarding crypto-assets and the use of this service.',
+        p: IS_MAINNET ? "WorkπServ is not yet operated by an incorporated company; a legal entity is being established in a crypto-friendly jurisdiction, and definitive terms (including governing law) will be published at that time. In the meantime, you are responsible for complying with your own country's laws regarding crypto-assets and the use of this service." : 'WorkπServ is in a testing phase and is not yet operated by an incorporated company. Before the Mainnet switch, a legal entity will be established in a crypto-friendly jurisdiction, and definitive terms (including governing law) will be published at that time. In the meantime, you are responsible for complying with your own country\'s laws regarding crypto-assets and the use of this service.',
       },
     ],
     checkbox: 'I have read and accept the terms and disclaimers above.',
@@ -138,7 +141,7 @@ const T: Record<Lang, Locale> = {
     sections: [
       {
         h: '١. طبيعة الخدمة',
-        p: 'WorkπServ سوقٌ لتبادل الخدمات بين الرّوّاد (Pioneers) تُسوَّى بعملة Pi. المنصّة في طور التجربة (Testnet): عملة Pi المتبادَلة لا قيمة حقيقية لها إلى حين الإعلان عن التحوّل إلى الشبكة الرئيسية (Mainnet).',
+        p: IS_MAINNET ? 'WorkπServ سوقٌ لتبادل الخدمات بين الرّوّاد (Pioneers) تُسوَّى بعملة Pi. تعمل المنصّة على الشبكة الرئيسية (Mainnet): عملة Pi المتبادَلة لها قيمة حقيقية والمعاملات نهائية. تابع وأنت على دراية كاملة.' : 'WorkπServ سوقٌ لتبادل الخدمات بين الرّوّاد (Pioneers) تُسوَّى بعملة Pi. المنصّة في طور التجربة (Testnet): عملة Pi المتبادَلة لا قيمة حقيقية لها إلى حين الإعلان عن التحوّل إلى الشبكة الرئيسية (Mainnet).',
       },
       {
         h: '٢. الاحتفاظ بالأموال في الضمان (Escrow)',
@@ -162,7 +165,7 @@ const T: Record<Lang, Locale> = {
       },
       {
         h: '٧. الإطار القانوني',
-        p: 'منصّة WorkπServ في طور التجربة وليست بعدُ مُشغّلة من قِبَل شركة مُسجّلة. قبل الانتقال إلى الشبكة الرئيسية (Mainnet)، سيُنشأ كيانٌ قانوني في ولاية قضائية داعمة للأصول المشفّرة، وستُنشَر عندئذٍ شروطٌ نهائية (بما في ذلك القانون الواجب التطبيق). وفي غضون ذلك، تقع على عاتقك مسؤولية الامتثال لقوانين بلدك المتعلّقة بالأصول المشفّرة وباستخدام هذه الخدمة.',
+        p: IS_MAINNET ? 'منصّة WorkπServ ليست بعدُ مُشغّلة من قِبَل شركة مُسجّلة؛ يجري حاليًا إنشاء كيان قانوني في ولاية قضائية داعمة للأصول المشفّرة، وستُنشَر عندئذٍ شروطٌ نهائية (بما في ذلك القانون الواجب التطبيق). وفي غضون ذلك، تقع على عاتقك مسؤولية الامتثال لقوانين بلدك المتعلّقة بالأصول المشفّرة وباستخدام هذه الخدمة.' : 'منصّة WorkπServ في طور التجربة وليست بعدُ مُشغّلة من قِبَل شركة مُسجّلة. قبل الانتقال إلى الشبكة الرئيسية (Mainnet)، سيُنشأ كيانٌ قانوني في ولاية قضائية داعمة للأصول المشفّرة، وستُنشَر عندئذٍ شروطٌ نهائية (بما في ذلك القانون الواجب التطبيق). وفي غضون ذلك، تقع على عاتقك مسؤولية الامتثال لقوانين بلدك المتعلّقة بالأصول المشفّرة وباستخدام هذه الخدمة.',
       },
     ],
     checkbox: 'لقد قرأتُ الشروط والتنبيهات أعلاه وأوافق عليها.',
