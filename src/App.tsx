@@ -5,6 +5,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 import { WelcomeModal } from '@/components/shared/WelcomeModal';
+import { API_BASE_URL } from '@/config/network';
 import ConsentGate from '@/components/ConsentGate';
 import { usePiAuth, AuthProvider } from '@/hooks/usePiAuth';
 import { LanguageProvider } from '@/i18n';
@@ -82,7 +83,7 @@ function AppContent() {
           « Je ne suis pas d'accord » déconnecte immédiatement le Pioneer (état partagé). */}
       {mustAcceptTerms && (
         <ConsentGate
-          apiBaseUrl={import.meta.env.VITE_BACKEND_URL || 'https://workpiserv-api-testnet.onrender.com'}
+          apiBaseUrl={API_BASE_URL}
           onAccepted={() => { setJustAccepted(true); refreshUser(); }}
           onDeclined={logout}
         />
