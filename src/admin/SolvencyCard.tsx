@@ -44,9 +44,10 @@ interface ReconPayload {
   };
 }
 
-// µπ → π (chaîne lisible, 2 décimales, sans perte d'entier significatif)
+// µπ → π — ⚠️ 1 π = 10 000 000 µπ (7 décimales, standard Pi/Stellar,
+// aligné sur MICRO dans reconciliation.js)
 const toPi = (micro: number | null) =>
-  micro === null ? '—' : (micro / 1_000_000).toLocaleString('fr-FR', { maximumFractionDigits: 2 });
+  micro === null ? '—' : (micro / 10_000_000).toLocaleString('fr-FR', { maximumFractionDigits: 2 });
 
 const fmtDate = (d?: string) =>
   d ? new Date(d).toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
