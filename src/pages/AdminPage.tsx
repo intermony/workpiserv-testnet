@@ -206,7 +206,8 @@ export default function AdminPage() {
         body: JSON.stringify({ reason: 'Arbitrage admin' }),
       });
       if (!r.ok) throw new Error();
-      setDisputes(d => d.map(x => x._id === id ? { ...x, status: 'refunding' } : x));
+      setDisputes(d => d.filter(x => x._id !== id));
+      fetchDisputeHistory();
     } catch { /* silent */ }
   };
 
@@ -217,7 +218,8 @@ export default function AdminPage() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
       });
       if (!r.ok) throw new Error();
-      setDisputes(d => d.map(x => x._id === id ? { ...x, status: 'completed' } : x));
+      setDisputes(d => d.filter(x => x._id !== id));
+      fetchDisputeHistory();
     } catch { /* silent */ }
   };
 
