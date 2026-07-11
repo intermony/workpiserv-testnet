@@ -169,7 +169,7 @@ export default function AdminPage() {
       const all: OrderRow[] = await r.json();
       // Filtre : commandes ayant eu un litige (disputeReason non vide) et aujourd'hui clôturées
       setDisputeHistory(all.filter(o =>
-        o.disputeReason && ['refunded', 'completed', 'cancelled'].includes(o.status)
+        o.disputeReason && ['refunding', 'refunded', 'completed', 'cancelled'].includes(o.status)
       ));
     } catch { /* silent */ }
     setLoading(false);
@@ -340,11 +340,13 @@ export default function AdminPage() {
   };
 
   const DISPUTE_STATUS_LABEL: Record<string, string> = {
+    refunding: 'Remboursement en cours…',
     refunded: 'Remboursé ✓',
     completed: 'Libéré au freelance ✓',
     cancelled: 'Annulé',
   };
   const DISPUTE_STATUS_COLOR: Record<string, string> = {
+    refunding: 'text-[#FBBF24]',
     refunded: 'text-[#4ADE80]',
     completed: 'text-[#60A5FA]',
     cancelled: 'text-[#F87171]',
