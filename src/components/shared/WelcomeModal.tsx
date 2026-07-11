@@ -142,7 +142,7 @@ export function WelcomeModal({ username, onClose }: WelcomeModalProps) {
                     </h2>
 
                     {/* Description */}
-                    <p className="text-gray-500 text-sm mb-4">
+                    <p className="text-gray-200 text-sm mb-4">
                       {t(current.descKey)}
                     </p>
 
