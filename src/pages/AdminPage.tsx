@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, RefreshCw, BarChart2, Users, Package, X, Send, MessageCircle, Ban, CheckCircle, Eye, EyeOff, ArrowDownToLine, Scale, RotateCcw, ShieldAlert } from 'lucide-react';
+import { Shield, RefreshCw, BarChart2, Users, Package, X, Send, MessageCircle, Ban, CheckCircle, Eye, EyeOff, ArrowDownToLine, Scale, RotateCcw, ShieldAlert, History } from 'lucide-react';
 import { usePiAuth } from '@/hooks/usePiAuth';
 import FlaggedUsersTab from '@/admin/FlaggedUsersTab';
 import SolvencyCard from '@/admin/SolvencyCard';
 import { API_BASE_URL as API } from '@/config/network';
+
 interface UserRow {
   _id: string;
   username: string;
@@ -22,7 +23,7 @@ interface ServiceRow {
   price?: number;
   category?: string;
   image?: string;
-  active?: boolean; // false = masqué (réutilise le flag existant du backend)
+  active?: boolean;
   ownerUsername?: string;
   createdAt?: string;
 }
@@ -62,10 +63,23 @@ interface DisputeRow {
   amount: number;
   status: string;
   disputeReason?: string;
+  disputedAt?: string;
   createdAt?: string;
-  buyerId?: { username?: string; avatar?: string };
-  freelancerId?: { username?: string; avatar?: string };
+  buyerId?: { username?: string; pi_username?: string; avatar?: string };
+  freelancerId?: { username?: string; pi_username?: string; avatar?: string };
   serviceId?: { title?: string };
+}
+
+interface OrderRow {
+  _id: string;
+  amount: number;
+  status: string;
+  disputeReason?: string;
+  disputedAt?: string;
+  createdAt?: string;
+  buyerUsername?: string;
+  sellerUsername?: string;
+  serviceTitle?: string;
 }
 
 export default function AdminPage() {
@@ -73,11 +87,17 @@ export default function AdminPage() {
   const navigate = useNavigate();
 
   const [tab, setTab] = useState<'stats' | 'users' | 'services' | 'withdrawals' | 'disputes' | 'fraud'>('stats');
+
+  // Sous-onglets historique
+  const [withdrawalView, setWithdrawalView] = useState<'active' | 'history'>('active');
+  const [disputeView, setDisputeView] = useState<'active' | 'history'>('active');
+
   const [stats, setStats] = useState<Stats | null>(null);
   const [users, setUsers] = useState<UserRow[]>([]);
   const [services, setServices] = useState<ServiceRow[]>([]);
   const [withdrawals, setWithdrawals] = useState<WithdrawalRow[]>([]);
   const [disputes, setDisputes] = useState<DisputeRow[]>([]);
+  const [disputeHistory, setDisputeHistory] = useState<OrderRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [banConfirm, setBanConfirm] = useState<string | null>(null);
   const [a2uStatus, setA2uStatus] = useState<string | null>(null);
@@ -88,7 +108,6 @@ export default function AdminPage() {
   });
 
   const token = () => localStorage.getItem('workpiserv_token') || '';
-
   const isAdmin = user?.username === 'alibentaher';
 
   const fetchStats = useCallback(async () => {
@@ -96,8 +115,7 @@ export default function AdminPage() {
     try {
       const r = await fetch(`${API}/api/admin/stats`, { headers: { Authorization: `Bearer ${token()}` } });
       if (!r.ok) throw new Error();
-      const data = await r.json();
-      setStats(data);
+      setStats(await r.json());
     } catch { /* silent */ }
     setLoading(false);
   }, []);
@@ -142,7 +160,21 @@ export default function AdminPage() {
     setLoading(false);
   }, []);
 
-  // Veto : bloque un retrait pendant la fenêtre de 48h (le backend rembourse le solde).
+  // Historique des litiges : commandes clôturées après dispute (refunded / completed avec disputeReason)
+  const fetchDisputeHistory = useCallback(async () => {
+    setLoading(true);
+    try {
+      const r = await fetch(`${API}/api/admin/orders`, { headers: { Authorization: `Bearer ${token()}` } });
+      if (!r.ok) throw new Error();
+      const all: OrderRow[] = await r.json();
+      // Filtre : commandes ayant eu un litige (disputeReason non vide) et aujourd'hui clôturées
+      setDisputeHistory(all.filter(o =>
+        o.disputeReason && ['refunded', 'completed', 'cancelled'].includes(o.status)
+      ));
+    } catch { /* silent */ }
+    setLoading(false);
+  }, []);
+
   const blockWithdrawal = async (id: string) => {
     try {
       const r = await fetch(`${API}/api/admin/withdrawals/${id}/block`, {
@@ -155,7 +187,6 @@ export default function AdminPage() {
     } catch { /* silent */ }
   };
 
-  // Payer maintenant : déclenche le payout sans attendre la fin de la fenêtre de veto.
   const releaseWithdrawal = async (id: string) => {
     try {
       const r = await fetch(`${API}/api/admin/withdrawals/${id}/release`, {
@@ -167,7 +198,6 @@ export default function AdminPage() {
     } catch { /* silent */ }
   };
 
-  // Arbitrage : rembourser l'acheteur (A2U). La commande passe en remboursement.
   const refundOrder = async (id: string) => {
     try {
       const r = await fetch(`${API}/api/admin/orders/${id}/refund`, {
@@ -180,7 +210,6 @@ export default function AdminPage() {
     } catch { /* silent */ }
   };
 
-  // Arbitrage : libérer les fonds au freelance (split 90/10).
   const releaseOrder = async (id: string) => {
     try {
       const r = await fetch(`${API}/api/admin/orders/${id}/release`, {
@@ -192,9 +221,17 @@ export default function AdminPage() {
     } catch { /* silent */ }
   };
 
-  useEffect(() => { if (loggedIn && isAdmin) { fetchStats(); fetchUsers(); fetchServices(); } }, [loggedIn, isAdmin]);
+  useEffect(() => {
+    if (loggedIn && isAdmin) { fetchStats(); fetchUsers(); fetchServices(); }
+  }, [loggedIn, isAdmin]);
 
-  const refresh = () => { fetchStats(); if (tab === 'users') fetchUsers(); if (tab === 'services') fetchServices(); if (tab === 'withdrawals') fetchWithdrawals(); if (tab === 'disputes') fetchDisputes(); };
+  const refresh = () => {
+    fetchStats();
+    if (tab === 'users') fetchUsers();
+    if (tab === 'services') fetchServices();
+    if (tab === 'withdrawals') fetchWithdrawals();
+    if (tab === 'disputes') { fetchDisputes(); if (disputeView === 'history') fetchDisputeHistory(); }
+  };
 
   const banUser = async (userId: string, currentlyBanned: boolean) => {
     try {
@@ -209,21 +246,18 @@ export default function AdminPage() {
     setBanConfirm(null);
   };
 
-  // Modération : cacher / réafficher un service (réversible — jamais de suppression).
-  // Réutilise le flag `active` du backend (active:false = masqué partout côté public).
   const toggleServiceVisibility = async (serviceId: string, currentlyHidden: boolean) => {
     try {
       const r = await fetch(`${API}/api/admin/services/${serviceId}/visibility`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
-        body: JSON.stringify({ active: currentlyHidden }) // caché → active:true (réaffiche) ; visible → active:false (cache)
+        body: JSON.stringify({ active: currentlyHidden })
       });
       if (!r.ok) throw new Error();
       setServices(s => s.map(x => x._id === serviceId ? { ...x, active: currentlyHidden } : x));
     } catch { /* silent */ }
   };
 
-  // ── CONTACT MODAL ──
   const openContact = (u: UserRow) => setContact({ open: true, user: u, message: '', sending: false, sent: false, error: '' });
   const closeContact = () => setContact(c => ({ ...c, open: false }));
 
@@ -264,6 +298,22 @@ export default function AdminPage() {
     }
   };
 
+  // ── SOUS-ONGLET TOGGLE (Actifs / Historique) ──
+  const SubToggle = ({ view, onChange }: { view: 'active' | 'history'; onChange: (v: 'active' | 'history') => void }) => (
+    <div className="flex gap-1 bg-muted p-1 rounded-xl mb-3">
+      <button
+        onClick={() => onChange('active')}
+        className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium transition-all ${view === 'active' ? 'bg-brand text-white shadow' : 'text-muted-foreground hover:bg-card'}`}>
+        <Scale size={12} /> Actifs
+      </button>
+      <button
+        onClick={() => onChange('history')}
+        className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium transition-all ${view === 'history' ? 'bg-brand text-white shadow' : 'text-muted-foreground hover:bg-card'}`}>
+        <History size={12} /> Historique
+      </button>
+    </div>
+  );
+
   if (!loggedIn || !isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -275,6 +325,30 @@ export default function AdminPage() {
       </div>
     );
   }
+
+  // Statuts actifs vs historique pour les retraits
+  const ACTIVE_W_STATUSES = ['requested'];
+  const HISTORY_W_STATUSES = ['processing', 'submitted', 'completed', 'failed', 'blocked'];
+
+  const W_STYLE: Record<string, string> = {
+    requested: 'text-[#FBBF24]', processing: 'text-[#60A5FA]', submitted: 'text-[#60A5FA]',
+    completed: 'text-[#4ADE80]', failed: 'text-[#F87171]', blocked: 'text-[#F87171]',
+  };
+  const W_LABEL: Record<string, string> = {
+    requested: 'En attente (48h)', processing: 'En cours', submitted: 'Sur la blockchain',
+    completed: 'Versé ✓', failed: 'Échec (remboursé)', blocked: 'Bloqué (remboursé)',
+  };
+
+  const DISPUTE_STATUS_LABEL: Record<string, string> = {
+    refunded: 'Remboursé ✓',
+    completed: 'Libéré au freelance ✓',
+    cancelled: 'Annulé',
+  };
+  const DISPUTE_STATUS_COLOR: Record<string, string> = {
+    refunded: 'text-[#4ADE80]',
+    completed: 'text-[#60A5FA]',
+    cancelled: 'text-[#F87171]',
+  };
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
@@ -294,21 +368,32 @@ export default function AdminPage() {
         </button>
       </div>
 
-      {/* Tabs */}
+      {/* Tabs principaux */}
       <div className="flex items-center gap-2 bg-muted p-1 rounded-2xl overflow-x-auto">
-        {([['stats','Statistiques',BarChart2],['users','Utilisateurs',Users],['services','Services',Package],['withdrawals','Retraits',ArrowDownToLine],['disputes','Litiges',Scale],['fraud','Fraude',ShieldAlert]] as const).map(([key,label,Icon]) => (
-          <button key={key} onClick={() => { setTab(key); if (key === 'users') fetchUsers(); if (key === 'services') fetchServices(); if (key === 'withdrawals') fetchWithdrawals(); if (key === 'disputes') fetchDisputes(); }}
+        {([
+          ['stats', 'Statistiques', BarChart2],
+          ['users', 'Utilisateurs', Users],
+          ['services', 'Services', Package],
+          ['withdrawals', 'Retraits', ArrowDownToLine],
+          ['disputes', 'Litiges', Scale],
+          ['fraud', 'Fraude', ShieldAlert],
+        ] as const).map(([key, label, Icon]) => (
+          <button key={key}
+            onClick={() => {
+              setTab(key);
+              if (key === 'users') fetchUsers();
+              if (key === 'services') fetchServices();
+              if (key === 'withdrawals') fetchWithdrawals();
+              if (key === 'disputes') fetchDisputes();
+            }}
             className={`shrink-0 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${tab === key ? 'bg-brand text-white shadow' : 'text-muted-foreground hover:bg-card'}`}>
             <Icon size={15} />{label}
           </button>
         ))}
       </div>
 
-      {/* Stats */}
-      {tab === 'stats' && (
-        <SolvencyCard apiBase={API} token={token} />
-      )}
-
+      {/* ── STATS ── */}
+      {tab === 'stats' && <SolvencyCard apiBase={API} token={token} />}
       {tab === 'stats' && stats && (
         <div className="grid grid-cols-2 gap-3">
           {[
@@ -326,14 +411,10 @@ export default function AdminPage() {
           ))}
         </div>
       )}
-
-      {/* Bouton déblocage A2U — visible admin uniquement, déjà dans AdminPage */}
       {tab === 'stats' && (
         <div className="bg-card border border-border rounded-2xl p-4 space-y-2">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">🔧 Outils A2U</p>
-          <button
-            onClick={cancelPendingA2U}
-            disabled={a2uLoading}
+          <button onClick={cancelPendingA2U} disabled={a2uLoading}
             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-brand/10 text-brand text-sm font-medium hover:bg-brand/20 transition-colors disabled:opacity-50">
             {a2uLoading ? <RefreshCw size={14} className="animate-spin" /> : null}
             {a2uLoading ? 'En cours...' : '🔓 Débloquer paiement A2U pending'}
@@ -342,7 +423,7 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* Users */}
+      {/* ── UTILISATEURS ── */}
       {tab === 'users' && (
         <div className="space-y-2">
           {users.length === 0 && !loading && <p className="text-center text-muted-foreground py-8">Aucun utilisateur</p>}
@@ -352,7 +433,6 @@ export default function AdminPage() {
             const isSelf = u.username === 'alibentaher' || u.pi_username === 'alibentaher';
             return (
               <div key={u._id} className={`bg-card rounded-2xl p-4 border ${u.banned ? 'border-red-100 opacity-60' : 'border-border'}`}>
-                {/* Ligne 1 : avatar + infos complètes */}
                 <div className="flex items-center gap-3 mb-3">
                   {u.avatar
                     ? <img src={u.avatar} alt={name} className="w-10 h-10 rounded-full object-cover shrink-0" />
@@ -369,15 +449,12 @@ export default function AdminPage() {
                     {u.displayName && <p className="text-xs text-muted-foreground mt-0.5">{u.displayName}</p>}
                   </div>
                 </div>
-                {/* Ligne 2 : boutons sur toute la largeur */}
                 {!isSelf && (
                   <div className="flex gap-2">
-                    {/* Bouton Contact */}
                     <button onClick={() => openContact(u)}
                       className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#100D26]/5 hover:bg-[#100D26]/10 text-navy text-xs font-medium transition-colors">
                       <MessageCircle size={13} /> Écrire
                     </button>
-                    {/* Bouton Bannir */}
                     {banConfirm === u._id ? (
                       <div className="flex gap-1">
                         <button onClick={() => banUser(u._id, !!u.banned)} className="px-2 py-1.5 rounded-xl bg-red-500 text-white text-xs font-medium">Oui</button>
@@ -397,7 +474,7 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* Services */}
+      {/* ── SERVICES ── */}
       {tab === 'services' && (
         <div className="space-y-2">
           {services.length === 0 && !loading && <p className="text-center text-muted-foreground py-8">Aucun service</p>}
@@ -405,7 +482,6 @@ export default function AdminPage() {
             const hidden = s.active === false;
             return (
               <div key={s._id} className={`bg-card rounded-2xl p-4 border ${hidden ? 'border-[#FBBF24]/30 opacity-60' : 'border-border'}`}>
-                {/* Ligne 1 : visuel + infos */}
                 <div className="flex items-center gap-3 mb-3">
                   {s.image
                     ? <img src={s.image} alt="" className="w-12 h-12 rounded-xl object-cover shrink-0" />
@@ -421,7 +497,6 @@ export default function AdminPage() {
                     {typeof s.price === 'number' && <p className="text-xs text-brand font-semibold mt-0.5">π {s.price}</p>}
                   </div>
                 </div>
-                {/* Ligne 2 : action de modération (réversible) */}
                 <div className="flex gap-2">
                   <button onClick={() => toggleServiceVisibility(s._id, hidden)}
                     className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${hidden ? 'bg-[#4ADE80]/10 text-[#4ADE80] hover:bg-[#4ADE80]/20' : 'bg-[#FBBF24]/10 text-[#FBBF24] hover:bg-[#FBBF24]/20'}`}>
@@ -434,31 +509,30 @@ export default function AdminPage() {
         </div>
       )}
 
+      {/* ── RETRAITS ── */}
       {tab === 'withdrawals' && (
-        <div className="space-y-2">
-          {withdrawals.length === 0 && !loading && <p className="text-center text-muted-foreground py-8">Aucun retrait</p>}
-          {withdrawals.map(w => {
-            const inWindow = w.status === 'requested';
-            const STYLE: Record<string, string> = {
-              requested: 'text-[#FBBF24]', processing: 'text-[#60A5FA]', submitted: 'text-[#60A5FA]',
-              completed: 'text-[#4ADE80]', failed: 'text-[#F87171]', blocked: 'text-[#F87171]',
-            };
-            const LABEL: Record<string, string> = {
-              requested: 'En attente (48h)', processing: 'En cours', submitted: 'Sur la blockchain',
-              completed: 'Versé', failed: 'Échec (remboursé)', blocked: 'Bloqué (remboursé)',
-            };
-            return (
-              <div key={w._id} className={`bg-card rounded-2xl p-4 border ${inWindow ? 'border-[#FBBF24]/30' : 'border-border'}`}>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-semibold text-navy">{w.amount} π</span>
-                  <span className={`text-xs font-medium ${STYLE[w.status] || ''}`}>{LABEL[w.status] || w.status}</span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {w.username ? `@${w.username}` : '—'}
-                  {inWindow && w.availableAt ? ` · auto le ${new Date(w.availableAt).toLocaleString()}` : ''}
-                </p>
-                {w.txid && <p className="text-[10px] text-muted-foreground mt-0.5 truncate">txid : {w.txid}</p>}
-                {inWindow && (
+        <div>
+          <SubToggle view={withdrawalView} onChange={v => setWithdrawalView(v)} />
+
+          {/* Actifs : en attente de décision (48h) */}
+          {withdrawalView === 'active' && (
+            <div className="space-y-2">
+              {withdrawals.filter(w => ACTIVE_W_STATUSES.includes(w.status)).length === 0 && !loading && (
+                <p className="text-center text-muted-foreground py-8">Aucun retrait en attente</p>
+              )}
+              {withdrawals.filter(w => ACTIVE_W_STATUSES.includes(w.status)).map(w => (
+                <div key={w._id} className="bg-card rounded-2xl p-4 border border-[#FBBF24]/30">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-semibold text-navy">{w.amount} π</span>
+                    <span className="text-xs font-medium text-[#FBBF24]">{W_LABEL[w.status]}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {w.username ? `@${w.username}` : '—'}
+                    {w.availableAt ? ` · auto le ${new Date(w.availableAt).toLocaleString('fr-FR')}` : ''}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                    Demandé le {w.createdAt ? new Date(w.createdAt).toLocaleDateString('fr-FR') : '—'}
+                  </p>
                   <div className="flex gap-2 mt-3">
                     <button onClick={() => blockWithdrawal(w._id)}
                       className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-medium bg-[#F87171]/10 text-[#F87171] hover:bg-[#F87171]/20 transition-colors">
@@ -469,61 +543,134 @@ export default function AdminPage() {
                       <CheckCircle size={13} /> Payer maintenant
                     </button>
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {tab === 'disputes' && (
-        <div className="space-y-2">
-          {disputes.length === 0 && !loading && <p className="text-center text-muted-foreground py-8">Aucun litige</p>}
-          {disputes.map(o => {
-            const pending = o.status === 'disputed';
-            return (
-              <div key={o._id} className={`bg-card rounded-2xl p-4 border ${pending ? 'border-[#FBBF24]/30' : 'border-border'}`}>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-semibold text-navy truncate pr-2">{o.serviceId?.title || 'Service'}</span>
-                  <span className="font-semibold text-navy shrink-0">{o.amount} π</span>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Acheteur {o.buyerId?.username ? `@${o.buyerId.username}` : '—'} · Freelance {o.freelancerId?.username ? `@${o.freelancerId.username}` : '—'}
-                </p>
-                <p className="text-xs mt-1">
-                  <span className={`font-medium ${pending ? 'text-[#FBBF24]' : 'text-[#60A5FA]'}`}>
-                    {pending ? 'En litige' : 'Remboursement en cours'}
-                  </span>
-                </p>
-                {o.disputeReason && <p className="text-xs text-muted-foreground mt-1 italic">« {o.disputeReason} »</p>}
-                {pending && (
-                  <div className="flex gap-2 mt-3">
-                    <button onClick={() => refundOrder(o._id)}
-                      className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-medium bg-[#F87171]/10 text-[#F87171] hover:bg-[#F87171]/20 transition-colors">
-                      <RotateCcw size={13} /> Rembourser l'acheteur
-                    </button>
-                    <button onClick={() => releaseOrder(o._id)}
-                      className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-medium bg-[#4ADE80]/10 text-[#4ADE80] hover:bg-[#4ADE80]/20 transition-colors">
-                      <CheckCircle size={13} /> Libérer au freelance
-                    </button>
+              ))}
+            </div>
+          )}
+
+          {/* Historique : versés / échoués / bloqués */}
+          {withdrawalView === 'history' && (
+            <div className="space-y-2">
+              {withdrawals.filter(w => HISTORY_W_STATUSES.includes(w.status)).length === 0 && !loading && (
+                <p className="text-center text-muted-foreground py-8">Aucun historique de retrait</p>
+              )}
+              {withdrawals.filter(w => HISTORY_W_STATUSES.includes(w.status)).map(w => (
+                <div key={w._id} className="bg-card rounded-2xl p-4 border border-border opacity-80">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-semibold text-navy">{w.amount} π</span>
+                    <span className={`text-xs font-medium ${W_STYLE[w.status] || ''}`}>{W_LABEL[w.status] || w.status}</span>
                   </div>
-                )}
-              </div>
-            );
-          })}
+                  <p className="text-xs text-muted-foreground">
+                    {w.username ? `@${w.username}` : '—'}
+                  </p>
+                  {w.txid && <p className="text-[10px] text-muted-foreground mt-0.5 truncate">txid : {w.txid}</p>}
+                  {w.error && <p className="text-[10px] text-[#F87171] mt-0.5">Erreur : {w.error}</p>}
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                    {w.createdAt ? new Date(w.createdAt).toLocaleDateString('fr-FR') : '—'}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
+      {/* ── LITIGES ── */}
+      {tab === 'disputes' && (
+        <div>
+          <SubToggle
+            view={disputeView}
+            onChange={v => {
+              setDisputeView(v);
+              if (v === 'history' && disputeHistory.length === 0) fetchDisputeHistory();
+            }}
+          />
+
+          {/* Actifs : en litige ou remboursement en cours */}
+          {disputeView === 'active' && (
+            <div className="space-y-2">
+              {disputes.length === 0 && !loading && (
+                <p className="text-center text-muted-foreground py-8">Aucun litige actif</p>
+              )}
+              {disputes.map(o => {
+                const pending = o.status === 'disputed';
+                return (
+                  <div key={o._id} className={`bg-card rounded-2xl p-4 border ${pending ? 'border-[#FBBF24]/30' : 'border-border'}`}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-semibold text-navy truncate pr-2">{o.serviceId?.title || 'Service'}</span>
+                      <span className="font-semibold text-navy shrink-0">{o.amount} π</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Acheteur {o.buyerId?.username ? `@${o.buyerId.username}` : '—'} · Freelance {o.freelancerId?.username ? `@${o.freelancerId.username}` : '—'}
+                    </p>
+                    <p className="text-xs mt-1">
+                      <span className={`font-medium ${pending ? 'text-[#FBBF24]' : 'text-[#60A5FA]'}`}>
+                        {pending ? 'En litige' : 'Remboursement en cours'}
+                      </span>
+                    </p>
+                    {o.disputeReason && <p className="text-xs text-muted-foreground mt-1 italic">« {o.disputeReason} »</p>}
+                    {o.disputedAt && (
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        Ouvert le {new Date(o.disputedAt).toLocaleDateString('fr-FR')}
+                      </p>
+                    )}
+                    {pending && (
+                      <div className="flex gap-2 mt-3">
+                        <button onClick={() => refundOrder(o._id)}
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-medium bg-[#F87171]/10 text-[#F87171] hover:bg-[#F87171]/20 transition-colors">
+                          <RotateCcw size={13} /> Rembourser l'acheteur
+                        </button>
+                        <button onClick={() => releaseOrder(o._id)}
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-medium bg-[#4ADE80]/10 text-[#4ADE80] hover:bg-[#4ADE80]/20 transition-colors">
+                          <CheckCircle size={13} /> Libérer au freelance
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Historique : litiges clôturés */}
+          {disputeView === 'history' && (
+            <div className="space-y-2">
+              {disputeHistory.length === 0 && !loading && (
+                <p className="text-center text-muted-foreground py-8">Aucun litige clôturé</p>
+              )}
+              {disputeHistory.map(o => (
+                <div key={o._id} className="bg-card rounded-2xl p-4 border border-border opacity-80">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-semibold text-navy truncate pr-2">{o.serviceTitle || 'Service'}</span>
+                    <span className="font-semibold text-navy shrink-0">{o.amount} π</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {o.buyerUsername ? `@${o.buyerUsername}` : '—'} → {o.sellerUsername ? `@${o.sellerUsername}` : '—'}
+                  </p>
+                  <p className={`text-xs font-medium mt-1 ${DISPUTE_STATUS_COLOR[o.status] || 'text-muted-foreground'}`}>
+                    {DISPUTE_STATUS_LABEL[o.status] || o.status}
+                  </p>
+                  {o.disputeReason && <p className="text-xs text-muted-foreground mt-1 italic">« {o.disputeReason} »</p>}
+                  {o.disputedAt && (
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      Litige ouvert le {new Date(o.disputedAt).toLocaleDateString('fr-FR')}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── FRAUDE ── */}
       {tab === 'fraud' && <FlaggedUsersTab apiBase={API} token={token} />}
 
-      {/* ── MODAL DE CONTACT ── */}
+      {/* ── MODAL CONTACT ── */}
       {contact.open && contact.user && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-          {/* Overlay */}
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={closeContact} />
-          {/* Panel */}
           <div className="relative w-full max-w-md bg-card rounded-t-3xl sm:rounded-3xl shadow-2xl p-6 space-y-4 mx-0 sm:mx-4">
-            {/* Header modal */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {contact.user.avatar
@@ -540,8 +687,6 @@ export default function AdminPage() {
                 <X size={18} className="text-muted-foreground" />
               </button>
             </div>
-
-            {/* Textarea */}
             {contact.sent ? (
               <div className="flex flex-col items-center py-6 space-y-2">
                 <CheckCircle size={40} className="text-green-500" />
