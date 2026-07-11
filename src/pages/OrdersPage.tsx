@@ -236,8 +236,11 @@ export default function OrdersPage() {
                         src={order.serviceImage}
                         alt={order.serviceTitle}
                         className="w-20 h-14 rounded-lg object-cover shrink-0 bg-muted"
-                        onError={(e) => { (e.target as HTMLImageElement).src = '/images/service-default.jpg'; }}
+                        onError={(e) => { const t = e.target as HTMLImageElement; t.style.display='none'; const fb = t.parentElement?.querySelector('.img-fallback') as HTMLElement; if(fb) fb.style.display='flex'; }}
                       />
+                      <div className="img-fallback w-20 h-14 rounded-lg shrink-0 bg-gradient-to-br from-[#1E1B4B] via-[#2A2566] to-[#443B8E] items-center justify-center hidden">
+                        <span className="text-white text-xs font-bold opacity-60">π</span>
+                      </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-medium text-navy text-sm line-clamp-1">{order.serviceTitle}</h3>
                         <p className="text-xs text-muted-foreground mt-1">{order.freelancer.name}</p>
@@ -263,8 +266,11 @@ export default function OrdersPage() {
                       src={activeOrder.serviceImage}
                       alt={activeOrder.serviceTitle}
                       className="w-24 h-16 rounded-lg object-cover shrink-0 bg-muted"
-                      onError={(e) => { (e.target as HTMLImageElement).src = '/images/service-default.jpg'; }}
+                      onError={(e) => { const t = e.target as HTMLImageElement; t.style.display='none'; const fb = t.parentElement?.querySelector('.img-fallback') as HTMLElement; if(fb) fb.style.display='flex'; }}
                     />
+                    <div className="img-fallback w-24 h-16 rounded-lg shrink-0 bg-gradient-to-br from-[#1E1B4B] via-[#2A2566] to-[#443B8E] items-center justify-center hidden">
+                    <span className="text-white text-xs font-bold opacity-60">π</span>
+                  </div>
                     <div className="flex-1">
                       <h2 className="font-semibold text-navy">{activeOrder.serviceTitle}</h2>
                       <p className="text-sm text-muted-foreground mt-1">{activeOrder.freelancer.name}</p>
