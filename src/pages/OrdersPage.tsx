@@ -8,7 +8,7 @@ import type { Order, OrderStatus } from '@/types';
 
 import { API_BASE_URL as API_URL } from '@/config/network';
 // Order enrichi avec les IDs bruts pour savoir si on est acheteur ou vendeur
-type OrderEx = Order & { buyerRawId: string; freelancerRawId: string };
+type OrderEx = Order & { buyerRawId: string; freelancerRawId: string; deliveredAt?: string | null };
 
 const statusConfig: Record<OrderStatus, { labelKey: string; color: string; bg: string }> = {
   active:          { labelKey: 'orders.status.active',          color: 'text-[#60A5FA]', bg: 'bg-[#60A5FA]/10' },
@@ -58,12 +58,62 @@ function normalizeOrder(o: any): OrderEx {
       yearsExp    : 0,
     },
     timeline     : o.timeline || [],
+    deliveredAt  : o.deliveredAt || null,
     milestones   : o.milestones || [],
     deliverables : o.deliverables || [],
   };
 }
 
-export default function OrdersPage() {
+// ── Timeline visuelle : Créée → Payée → Livrée → Validée ──
+// Masquée pour les statuts d'exception (cancelled/disputed/refunding/refunded),
+// qui ont déjà leur propre bannière dédiée plus bas dans la page.
+function OrderTimeline({ order, t }: { order: OrderEx; t: (k: string) => string }) {
+  if (['cancelled', 'disputed', 'refunding', 'refunded'].includes(order.status)) return null;
+
+  const paidEvent = order.timeline?.find((e: { event?: string }) => e?.event === 'payment_completed');
+
+  const steps = [
+    { key: 'created',   done: true,                                                at: order.date },
+    { key: 'paid',      done: order.status !== 'pending_payment',                  at: paidEvent?.at ? new Date(paidEvent.at).toLocaleDateString() : null },
+    { key: 'delivered', done: ['delivered', 'completed'].includes(order.status),   at: order.deliveredAt ? new Date(order.deliveredAt).toLocaleDateString() : null },
+    { key: 'validated', done: order.status === 'completed',                        at: null },
+  ] as const;
+
+  const nextIndex = steps.findIndex(s => !s.done);
+
+  return (
+    <div className="mt-4 bg-card border border-border rounded-xl p-4">
+      <div className="flex items-start">
+        {steps.map((step, i) => (
+          <div key={step.key} className="flex items-center flex-1 last:flex-none">
+            <div className="flex flex-col items-center">
+              <div
+                className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
+                  step.done
+                    ? 'bg-escrow text-white'
+                    : i === nextIndex
+                      ? 'bg-escrow-light text-escrow border-2 border-escrow'
+                      : 'bg-muted text-muted-foreground'
+                }`}
+              >
+                {step.done ? <CheckCircle2 size={14} /> : <span className="text-xs font-semibold">{i + 1}</span>}
+              </div>
+              <span className={`mt-1 text-[10px] text-center leading-tight max-w-[60px] ${step.done ? 'text-navy font-medium' : 'text-muted-foreground'}`}>
+                {t(`orders.timeline.${step.key}`)}
+              </span>
+              {step.at && <span className="text-[9px] text-muted-foreground">{step.at}</span>}
+            </div>
+            {i < steps.length - 1 && (
+              <div className={`flex-1 h-0.5 mx-1 mb-5 ${steps[i + 1].done ? 'bg-escrow' : 'bg-muted'}`} />
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+
   const { user } = usePiAuth();
   const { t } = useLanguage();
   const [orders, setOrders]             = useState<OrderEx[]>([]);
@@ -293,6 +343,8 @@ export default function OrdersPage() {
                       {t(getStatusConfig(activeOrder.status).labelKey)}
                     </span>
                   </div>
+
+                  <OrderTimeline order={activeOrder} t={t} />
 
                   {/* Actions selon le rôle */}
                   {myId === activeOrder.freelancerRawId &&
