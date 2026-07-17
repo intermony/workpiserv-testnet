@@ -65,8 +65,6 @@ function normalizeOrder(o: any): OrderEx {
 }
 
 // ── Timeline visuelle : Créée → Payée → Livrée → Validée ──
-// Masquée pour les statuts d'exception (cancelled/disputed/refunding/refunded),
-// qui ont déjà leur propre bannière dédiée plus bas dans la page.
 function OrderTimeline({ order, t }: { order: OrderEx; t: (k: string) => string }) {
   if (['cancelled', 'disputed', 'refunding', 'refunded'].includes(order.status)) return null;
 
@@ -113,7 +111,7 @@ function OrderTimeline({ order, t }: { order: OrderEx; t: (k: string) => string 
   );
 }
 
-
+export default function OrdersPage() {
   const { user } = usePiAuth();
   const { t } = useLanguage();
   const [orders, setOrders]             = useState<OrderEx[]>([]);
