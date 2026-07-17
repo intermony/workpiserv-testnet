@@ -64,48 +64,78 @@ function normalizeOrder(o: any): OrderEx {
   };
 }
 
-// ── Timeline visuelle : Créée → Payée → Livrée → Validée ──
+// ── Timeline verticale : Créée → Payée → Livrée → Validée ──
+// Chaque étape affiche titre + description + date une fois franchie.
+// Masquée pour les statuts d'exception (déjà gérés par leurs propres bannières).
 function OrderTimeline({ order, t }: { order: OrderEx; t: (k: string) => string }) {
   if (['cancelled', 'disputed', 'refunding', 'refunded'].includes(order.status)) return null;
 
-  const paidEvent = order.timeline?.find((e: { event?: string }) => e?.event === 'payment_completed');
+  const paidEvent      = order.timeline?.find((e: { event?: string }) => e?.event === 'payment_completed');
+  const completedEvent = order.timeline?.find((e: { event?: string }) => e?.event === 'completed');
+
+  const fmt = (d?: string | null) =>
+    d ? new Date(d).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : null;
 
   const steps = [
-    { key: 'created',   done: true,                                                at: order.date },
-    { key: 'paid',      done: order.status !== 'pending_payment',                  at: paidEvent?.at ? new Date(paidEvent.at).toLocaleDateString() : null },
-    { key: 'delivered', done: ['delivered', 'completed'].includes(order.status),   at: order.deliveredAt ? new Date(order.deliveredAt).toLocaleDateString() : null },
-    { key: 'validated', done: order.status === 'completed',                        at: null },
-  ] as const;
+    {
+      key: 'created',
+      done: true,
+      title: t('orders.timeline.created'),
+      desc: t('orders.timeline.createdDesc').replace('{service}', order.serviceTitle),
+      at: fmt(order.date),
+    },
+    {
+      key: 'paid',
+      done: order.status !== 'pending_payment',
+      title: t('orders.timeline.paid'),
+      desc: t('orders.timeline.paidDesc').replace('{n}', String(order.price)),
+      at: fmt(paidEvent?.at ?? null),
+    },
+    {
+      key: 'delivered',
+      done: ['delivered', 'completed'].includes(order.status),
+      title: t('orders.timeline.delivered'),
+      desc: t('orders.timeline.deliveredDesc').replace('{name}', order.freelancer?.name || ''),
+      at: fmt(order.deliveredAt),
+    },
+    {
+      key: 'validated',
+      done: order.status === 'completed',
+      title: t('orders.timeline.validated'),
+      desc: t('orders.timeline.validatedDesc'),
+      at: fmt(completedEvent?.at ?? null),
+    },
+  ];
 
-  const nextIndex = steps.findIndex(s => !s.done);
+  const activeIndex = steps.findIndex(s => !s.done);
 
   return (
-    <div className="mt-4 bg-card border border-border rounded-xl p-4">
-      <div className="flex items-start">
-        {steps.map((step, i) => (
-          <div key={step.key} className="flex items-center flex-1 last:flex-none">
-            <div className="flex flex-col items-center">
-              <div
-                className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
-                  step.done
-                    ? 'bg-escrow text-white'
-                    : i === nextIndex
-                      ? 'bg-escrow-light text-escrow border-2 border-escrow'
-                      : 'bg-muted text-muted-foreground'
-                }`}
-              >
-                {step.done ? <CheckCircle2 size={14} /> : <span className="text-xs font-semibold">{i + 1}</span>}
+    <div className="mt-4 bg-card border border-border rounded-xl p-5">
+      <h3 className="font-heading font-bold text-lg text-navy mb-4">{t('orders.timeline.title')}</h3>
+      <div>
+        {steps.map((step, i) => {
+          const isLast = i === steps.length - 1;
+          const isCurrent = i === activeIndex;
+          return (
+            <div key={step.key} className="flex gap-3">
+              <div className="flex flex-col items-center">
+                <div
+                  className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
+                    step.done ? 'bg-escrow text-white' : isCurrent ? 'bg-brand text-white' : 'bg-muted text-muted-foreground'
+                  }`}
+                >
+                  {step.done ? <CheckCircle2 size={13} /> : <span className="text-[10px] font-semibold">{i + 1}</span>}
+                </div>
+                {!isLast && <div className={`w-0.5 flex-1 min-h-[28px] ${step.done ? 'bg-escrow' : 'bg-muted'}`} />}
               </div>
-              <span className={`mt-1 text-[10px] text-center leading-tight max-w-[60px] ${step.done ? 'text-navy font-medium' : 'text-muted-foreground'}`}>
-                {t(`orders.timeline.${step.key}`)}
-              </span>
-              {step.at && <span className="text-[9px] text-muted-foreground">{step.at}</span>}
+              <div className={`pb-5 ${!step.done && !isCurrent ? 'opacity-50' : ''}`}>
+                <p className={`font-medium text-sm ${step.done || isCurrent ? 'text-navy' : 'text-muted-foreground'}`}>{step.title}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{step.desc}</p>
+                {step.at && <p className="text-[11px] text-muted-foreground mt-1">{step.at}</p>}
+              </div>
             </div>
-            {i < steps.length - 1 && (
-              <div className={`flex-1 h-0.5 mx-1 mb-5 ${steps[i + 1].done ? 'bg-escrow' : 'bg-muted'}`} />
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
