@@ -9,7 +9,11 @@ import type { Order, OrderStatus, Milestone } from '@/types';
 import { API_BASE_URL as API_URL } from '@/config/network';
 // Order enrichi avec les IDs bruts pour savoir si on est acheteur ou vendeur
 // (deliveredAt : champ backend pas encore dans le type Order partagé)
-type OrderEx = Order & { buyerRawId: string; freelancerRawId: string; deliveredAt?: string | null };
+// order.date est une chaîne DÉJÀ formatée pour l'affichage (toLocaleDateString),
+// donc jamais re-parsable de façon fiable par `new Date()` (ex. "16/07/2026" en fr
+// est invalide pour le moteur JS → Invalid Date). createdAt garde l'ISO brut du
+// backend, réservé aux recalculs (ex. timeline).
+type OrderEx = Order & { buyerRawId: string; freelancerRawId: string; deliveredAt?: string | null; createdAt?: string | null };
 
 const statusConfig: Record<OrderStatus, { labelKey: string; color: string; bg: string }> = {
   active:          { labelKey: 'orders.status.active',          color: 'text-[#60A5FA]', bg: 'bg-[#60A5FA]/10' },
@@ -43,6 +47,7 @@ function normalizeOrder(o: any): OrderEx {
     status       : o.status || 'active',
     price        : o.amount || o.price || 0,
     date         : o.createdAt ? new Date(o.createdAt).toLocaleDateString() : o.date || '',
+    createdAt    : o.createdAt || null,
     freelancer   : {
       id          : o.freelancerId?._id || '',
       name        : o.freelancerId?.username || 'Pioneer',
@@ -76,7 +81,7 @@ function OrderTimeline({ order, t }: { order: OrderEx; t: (k: string) => string 
     d ? new Date(d).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : null;
 
   const steps = [
-    { key: 'created',   done: true,                                              title: t('orders.timeline.created'),   desc: t('orders.timeline.createdDesc').replace('{service}', order.serviceTitle), at: fmt(order.date) },
+    { key: 'created',   done: true,                                              title: t('orders.timeline.created'),   desc: t('orders.timeline.createdDesc').replace('{service}', order.serviceTitle), at: fmt(order.createdAt) },
     { key: 'paid',      done: order.status !== 'pending_payment',                title: t('orders.timeline.paid'),      desc: t('orders.timeline.paidDesc').replace('{n}', String(order.price)),        at: fmt(paidEvent?.at ?? null) },
     { key: 'delivered', done: ['delivered', 'completed'].includes(order.status), title: t('orders.timeline.delivered'), desc: t('orders.timeline.deliveredDesc').replace('{name}', order.freelancer?.name || ''), at: fmt(order.deliveredAt) },
     { key: 'validated', done: order.status === 'completed',                      title: t('orders.timeline.validated'), desc: t('orders.timeline.validatedDesc'),                                         at: fmt(completedEvent?.at ?? null) },
