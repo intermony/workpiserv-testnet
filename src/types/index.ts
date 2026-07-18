@@ -99,15 +99,19 @@ export interface Order {
 export type OrderStatus = 'active' | 'pending_payment' | 'in_progress' | 'delivered' | 'completed' | 'cancelled' | 'disputed' | 'refunding' | 'refunded';
 
 export interface TimelineEvent {
-  title: string;
-  description: string;
-  date: string;
-  status: 'completed' | 'current' | 'pending';
+  event: string;
+  at: string;
 }
 
 export interface Milestone {
+  id: string;
   title: string;
-  status: 'completed' | 'in_progress' | 'pending';
+  createdBy: string;
+  done: boolean;
+  approvedBy: string | null;
+  createdAt: string;
+  doneAt: string | null;
+  approvedAt: string | null;
 }
 
 export interface Deliverable {
