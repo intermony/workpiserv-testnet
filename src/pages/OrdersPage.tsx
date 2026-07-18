@@ -4,15 +4,12 @@ import { Package, Shield, Loader2, Truck, CheckCircle2, AlertTriangle, RotateCcw
 import { usePiAuth } from '@/hooks/usePiAuth';
 import Price from '@/components/shared/Price';
 import { useLanguage } from '@/i18n';
-import type { Order, OrderStatus } from '@/types';
+import type { Order, OrderStatus, Milestone } from '@/types';
 
 import { API_BASE_URL as API_URL } from '@/config/network';
 // Order enrichi avec les IDs bruts pour savoir si on est acheteur ou vendeur
-type Milestone = {
-  id: string; title: string; createdBy: string; done: boolean;
-  approvedBy: string | null; createdAt: string; doneAt: string | null; approvedAt: string | null;
-};
-type OrderEx = Order & { buyerRawId: string; freelancerRawId: string; deliveredAt?: string | null; milestones?: Milestone[] };
+// (deliveredAt : champ backend pas encore dans le type Order partagé)
+type OrderEx = Order & { buyerRawId: string; freelancerRawId: string; deliveredAt?: string | null };
 
 const statusConfig: Record<OrderStatus, { labelKey: string; color: string; bg: string }> = {
   active:          { labelKey: 'orders.status.active',          color: 'text-[#60A5FA]', bg: 'bg-[#60A5FA]/10' },
@@ -127,7 +124,7 @@ function MilestoneTracker({
   onAdd: (title: string) => void; onMarkDone: (mid: string) => void; onApprove: (mid: string) => void;
 }) {
   const [newTitle, setNewTitle] = useState('');
-  const milestones = order.milestones || [];
+  const milestones: Milestone[] = order.milestones || [];
   const isFreelancer = myId === order.freelancerRawId;
   const isBuyer = myId === order.buyerRawId;
   const canEdit = order.status === 'in_progress';
