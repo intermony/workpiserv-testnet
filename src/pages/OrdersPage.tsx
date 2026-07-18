@@ -8,7 +8,11 @@ import type { Order, OrderStatus } from '@/types';
 
 import { API_BASE_URL as API_URL } from '@/config/network';
 // Order enrichi avec les IDs bruts pour savoir si on est acheteur ou vendeur
-type OrderEx = Order & { buyerRawId: string; freelancerRawId: string; deliveredAt?: string | null };
+type Milestone = {
+  id: string; title: string; createdBy: string; done: boolean;
+  approvedBy: string | null; createdAt: string; doneAt: string | null; approvedAt: string | null;
+};
+type OrderEx = Order & { buyerRawId: string; freelancerRawId: string; deliveredAt?: string | null; milestones?: Milestone[] };
 
 const statusConfig: Record<OrderStatus, { labelKey: string; color: string; bg: string }> = {
   active:          { labelKey: 'orders.status.active',          color: 'text-[#60A5FA]', bg: 'bg-[#60A5FA]/10' },
@@ -65,8 +69,6 @@ function normalizeOrder(o: any): OrderEx {
 }
 
 // ── Timeline verticale : Créée → Payée → Livrée → Validée ──
-// Chaque étape affiche titre + description + date une fois franchie.
-// Masquée pour les statuts d'exception (déjà gérés par leurs propres bannières).
 function OrderTimeline({ order, t }: { order: OrderEx; t: (k: string) => string }) {
   if (['cancelled', 'disputed', 'refunding', 'refunded'].includes(order.status)) return null;
 
@@ -77,34 +79,10 @@ function OrderTimeline({ order, t }: { order: OrderEx; t: (k: string) => string 
     d ? new Date(d).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : null;
 
   const steps = [
-    {
-      key: 'created',
-      done: true,
-      title: t('orders.timeline.created'),
-      desc: t('orders.timeline.createdDesc').replace('{service}', order.serviceTitle),
-      at: fmt(order.date),
-    },
-    {
-      key: 'paid',
-      done: order.status !== 'pending_payment',
-      title: t('orders.timeline.paid'),
-      desc: t('orders.timeline.paidDesc').replace('{n}', String(order.price)),
-      at: fmt(paidEvent?.at ?? null),
-    },
-    {
-      key: 'delivered',
-      done: ['delivered', 'completed'].includes(order.status),
-      title: t('orders.timeline.delivered'),
-      desc: t('orders.timeline.deliveredDesc').replace('{name}', order.freelancer?.name || ''),
-      at: fmt(order.deliveredAt),
-    },
-    {
-      key: 'validated',
-      done: order.status === 'completed',
-      title: t('orders.timeline.validated'),
-      desc: t('orders.timeline.validatedDesc'),
-      at: fmt(completedEvent?.at ?? null),
-    },
+    { key: 'created',   done: true,                                              title: t('orders.timeline.created'),   desc: t('orders.timeline.createdDesc').replace('{service}', order.serviceTitle), at: fmt(order.date) },
+    { key: 'paid',      done: order.status !== 'pending_payment',                title: t('orders.timeline.paid'),      desc: t('orders.timeline.paidDesc').replace('{n}', String(order.price)),        at: fmt(paidEvent?.at ?? null) },
+    { key: 'delivered', done: ['delivered', 'completed'].includes(order.status), title: t('orders.timeline.delivered'), desc: t('orders.timeline.deliveredDesc').replace('{name}', order.freelancer?.name || ''), at: fmt(order.deliveredAt) },
+    { key: 'validated', done: order.status === 'completed',                      title: t('orders.timeline.validated'), desc: t('orders.timeline.validatedDesc'),                                         at: fmt(completedEvent?.at ?? null) },
   ];
 
   const activeIndex = steps.findIndex(s => !s.done);
@@ -119,11 +97,9 @@ function OrderTimeline({ order, t }: { order: OrderEx; t: (k: string) => string 
           return (
             <div key={step.key} className="flex gap-3">
               <div className="flex flex-col items-center">
-                <div
-                  className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
-                    step.done ? 'bg-escrow text-white' : isCurrent ? 'bg-brand text-white' : 'bg-muted text-muted-foreground'
-                  }`}
-                >
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
+                  step.done ? 'bg-escrow text-white' : isCurrent ? 'bg-brand text-white' : 'bg-muted text-muted-foreground'
+                }`}>
                   {step.done ? <CheckCircle2 size={13} /> : <span className="text-[10px] font-semibold">{i + 1}</span>}
                 </div>
                 {!isLast && <div className={`w-0.5 flex-1 min-h-[28px] ${step.done ? 'bg-escrow' : 'bg-muted'}`} />}
@@ -137,6 +113,102 @@ function OrderTimeline({ order, t }: { order: OrderEx; t: (k: string) => string 
           );
         })}
       </div>
+    </div>
+  );
+}
+
+// ── Jalons de commande : le freelance propose, l'acheteur valide ──
+// Bloquant côté backend (route /complete refusée tant que non tous validés),
+// mais paiement toujours unique et global — aucune libération fractionnée ici.
+function MilestoneTracker({
+  order, myId, t, acting, onAdd, onMarkDone, onApprove,
+}: {
+  order: OrderEx; myId: string; t: (k: string) => string; acting: boolean;
+  onAdd: (title: string) => void; onMarkDone: (mid: string) => void; onApprove: (mid: string) => void;
+}) {
+  const [newTitle, setNewTitle] = useState('');
+  const milestones = order.milestones || [];
+  const isFreelancer = myId === order.freelancerRawId;
+  const isBuyer = myId === order.buyerRawId;
+  const canEdit = order.status === 'in_progress';
+
+  if (milestones.length === 0 && !(isFreelancer && canEdit)) return null;
+
+  const approvedCount = milestones.filter(m => m.approvedBy).length;
+  const total = milestones.length;
+  const pct = total > 0 ? Math.round((approvedCount / total) * 100) : 0;
+
+  return (
+    <div className="mt-4 bg-card border border-border rounded-xl p-5">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="font-heading font-bold text-lg text-navy">{t('orders.milestones.title')}</h3>
+        {total > 0 && <span className="text-sm text-muted-foreground">{pct}%</span>}
+      </div>
+      {total > 0 && (
+        <>
+          <p className="text-xs text-muted-foreground mb-2">
+            {t('orders.milestones.progress').replace('{done}', String(approvedCount)).replace('{total}', String(total))}
+          </p>
+          <div className="w-full h-2 bg-muted rounded-full mb-4 overflow-hidden">
+            <div className="h-full bg-escrow rounded-full transition-all" style={{ width: `${pct}%` }} />
+          </div>
+        </>
+      )}
+
+      <div className="space-y-2">
+        {milestones.map(m => (
+          <div key={m.id} className="flex items-center justify-between gap-2 py-2 border-b border-border last:border-0">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
+                m.approvedBy ? 'bg-escrow text-white' : m.done ? 'bg-brand-light text-brand' : 'bg-muted text-muted-foreground'
+              }`}>
+                {m.approvedBy ? <CheckCircle2 size={11} /> : <span className="text-[9px] font-semibold">•</span>}
+              </div>
+              <span className={`text-sm truncate ${m.approvedBy ? 'text-navy' : 'text-muted-foreground'}`}>{m.title}</span>
+            </div>
+            {isFreelancer && !m.done && (
+              <button
+                disabled={acting}
+                onClick={() => onMarkDone(m.id)}
+                className="text-xs font-medium text-escrow shrink-0 disabled:opacity-50"
+              >
+                {t('orders.milestones.markDone')}
+              </button>
+            )}
+            {isBuyer && m.done && !m.approvedBy && (
+              <button
+                disabled={acting}
+                onClick={() => onApprove(m.id)}
+                className="text-xs font-medium text-white bg-escrow px-2 py-1 rounded-full shrink-0 disabled:opacity-50"
+              >
+                {t('orders.milestones.approve')}
+              </button>
+            )}
+            {m.done && !m.approvedBy && isFreelancer && (
+              <span className="text-[11px] text-muted-foreground shrink-0">{t('orders.milestones.pendingApproval')}</span>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {isFreelancer && canEdit && total < 20 && (
+        <div className="flex gap-2 mt-3">
+          <input
+            value={newTitle}
+            onChange={e => setNewTitle(e.target.value)}
+            placeholder={t('orders.milestones.addPlaceholder')}
+            maxLength={140}
+            className="flex-1 text-sm border border-border rounded-lg px-3 py-2 bg-background"
+          />
+          <button
+            disabled={acting || !newTitle.trim()}
+            onClick={() => { onAdd(newTitle.trim()); setNewTitle(''); }}
+            className="text-sm font-medium text-white bg-escrow px-3 py-2 rounded-lg disabled:opacity-50 shrink-0"
+          >
+            {t('orders.milestones.add')}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -177,6 +249,33 @@ export default function OrdersPage() {
       setActing(false);
     }
   };
+
+  // Jalons : proposer (freelance), marquer fait (freelance), valider (acheteur).
+  // Chaque appel remplace localement order.milestones avec la réponse serveur
+  // (source de vérité), pas de mise à jour optimiste sur une structure imbriquée.
+  const milestoneAction = async (orderId: string, method: 'POST' | 'PATCH', path: string, body?: object) => {
+    setActing(true); setActionError(null);
+    try {
+      const token = localStorage.getItem('workpiserv_token');
+      const res = await fetch(`${API_URL}/api/orders/${orderId}/milestones${path}`, {
+        method,
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || t('orders.actionFailed'));
+      setOrders(prev => prev.map(o => (o.id === orderId ? { ...o, milestones: data.milestones ?? o.milestones } : o)));
+      return true;
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : t('orders.actionFailed'));
+      return false;
+    } finally {
+      setActing(false);
+    }
+  };
+  const addMilestone      = (orderId: string, title: string) => milestoneAction(orderId, 'POST', '', { title });
+  const markMilestoneDone = (orderId: string, mid: string)    => milestoneAction(orderId, 'PATCH', `/${mid}/done`);
+  const approveMilestone  = (orderId: string, mid: string)    => milestoneAction(orderId, 'PATCH', `/${mid}/approve`);
 
   // Actions litige / remboursement (réponses serveur variables : 200/202/400).
   // On affiche le message serveur (ex. « il reste X jours pour livrer »).
@@ -373,6 +472,15 @@ export default function OrdersPage() {
                   </div>
 
                   <OrderTimeline order={activeOrder} t={t} />
+                  <MilestoneTracker
+                    order={activeOrder}
+                    myId={myId}
+                    t={t}
+                    acting={acting}
+                    onAdd={title => addMilestone(activeOrder.id, title)}
+                    onMarkDone={mid => markMilestoneDone(activeOrder.id, mid)}
+                    onApprove={mid => approveMilestone(activeOrder.id, mid)}
+                  />
 
                   {/* Actions selon le rôle */}
                   {myId === activeOrder.freelancerRawId &&
