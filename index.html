@@ -6,20 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="WorkπServ - The first secure freelance marketplace powered by Pi Network." />
     <title>WorkπServ | Freelance Marketplace on Pi Network</title>
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self' https://sdk.minepi.com;
+      style-src 'self' 'unsafe-inline';
+      img-src 'self' data: https://res.cloudinary.com;
+      font-src 'self';
+      connect-src 'self' https://workpiserv-api-testnet.onrender.com https://workpiserv-api-mainnet.onrender.com https://api.coingecko.com https://sdk.minepi.com https://*.minepi.com;
+      base-uri 'self';
+      form-action 'self';
+      object-src 'none';
+    ">
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-    <script>
-      // Restore path from query param set by 404.html
-      (function() {
-        var search = window.location.search;
-        if (search) {
-          var params = new URLSearchParams(search);
-          var path = params.get('path');
-          if (path && path !== '/') {
-            window.history.replaceState(null, null, path);
-          }
-        }
-      })();
-    </script>
     <script type="module" crossorigin src="/assets/index-c_v_iOXl.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-Dh9BTvlt.css">
   </head>
