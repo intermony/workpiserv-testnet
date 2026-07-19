@@ -45,3 +45,18 @@ export function apiHeaders(extra: Record<string, string> = {}): Record<string, s
     ...extra,
   };
 }
+
+/**
+ * À appeler après chaque réponse API : si le token est invalide/expiré/révoqué
+ * (401 — banni, JWT expiré, etc.), vide la session locale et renvoie vers
+ * l'accueil pour forcer une reconnexion propre, au lieu de laisser l'UI dans
+ * un état "connecté" fantôme jusqu'à ce qu'une action échoue silencieusement.
+ */
+export function handleUnauthorized(status: number): void {
+  if (status !== 401) return;
+  try {
+    localStorage.removeItem("workpiserv_token");
+    localStorage.removeItem("workpiserv_user");
+  } catch { /* ignore */ }
+  if (typeof window !== "undefined") window.location.hash = "#/";
+}
