@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { ArrowDownToLine, Clock, Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import { useLanguage } from '@/i18n';
 
-import { API_BASE_URL as API_URL } from '@/config/network';
+import { API_BASE_URL as API_URL, apiHeaders, handleUnauthorized } from '@/config/network';
 const MIN_WITHDRAWAL = 0.5; // indicatif côté client ; le backend fait foi
 
 type WStatus = 'requested' | 'processing' | 'submitted' | 'completed' | 'failed' | 'blocked';
@@ -96,8 +96,8 @@ export default function WithdrawCard({ balance }: { balance: number }) {
 
   const fetchList = useCallback(async () => {
     try {
-      const r = await fetch(`${API_URL}/api/withdrawals`, { headers: { Authorization: `Bearer ${token()}` } });
-      if (!r.ok) return;
+      const r = await fetch(`${API_URL}/api/withdrawals`, { headers: apiHeaders({ Authorization: `Bearer ${token()}` }) });
+      if (!r.ok) { handleUnauthorized(r.status); return; }
       setList(await r.json());
     } catch { /* silent */ }
   }, []);
@@ -114,11 +114,11 @@ export default function WithdrawCard({ balance }: { balance: number }) {
     try {
       const r = await fetch(`${API_URL}/api/withdrawals`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
+        headers: apiHeaders({ 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` }),
         body: JSON.stringify({ amount: amt }),
       });
       const data = await r.json().catch(() => ({}));
-      if (!r.ok) { setError(data.error || `HTTP ${r.status}`); setSubmitting(false); return; }
+      if (!r.ok) { handleUnauthorized(r.status); setError(data.error || `HTTP ${r.status}`); setSubmitting(false); return; }
       setReserved(v => +(v + amt).toFixed(7));
       setAmount('');
       setSuccess(s.okRequested);

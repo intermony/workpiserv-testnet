@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Send, Loader2, CheckCircle2, XCircle, Users, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { useLanguage } from '@/i18n';
 
-import { API_BASE_URL as API_URL } from '@/config/network';
+import { API_BASE_URL as API_URL, apiHeaders, handleUnauthorized } from '@/config/network';
 const TEST_AMOUNT = 0.1;
 
 interface PioneerRow {
@@ -64,11 +64,13 @@ export default function AdminA2UCard({ currentUid }: { currentUid?: string }) {
     setLoading(true);
     try {
       const r = await fetch(`${API_URL}/api/admin/users`, {
-        headers: { Authorization: `Bearer ${token()}` },
+        headers: apiHeaders({ Authorization: `Bearer ${token()}` }),
       });
       if (r.ok) {
         const data = await r.json();
         setRows(Array.isArray(data) ? data : []);
+      } else {
+        handleUnauthorized(r.status);
       }
     } catch {
       /* silencieux */
@@ -85,7 +87,7 @@ export default function AdminA2UCard({ currentUid }: { currentUid?: string }) {
     try {
       const r = await fetch(`${API_URL}/api/admin/test-a2u`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
+        headers: apiHeaders({ 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` }),
         body: JSON.stringify({ uid: u.pi_uid, amount: TEST_AMOUNT }),
       });
       const data = await r.json();
@@ -94,6 +96,7 @@ export default function AdminA2UCard({ currentUid }: { currentUid?: string }) {
         setStates((p) => ({ ...p, [u._id]: { phase: 'done', msg: txid } }));
         setPaid((p) => new Set(p).add(u.pi_uid as string));
       } else {
+        handleUnauthorized(r.status);
         setStates((p) => ({ ...p, [u._id]: { phase: 'error', msg: data.error || 'Échec' } }));
       }
     } catch {
