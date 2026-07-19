@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <title>WorkPiServ</title>
     <script>
-      var path = window.location.pathname;
-      window.location.replace('/?redirect=' + encodeURIComponent(path));
+      // HashRouter n'a pas besoin de restaurer un chemin : tout renvoyer à l'accueil.
+      window.location.replace('/');
     </script>
   </head>
   <body></body>
