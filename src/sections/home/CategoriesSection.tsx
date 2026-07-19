@@ -5,7 +5,7 @@ import { ScrollReveal } from '@/components/shared/ScrollReveal';
 import { categories } from '@/data/categories';
 import { useLanguage } from '@/i18n';
 
-import { API_BASE_URL as API_URL } from '@/config/network';
+import { API_BASE_URL as API_URL, apiHeaders } from '@/config/network';
 const iconMap: Record<string, React.ElementType> = {
   Palette, Code, Megaphone, Pen, Clapperboard, Mic,
 };
@@ -18,7 +18,7 @@ export function CategoriesSection() {
     let active = true;
     (async () => {
       try {
-        const res = await fetch(`${API_URL}/api/services`);
+        const res = await fetch(`${API_URL}/api/services`, { headers: apiHeaders() });
         if (res.ok) {
           const data = await res.json();
           const raw = (Array.isArray(data) ? data : data.services || []) as Array<{ category?: string }>;

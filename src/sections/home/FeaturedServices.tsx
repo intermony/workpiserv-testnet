@@ -6,7 +6,7 @@ import { ServiceCard } from '@/components/shared/ServiceCard';
 import type { Service } from '@/types';
 import { useLanguage } from '@/i18n';
 
-import { API_BASE_URL as API_URL } from '@/config/network';
+import { API_BASE_URL as API_URL, apiHeaders } from '@/config/network';
 // Même mapper API → Service que MarketplacePage (cohérence garantie).
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function normalizeApiService(s: any): Service {
@@ -50,7 +50,7 @@ export function FeaturedServices() {
     (async () => {
       try {
         // L'API renvoie les plus récents ; on remonte ensuite les mieux notés.
-        const res = await fetch(`${API_URL}/api/services?sort=newest`);
+        const res = await fetch(`${API_URL}/api/services?sort=newest`, { headers: apiHeaders() });
         if (res.ok) {
           const data = await res.json();
           const raw: unknown[] = Array.isArray(data) ? data : data.services || [];

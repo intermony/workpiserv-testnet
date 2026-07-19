@@ -3,7 +3,7 @@ import CountUp from 'react-countup';
 import { ScrollReveal } from '@/components/shared/ScrollReveal';
 import { useLanguage } from '@/i18n';
 
-import { API_BASE_URL as API_URL } from '@/config/network';
+import { API_BASE_URL as API_URL, apiHeaders } from '@/config/network';
 interface Stats {
   services: number;
   freelancers: number;
@@ -15,7 +15,7 @@ export function StatsBar() {
   const [stats, setStats] = useState<Stats>({ services: 0, freelancers: 0, transactions: 0 });
 
   useEffect(() => {
-    fetch(`${API_URL}/api/stats`)
+    fetch(`${API_URL}/api/stats`, { headers: apiHeaders() })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (data) setStats(data);
