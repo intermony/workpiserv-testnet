@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { ChevronDown, Loader2, CheckCircle } from 'lucide-react';
 import { useLanguage } from '@/i18n';
 
-import { API_BASE_URL as API_URL } from '@/config/network';
+import { API_BASE_URL as API_URL, apiHeaders, handleUnauthorized } from '@/config/network';
 const CATEGORIES = [
   { id: 'design',      name: 'Design' },
   { id: 'development', name: 'Development' },
@@ -41,10 +41,10 @@ export default function CreateServicePage() {
     try {
       const res = await fetch(`${API_URL}/api/services`, {
         method: 'POST',
-        headers: {
+        headers: apiHeaders({
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
+        }),
         body: JSON.stringify({
           title: title.trim(),
           category,
@@ -59,6 +59,7 @@ export default function CreateServicePage() {
         setSuccess(true);
         setTimeout(() => navigate('/profile'), 2000);
       } else {
+        handleUnauthorized(res.status);
         const data = await res.json().catch(() => ({}));
         setError((data as { message?: string }).message || t('create.failed'));
       }

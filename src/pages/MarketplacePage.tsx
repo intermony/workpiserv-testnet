@@ -10,7 +10,7 @@ import type { Service } from '@/types';
 
 import { useLanguage } from '@/i18n';
 
-import { API_BASE_URL as API_URL } from '@/config/network';
+import { API_BASE_URL as API_URL, apiHeaders } from '@/config/network';
 const sortOptions = [
   { value: 'popular',    label: 'market.sort.popular' },
   { value: 'newest',     label: 'market.sort.newest' },
@@ -91,7 +91,7 @@ export default function MarketplacePage() {
       if (searchQuery) params.set('q', searchQuery);
       if (activeSort)  params.set('sort', activeSort);
 
-      const res = await fetch(`${API_URL}/api/services?${params}`);
+      const res = await fetch(`${API_URL}/api/services?${params}`, { headers: apiHeaders() });
       if (res.ok) {
         const data = await res.json();
         const raw: unknown[] = Array.isArray(data) ? data : data.services || [];

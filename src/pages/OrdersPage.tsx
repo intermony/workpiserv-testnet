@@ -6,7 +6,7 @@ import Price from '@/components/shared/Price';
 import { useLanguage } from '@/i18n';
 import type { Order, OrderStatus, Milestone } from '@/types';
 
-import { API_BASE_URL as API_URL } from '@/config/network';
+import { API_BASE_URL as API_URL, apiHeaders, handleUnauthorized } from '@/config/network';
 // Order enrichi avec les IDs bruts pour savoir si on est acheteur ou vendeur
 // (deliveredAt : champ backend pas encore dans le type Order partagé)
 // order.date est une chaîne DÉJÀ formatée pour l'affichage (toLocaleDateString),
@@ -239,10 +239,10 @@ export default function OrdersPage() {
       const token = localStorage.getItem('workpiserv_token');
       const res = await fetch(`${API_URL}/api/orders/${orderId}/${action}`, {
         method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        headers: apiHeaders(token ? { Authorization: `Bearer ${token}` } : {}),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'failed');
+      if (!res.ok) { handleUnauthorized(res.status); throw new Error(data.error || 'failed'); }
       const newStatus: OrderStatus = action === 'deliver' ? 'delivered' : 'completed';
       setOrders(prev => prev.map(o => (o.id === orderId ? { ...o, status: newStatus } : o)));
     } catch {
@@ -261,11 +261,11 @@ export default function OrdersPage() {
       const token = localStorage.getItem('workpiserv_token');
       const res = await fetch(`${API_URL}/api/orders/${orderId}/milestones${path}`, {
         method,
-        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        headers: apiHeaders({ 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }),
         body: body ? JSON.stringify(body) : undefined,
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || t('orders.actionFailed'));
+      if (!res.ok) { handleUnauthorized(res.status); throw new Error(data.error || t('orders.actionFailed')); }
       setOrders(prev => prev.map(o => (o.id === orderId ? { ...o, milestones: data.milestones ?? o.milestones } : o)));
       return true;
     } catch (e) {
@@ -287,11 +287,11 @@ export default function OrdersPage() {
       const token = localStorage.getItem('workpiserv_token');
       const res = await fetch(`${API_URL}/api/orders/${orderId}/${path}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        headers: apiHeaders({ 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }),
         body: body ? JSON.stringify(body) : undefined,
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || t('orders.actionFailed'));
+      if (!res.ok) { handleUnauthorized(res.status); throw new Error(data.error || t('orders.actionFailed')); }
       if (optimisticStatus) setOrders(prev => prev.map(o => (o.id === orderId ? { ...o, status: optimisticStatus } : o)));
       return true;
     } catch (e) {
@@ -306,9 +306,9 @@ export default function OrdersPage() {
     let token: string | null = null;
     try { token = localStorage.getItem('workpiserv_token'); } catch { token = null; }
     fetch(`${API_URL}/api/orders`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      headers: apiHeaders(token ? { Authorization: `Bearer ${token}` } : {}),
     })
-      .then(r => r.ok ? r.json() : null)
+      .then(r => { if (!r.ok) { handleUnauthorized(r.status); return null; } return r.json(); })
       .then(data => {
         if (!data) { setError(true); return; }
         const raw = Array.isArray(data) ? data : data.orders || [];

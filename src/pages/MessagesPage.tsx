@@ -3,7 +3,7 @@ import { MessageSquare, Send, User, ArrowLeft, Loader2 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '@/i18n';
 
-import { API_BASE_URL as API_URL } from '@/config/network';
+import { API_BASE_URL as API_URL, apiHeaders, handleUnauthorized } from '@/config/network';
 interface Conversation {
   _id: string;
   participantId: string;
@@ -67,9 +67,9 @@ export default function MessagesPage() {
     const token = getToken();
     if (!token) { setLoadingConvs(false); return; }
     fetch(`${API_URL}/api/messages/conversations`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: apiHeaders({ Authorization: `Bearer ${token}` })
     })
-      .then(r => r.ok ? r.json() : [])
+      .then(r => { if (!r.ok) { handleUnauthorized(r.status); return []; } return r.json(); })
       .then(data => setConversations(Array.isArray(data) ? data : []))
       .catch(() => setConversations([]))
       .finally(() => setLoadingConvs(false));
@@ -80,9 +80,9 @@ export default function MessagesPage() {
     setLoadingMsgs(true);
     const token = getToken();
     fetch(`${API_URL}/api/messages/chat/${activeConv.participantId}`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {}
+      headers: apiHeaders(token ? { Authorization: `Bearer ${token}` } : {})
     })
-      .then(r => r.ok ? r.json() : [])
+      .then(r => { if (!r.ok) { handleUnauthorized(r.status); return []; } return r.json(); })
       .then(data => setMessages(Array.isArray(data) ? data : []))
       .catch(() => setMessages([]))
       .finally(() => setLoadingMsgs(false));
@@ -111,7 +111,7 @@ export default function MessagesPage() {
     try {
       const res = await fetch(`${API_URL}/api/messages`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: apiHeaders({ 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }),
         body: JSON.stringify({ recver_id: activeConv.participantId, text }),
       });
       if (res.ok) {
@@ -122,6 +122,8 @@ export default function MessagesPage() {
             ? { ...c, lastMessage: text, lastMessageAt: new Date().toISOString() }
             : c
         ));
+      } else {
+        handleUnauthorized(res.status);
       }
     } catch {
       // keep optimistic message

@@ -13,7 +13,7 @@ import { piSDK, piSdkAvailable } from '@/lib/pi';
 import { useLanguage } from '@/i18n';
 import type { Service, Review } from '@/types';
 
-import { API_BASE_URL as API_URL } from '@/config/network';
+import { API_BASE_URL as API_URL, apiHeaders, handleUnauthorized } from '@/config/network';
 // Mention transparente de la commission (affichée au moment de commander), multilingue.
 const COMMISSION_NOTE: Record<string, (net: string) => string> = {
   en: (net) => `Platform commission 10% — the freelancer receives π ${net}`,
@@ -93,8 +93,8 @@ export default function ServiceDetailPage() {
     setLoading(true);
     setNotFound(false);
     Promise.all([
-      fetch(`${API_URL}/api/services/${id}`).then(r => r.ok ? r.json() : null),
-      fetch(`${API_URL}/api/reviews?service=${id}`).then(r => r.ok ? r.json() : []),
+      fetch(`${API_URL}/api/services/${id}`, { headers: apiHeaders() }).then(r => r.ok ? r.json() : null),
+      fetch(`${API_URL}/api/reviews?service=${id}`, { headers: apiHeaders() }).then(r => r.ok ? r.json() : []),
     ])
       .then(([sData, rData]) => {
         if (!sData) { setNotFound(true); return; }
@@ -163,11 +163,11 @@ export default function ServiceDetailPage() {
         const token = localStorage.getItem('workpiserv_token');
         const r = await fetch(`${API_URL}/api/orders`, {
           method : 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          headers: apiHeaders({ 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }),
           body   : JSON.stringify({ serviceId: service.id, package: pkg?.name || 'Standard' }),
         });
         const o = await r.json();
-        if (!r.ok) { setBuying(false); setBuyError(o.error || t('service.payStart')); return; }
+        if (!r.ok) { handleUnauthorized(r.status); setBuying(false); setBuyError(o.error || t('service.payStart')); return; }
         orderId   = o._id;
         payAmount = o.amount; // montant en Pi verrouillé par le serveur
       }

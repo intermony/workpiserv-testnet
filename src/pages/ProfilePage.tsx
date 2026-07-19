@@ -12,7 +12,7 @@ import WithdrawCard from '@/components/WithdrawCard';
 import RechargeCard from '@/components/RechargeCard';
 import AdminA2UCard from '@/components/AdminA2UCard';
 
-import { API_BASE_URL as API_URL } from '@/config/network';
+import { API_BASE_URL as API_URL, apiHeaders, handleUnauthorized } from '@/config/network';
 // Adresse publique Pi (format Stellar) : commence par G, 56 caractères
 const PI_ADDRESS_REGEX = /^G[A-Z2-7]{55}$/;
 
@@ -88,13 +88,13 @@ export default function ProfilePage() {
       const token = localStorage.getItem('workpiserv_token');
       const res = await fetch(`${API_URL}/api/users/profile`, {
         method: 'PUT',
-        headers: {
+        headers: apiHeaders({
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
+        }),
         body: JSON.stringify(form),
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) { handleUnauthorized(res.status); throw new Error(); }
       await refreshUser();
       setEditingProfile(false);
     } catch {
@@ -130,10 +130,10 @@ export default function ProfilePage() {
       formData.append('avatar', file);
       const res = await fetch(`${API_URL}/api/users/avatar`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${localStorage.getItem('workpiserv_token')}` },
+        headers: apiHeaders({ Authorization: `Bearer ${localStorage.getItem('workpiserv_token')}` }),
         body: formData,
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) { handleUnauthorized(res.status); throw new Error(); }
       await refreshUser();
       setPhotoModal(false);
     } catch { setPhotoError("Échec de l'upload. Réessayez."); }
@@ -152,13 +152,13 @@ export default function ProfilePage() {
       const token = localStorage.getItem('workpiserv_token');
       const res = await fetch(`${API_URL}/api/users/wallet`, {
         method: 'PUT',
-        headers: {
+        headers: apiHeaders({
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
+        }),
         body: JSON.stringify({ pi_wallet_address: value }),
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) { handleUnauthorized(res.status); throw new Error(); }
       await refreshUser();
       setEditing(false);
     } catch {
