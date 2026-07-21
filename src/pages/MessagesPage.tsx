@@ -2,8 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { MessageSquare, Send, User, ArrowLeft, Loader2 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '@/i18n';
+import { useDeliveryNotifications } from '@/hooks/useDeliveryNotifications';
+import { DeliveryNotificationBanner } from '@/components/shared/DeliveryNotificationBanner';
 
 import { API_BASE_URL as API_URL, apiHeaders, handleUnauthorized } from '@/config/network';
+
 interface Conversation {
   _id: string;
   participantId: string;
@@ -47,6 +50,9 @@ export default function MessagesPage() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const myId = getMyId();
 
+  // N1 — bandeau notifications de livraison
+  const { latest, markAsRead, markAllAsRead } = useDeliveryNotifications();
+
   // Ouvre directement une conversation avec un vendeur (bouton "Contact" d'une page service).
   useEffect(() => {
     const to = searchParams.get('to');
@@ -62,6 +68,12 @@ export default function MessagesPage() {
       unread: 0,
     });
   }, [searchParams, loadingConvs, conversations, activeConv]);
+
+  // N1 — quand on arrive via le bandeau avec ?notif=xxx, on marque la notif comme lue
+  useEffect(() => {
+    const notifId = searchParams.get('notif');
+    if (notifId) markAsRead(notifId);
+  }, [searchParams, markAsRead]);
 
   useEffect(() => {
     const token = getToken();
@@ -154,6 +166,12 @@ export default function MessagesPage() {
         <div className="p-4 border-b border-border">
           <h2 className="font-semibold text-foreground text-lg">{t('nav.messages')}</h2>
         </div>
+        {/* N1 — bandeau livraisons non lues, affiché au-dessus de la liste des conversations */}
+        <DeliveryNotificationBanner
+          notifications={latest}
+          onDismiss={markAsRead}
+          onClearAll={markAllAsRead}
+        />
         <div className="flex-1 overflow-y-auto">
           {loadingConvs ? (
             <div className="flex items-center justify-center h-32 gap-2 text-muted-foreground">
