@@ -64,6 +64,13 @@ const translations: Record<Lang, Record<string, string>> = {
     'common.add': "Add",
     'common.loading': "Loading...",
 
+    'notif.delivery.bannerTitle': "{n} new delivery notification",
+    'notif.delivery.bannerTitlePlural': "{n} new delivery notifications",
+    'notif.delivery.itemTitle': "📦 {name} has delivered your order",
+    'notif.delivery.more': "And {n} more…",
+    'notif.delivery.markAllRead': "Mark all as read",
+    'notif.delivery.badgeAria': "{n} unread delivery notifications",
+
     'wallet.warning.title': "⚠️ Security warnings — read carefully",
     'wallet.warning.phrase': "NEVER enter your 24-word secret passphrase on any website — not even WorkπServ. Only in the official Pi Browser.",
     'wallet.warning.publicOnly': "Only enter your PUBLIC address (starts with G, 56 characters) — never your private key or passphrase.",
@@ -354,6 +361,13 @@ const translations: Record<Lang, Record<string, string>> = {
     'common.edit': "Modifier",
     'common.add': "Ajouter",
     'common.loading': "Chargement...",
+
+    'notif.delivery.bannerTitle': "{n} nouvelle livraison",
+    'notif.delivery.bannerTitlePlural': "{n} nouvelles livraisons",
+    'notif.delivery.itemTitle': "📦 {name} a livré votre commande",
+    'notif.delivery.more': "Et {n} de plus…",
+    'notif.delivery.markAllRead': "Tout marquer comme lu",
+    'notif.delivery.badgeAria': "{n} notifications de livraison non lues",
 
     'wallet.warning.title': "⚠️ Avertissements de sécurité — lisez attentivement",
     'wallet.warning.phrase': "Ne saisissez JAMAIS votre phrase secrète de 24 mots sur un site web — pas même WorkπServ. Uniquement dans le Pi Browser officiel.",
@@ -646,6 +660,13 @@ const translations: Record<Lang, Record<string, string>> = {
     'common.add': "إضافة",
     'common.loading': "جارٍ التحميل...",
 
+    'notif.delivery.bannerTitle': "إشعار تسليم جديد ({n})",
+    'notif.delivery.bannerTitlePlural': "{n} إشعارات تسليم جديدة",
+    'notif.delivery.itemTitle': "📦 قام {name} بتسليم طلبك",
+    'notif.delivery.more': "و{n} أخرى…",
+    'notif.delivery.markAllRead': "وضع علامة قراءة على الكل",
+    'notif.delivery.badgeAria': "{n} إشعارات تسليم غير مقروءة",
+
     'wallet.warning.title': "⚠️ تحذيرات أمنية — اقرأ بعناية",
     'wallet.warning.phrase': "لا تُدخل أبداً عبارتك السرية المكونة من 24 كلمة في أي موقع — ولا حتى WorkπServ. فقط في متصفح Pi الرسمي.",
     'wallet.warning.publicOnly': "أدخل فقط عنوانك العام (يبدأ بـ G، 56 حرفاً) — وليس مفتاحك الخاص أو عبارتك السرية أبداً.",
@@ -937,6 +958,13 @@ const translations: Record<Lang, Record<string, string>> = {
     'common.add': "添加",
     'common.loading': "加载中...",
 
+    'notif.delivery.bannerTitle': "{n} 条新交付通知",
+    'notif.delivery.bannerTitlePlural': "{n} 条新交付通知",
+    'notif.delivery.itemTitle': "📦 {name} 已交付您的订单",
+    'notif.delivery.more': "还有 {n} 条…",
+    'notif.delivery.markAllRead': "全部标为已读",
+    'notif.delivery.badgeAria': "{n} 条未读交付通知",
+
     'wallet.warning.title': "⚠️ 安全警告 — 请仔细阅读",
     'wallet.warning.phrase': "切勿在任何网站输入您的24个助记词 — 包括WorkπServ。只能在官方Pi浏览器中输入。",
     'wallet.warning.publicOnly': "只输入您的公共地址（以G开头，56个字符）— 切勿输入私钥或助记词。",
@@ -1227,6 +1255,13 @@ const translations: Record<Lang, Record<string, string>> = {
     'common.edit': "Sửa",
     'common.add': "Thêm",
     'common.loading': "Đang tải...",
+
+    'notif.delivery.bannerTitle': "{n} thông báo giao hàng mới",
+    'notif.delivery.bannerTitlePlural': "{n} thông báo giao hàng mới",
+    'notif.delivery.itemTitle': "📦 {name} đã giao đơn hàng của bạn",
+    'notif.delivery.more': "Và {n} nữa…",
+    'notif.delivery.markAllRead': "Đánh dấu tất cả đã đọc",
+    'notif.delivery.badgeAria': "{n} thông báo giao hàng chưa đọc",
 
     'wallet.warning.title': "⚠️ Cảnh báo bảo mật — đọc kỹ",
     'wallet.warning.phrase': "KHÔNG BAO GIỜ nhập cụm 24 từ bí mật trên bất kỳ trang web nào — kể cả WorkπServ. Chỉ trong Pi Browser chính thức.",
