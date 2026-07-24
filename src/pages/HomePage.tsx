@@ -4,11 +4,14 @@ import { CategoriesSection } from '@/sections/home/CategoriesSection';
 import { FeaturedServices } from '@/sections/home/FeaturedServices';
 import { HowItWorks } from '@/sections/home/HowItWorks';
 import { FreelancerCTA } from '@/sections/home/FreelancerCTA';
+import { TestnetBadge } from '@/components/shared/TestnetBadge';
 import { BookOpen, Newspaper } from 'lucide-react';
 
 export default function HomePage() {
   return (
     <main>
+      <TestnetBadge />
+
       {/* ── Resource quick-links ── */}
       <div className="flex items-center justify-center gap-3 px-4 pt-5 pb-1">
         <a
