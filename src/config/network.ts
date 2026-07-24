@@ -20,10 +20,23 @@ export type PiNetwork = "mainnet" | "testnet";
 const hostname =
   typeof window !== "undefined" ? window.location.hostname : "";
 
-/** Réseau actif, déduit du nom d'hôte. */
-export const PI_NETWORK: PiNetwork = hostname.startsWith("testnet.")
-  ? "testnet"
-  : "mainnet";
+/**
+ * Le hostname reste la protection historique (build testnet.* => testnet,
+ * quel que soit l'environnement de build — protège contre l'incident du
+ * 03/07/2026 où un build s'était retrouvé sur le mauvais domaine).
+ *
+ * VITE_PI_SANDBOX permet en plus de forcer le mode testnet sur un domaine
+ * qui ne commence pas par "testnet." (ex: workpiserv.com pendant une phase
+ * de test volontaire avec de vrais Pionniers). Cette variable ne peut
+ * JAMAIS forcer le mode mainnet — elle ne fait qu'ajouter testnet comme
+ * possibilité supplémentaire, jamais retirer la protection existante.
+ */
+const hostnameSaysTestnet = hostname.startsWith("testnet.");
+const envForcesSandbox = import.meta.env.VITE_PI_SANDBOX === "true";
+
+/** Réseau actif : testnet si le hostname OU la variable d'env le demande. */
+export const PI_NETWORK: PiNetwork =
+  hostnameSaysTestnet || envForcesSandbox ? "testnet" : "mainnet";
 
 /** URL de base de l'API backend correspondant au réseau. */
 export const API_BASE_URL: string =
@@ -44,19 +57,4 @@ export function apiHeaders(extra: Record<string, string> = {}): Record<string, s
     "X-Pi-Network": PI_NETWORK,
     ...extra,
   };
-}
-
-/**
- * À appeler après chaque réponse API : si le token est invalide/expiré/révoqué
- * (401 — banni, JWT expiré, etc.), vide la session locale et renvoie vers
- * l'accueil pour forcer une reconnexion propre, au lieu de laisser l'UI dans
- * un état "connecté" fantôme jusqu'à ce qu'une action échoue silencieusement.
- */
-export function handleUnauthorized(status: number): void {
-  if (status !== 401) return;
-  try {
-    localStorage.removeItem("workpiserv_token");
-    localStorage.removeItem("workpiserv_user");
-  } catch { /* ignore */ }
-  if (typeof window !== "undefined") window.location.hash = "#/";
 }
