@@ -152,7 +152,11 @@ class PiSDK {
   }
 
   async createPayment(orderData: OrderData, callbacks: PaymentCallbacks) {
-    if (!this.initialized || !window.Pi) throw new Error('Pi SDK not initialized');
+    if (!window.Pi) throw new Error('Pi SDK not initialized');
+    // Init paresseuse : un utilisateur déjà connecté via un token sauvegardé
+    // (pas de nouvelle authentification cette session) n'a jamais déclenché
+    // this.init() — sans ce filet, createPayment() échouait immédiatement.
+    if (!this.initialized) await this.init();
     const token = localStorage.getItem('workpiserv_token');
     return await (window.Pi as unknown as { createPayment: (data: unknown, cb: unknown) => Promise<unknown> }).createPayment(
       {
