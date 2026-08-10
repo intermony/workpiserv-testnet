@@ -39,26 +39,34 @@ module.exports = {
           foreground: "hsl(var(--card-foreground))",
         },
         brand: {
-          DEFAULT: '#F16530',
-          hover: '#E05520',
-          light: '#FFF0EB',
-          subtle: 'rgba(241, 101, 48, 0.08)',
+          DEFAULT: '#F2622E',
+          hover: '#D9501E',
+          light: '#FEF0EC',
+          subtle: 'rgba(242, 98, 46, 0.08)',
         },
         navy: {
-          DEFAULT: '#E2DEFF',
+          DEFAULT: '#1A1A1A',
         },
         escrow: {
-          DEFAULT: '#B49BFF',
-          light: 'rgba(180,155,255,0.15)',
+          DEFAULT: '#1B4FD8',
+          light: 'rgba(27,79,216,0.10)',
+        },
+        success: {
+          DEFAULT: '#16A34A',
+          light: 'rgba(22,163,74,0.10)',
+        },
+        warn: {
+          DEFAULT: '#EAB308',
+          light: 'rgba(234,179,8,0.12)',
         },
         dark: {
-          DEFAULT: '#161236',
-          card: '#231E50',
-          elem: '#302A69',
+          DEFAULT: '#EEF9F1',
+          card: '#FFFFFF',
+          elem: '#DFF3E6',
         },
         mauve: {
-          DEFAULT: '#B49BFF',
-          dark: '#785ADC',
+          DEFAULT: '#1B4FD8',
+          dark: '#123AA8',
         },
       },
       fontFamily: {
