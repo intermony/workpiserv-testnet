@@ -314,7 +314,7 @@ export default function ProfilePage() {
             </div>
             <div className="h-2.5 w-full rounded-full bg-border overflow-hidden">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-brand to-[#1B4FD8] transition-all duration-500"
+                className="h-full rounded-full bg-gradient-to-r from-brand to-[#0077B6] transition-all duration-500"
                 style={{ width: `${completionPct}%` }}
               />
             </div>
