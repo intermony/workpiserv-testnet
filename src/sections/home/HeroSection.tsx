@@ -6,7 +6,7 @@ import { useLanguage } from '@/i18n';
 export function HeroSection() {
   const { t } = useLanguage();
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-[#1B1640] via-[#161236] to-[#13112E] rounded-b-[32px]">
+    <section className="relative overflow-hidden bg-gradient-to-br from-[#EEF9F1] via-[#DFF3E6] to-[#DDF3E4] rounded-b-[32px]">
       <div className="absolute top-10 left-10 w-[300px] h-[300px] bg-brand/8 rounded-full blur-[80px]" />
       <div className="absolute bottom-10 right-10 w-[250px] h-[250px] bg-escrow/6 rounded-full blur-[80px]" />
 
