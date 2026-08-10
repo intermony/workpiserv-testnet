@@ -14,8 +14,15 @@ un escrow. Propriétaire unique : Ali Ben Taher (@alibentaher).
 
 - **Repo** : ce repo (`workpiserv-testnet`) est la branche/déploiement **testnet**.
 - Le réseau actif (mainnet/testnet) est déduit **automatiquement du hostname**
-  au runtime — ne jamais coder une URL d'API en dur, toujours passer par
-  `@/config/network`.
+  au runtime (`testnet.*` → testnet) — ne jamais coder une URL d'API en dur,
+  toujours passer par `@/config/network`.
+- **Override testnet via env** : la variable `VITE_PI_SANDBOX=true` force le
+  mode testnet même sur un domaine qui ne commence pas par `testnet.` (ex.
+  `workpiserv.com` pendant une phase de test volontaire avec de vrais
+  Pionniers). Cette variable ne peut **jamais** forcer le mode mainnet — elle
+  ne fait qu'ajouter testnet comme possibilité supplémentaire, jamais retirer
+  la protection historique du hostname. Voir les commentaires dans
+  `src/config/network.ts`.
 
 ## Stack technique
 
