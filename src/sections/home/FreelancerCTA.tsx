@@ -10,7 +10,7 @@ export function FreelancerCTA() {
     <section className="py-16 lg:py-24">
       <div className="section-container">
         <ScrollReveal>
-          <div className="relative overflow-hidden bg-gradient-to-br from-brand to-[#FF8A5C] rounded-3xl px-8 py-12 lg:px-16 lg:py-16 text-center">
+          <div className="relative overflow-hidden bg-gradient-to-br from-brand to-[#FF9466] rounded-3xl px-8 py-12 lg:px-16 lg:py-16 text-center">
             <motion.span
               className="absolute -bottom-6 -right-6 text-[150px] font-heading font-bold text-white/10 select-none"
               animate={{ y: [-4, 4] }}
