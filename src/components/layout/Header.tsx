@@ -77,9 +77,9 @@ export function Header() {
 
             <Link to="/" className="flex items-center gap-2 shrink-0">
               <div className="w-8 h-8 bg-brand rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-sm">π</span>
+                <span className="text-white font-bold text-xs">Pi</span>
               </div>
-              <span className="font-heading font-bold text-lg text-navy">Work<span className="text-brand">π</span>Serv</span>
+              <span className="font-heading font-bold text-lg text-navy">WorkPiServ</span>
             </Link>
 
             {isDesktop && (
@@ -154,8 +154,8 @@ export function Header() {
                 {/* Header du drawer */}
                 <div className="flex items-center justify-between mb-4">
                   <Link to="/" className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-brand rounded-full flex items-center justify-center"><span className="text-white font-bold text-sm">π</span></div>
-                    <span className="font-heading font-bold text-lg text-navy">Work<span className="text-brand">π</span>Serv</span>
+                    <div className="w-8 h-8 bg-brand rounded-full flex items-center justify-center"><span className="text-white font-bold text-xs">Pi</span></div>
+                    <span className="font-heading font-bold text-lg text-navy">WorkPiServ</span>
                   </Link>
                   <button onClick={() => setMobileDrawerOpen(false)} className="p-2 rounded-lg hover:bg-muted"><X size={20} /></button>
                 </div>
@@ -277,7 +277,7 @@ export function Header() {
             <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} transition={{ duration: 0.25 }} className="fixed inset-0 z-50 flex items-center justify-center p-4">
               <div className="bg-card rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center">
                 <div className="w-16 h-16 bg-brand rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-white font-bold text-3xl">π</span>
+                  <span className="text-white font-bold text-2xl">Pi</span>
                 </div>
                 <h3 className="font-heading font-bold text-xl text-navy mb-2">{t('pimodal.title')}</h3>
                 <div className="space-y-2 mb-6">

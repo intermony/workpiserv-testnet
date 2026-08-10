@@ -38,10 +38,10 @@ export function Footer() {
           <div>
             <button onClick={() => navigate('/')} className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-                <span className="text-brand font-bold text-sm">π</span>
+                <span className="text-brand font-bold text-xs">Pi</span>
               </div>
               <span className="font-heading font-bold text-lg text-white">
-                Work<span className="text-brand">π</span>Serv
+                WorkPiServ
               </span>
             </button>
             <p className="text-sm text-muted-foreground leading-relaxed">
@@ -122,7 +122,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted-foreground">
-            &copy; 2026 WorkπServ. {t('footer.rights')}
+            &copy; 2026 WorkPiServ. {t('footer.rights')}
           </p>
           <div className="flex items-center gap-5 flex-wrap justify-center">
             <button
