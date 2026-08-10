@@ -4,32 +4,38 @@
 
 @layer base {
   :root {
-    --background: 250 50% 9%;
-    --foreground: 250 80% 92%;
-    --card: 250 48% 14%;
-    --card-foreground: 250 80% 92%;
-    --popover: 250 48% 14%;
-    --popover-foreground: 250 80% 92%;
-    --primary: 22 89% 56%;
+    --background: 138 45% 95%;
+    --foreground: 0 0% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+    --primary: 14 85% 58%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 250 45% 22%;
-    --secondary-foreground: 250 80% 92%;
-    --muted: 250 45% 18%;
-    --muted-foreground: 250 30% 65%;
-    --accent: 270 80% 70%;
+    --secondary: 224 60% 47%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 138 25% 90%;
+    --muted-foreground: 220 8% 42%;
+    --accent: 224 60% 47%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 250 40% 22%;
-    --input: 250 40% 20%;
-    --ring: 22 89% 56%;
+    --border: 138 25% 82%;
+    --input: 138 25% 85%;
+    --ring: 14 85% 58%;
     --radius: 0.625rem;
-    
+
     --color-brand: #F2622E;
-    --color-brand-hover: #E05520;
-    --color-brand-light: rgba(242, 98, 46, 0.15);
-    --color-navy: #E2DEFF;
-    --color-escrow: #B49BFF;
+    --color-brand-hover: #D9501E;
+    --color-brand-light: rgba(242, 98, 46, 0.10);
+    --color-blue: #1B4FD8;
+    --color-blue-light: rgba(27, 79, 216, 0.10);
+    --color-green: #16A34A;
+    --color-green-light: rgba(22, 163, 74, 0.10);
+    --color-yellow: #EAB308;
+    --color-yellow-light: rgba(234, 179, 8, 0.12);
+    --color-navy: #1A1A1A;
+    --color-escrow: #1B4FD8;
     --font-heading: 'Poppins', system-ui, sans-serif;
     --font-body: 'Inter', system-ui, sans-serif;
   }
@@ -43,7 +49,7 @@
   }
   
   body {
-    @apply bg-[#161236] text-[#E2DEFF] font-body antialiased;
+    @apply bg-[#EEF9F1] text-[#1A1A1A] font-body antialiased;
   }
 }
 
@@ -61,15 +67,15 @@
   }
   
   .btn-ghost {
-    @apply text-[#9080D0] font-medium px-4 py-2 rounded-full transition-all duration-200 hover:bg-[#2A2460] focus:outline-none;
+    @apply text-[#6B6B6B] font-medium px-4 py-2 rounded-full transition-all duration-200 hover:bg-[#DFF3E6] focus:outline-none;
   }
   
   .card-surface {
-    @apply bg-[#231E50] border border-[#302A69] rounded-2xl shadow-card transition-all duration-300;
+    @apply bg-white border border-[#C7E8D2] rounded-2xl shadow-card transition-all duration-300;
   }
   
   .card-surface-hover {
-    @apply bg-[#231E50] border border-[#302A69] rounded-2xl shadow-card transition-all duration-300 hover:shadow-card-hover hover:-translate-y-0.5 cursor-pointer hover:border-[#785ADC];
+    @apply bg-white border border-[#C7E8D2] rounded-2xl shadow-card transition-all duration-300 hover:shadow-card-hover hover:-translate-y-0.5 cursor-pointer hover:border-[#1B4FD8];
   }
   
   .text-gradient-brand {
