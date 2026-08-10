@@ -4,38 +4,40 @@
 
 @layer base {
   :root {
-    --background: 138 45% 95%;
-    --foreground: 0 0% 10%;
+    --background: 45 20% 96%;
+    --foreground: 240 28% 14%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
+    --card-foreground: 240 28% 14%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
-    --primary: 14 85% 58%;
+    --popover-foreground: 240 28% 14%;
+    --primary: 16 100% 60%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 224 60% 47%;
+    --secondary: 201 100% 36%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 138 25% 90%;
+    --muted: 45 15% 91%;
     --muted-foreground: 220 8% 42%;
-    --accent: 224 60% 47%;
+    --accent: 201 100% 36%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 138 25% 82%;
-    --input: 138 25% 85%;
-    --ring: 14 85% 58%;
+    --border: 45 15% 85%;
+    --input: 45 15% 87%;
+    --ring: 16 100% 60%;
     --radius: 0.625rem;
 
-    --color-brand: #F2622E;
-    --color-brand-hover: #D9501E;
-    --color-brand-light: rgba(242, 98, 46, 0.10);
-    --color-blue: #1B4FD8;
-    --color-blue-light: rgba(27, 79, 216, 0.10);
+    --color-brand: #FF6B35;
+    --color-brand-hover: #E85A2B;
+    --color-brand-light: rgba(255, 107, 53, 0.10);
+    --color-blue: #0077B6;
+    --color-blue-light: rgba(0, 119, 182, 0.10);
     --color-green: #16A34A;
     --color-green-light: rgba(22, 163, 74, 0.10);
     --color-yellow: #EAB308;
     --color-yellow-light: rgba(234, 179, 8, 0.12);
-    --color-navy: #1A1A1A;
-    --color-escrow: #1B4FD8;
+    --color-gold: #FFD166;
+    --color-gold-light: rgba(255, 209, 102, 0.15);
+    --color-navy: #004E64;
+    --color-escrow: #0077B6;
     --font-heading: 'Poppins', system-ui, sans-serif;
     --font-body: 'Inter', system-ui, sans-serif;
   }
@@ -49,7 +51,7 @@
   }
   
   body {
-    @apply bg-[#EEF9F1] text-[#1A1A1A] font-body antialiased;
+    @apply bg-[#F7F6F3] text-[#1A1A2E] font-body antialiased;
   }
 }
 
@@ -67,19 +69,19 @@
   }
   
   .btn-ghost {
-    @apply text-[#6B6B6B] font-medium px-4 py-2 rounded-full transition-all duration-200 hover:bg-[#DFF3E6] focus:outline-none;
+    @apply text-[#6B6B6B] font-medium px-4 py-2 rounded-full transition-all duration-200 hover:bg-[#EFEDE8] focus:outline-none;
   }
   
   .card-surface {
-    @apply bg-white border border-[#C7E8D2] rounded-2xl shadow-card transition-all duration-300;
+    @apply bg-white border border-[#E8E6DF] rounded-2xl shadow-card transition-all duration-300;
   }
   
   .card-surface-hover {
-    @apply bg-white border border-[#C7E8D2] rounded-2xl shadow-card transition-all duration-300 hover:shadow-card-hover hover:-translate-y-0.5 cursor-pointer hover:border-[#1B4FD8];
+    @apply bg-white border border-[#E8E6DF] rounded-2xl shadow-card transition-all duration-300 hover:shadow-card-hover hover:-translate-y-0.5 cursor-pointer hover:border-[#0077B6];
   }
   
   .text-gradient-brand {
-    @apply bg-gradient-to-r from-brand to-[#FF8A5C] bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-brand to-[#FF9466] bg-clip-text text-transparent;
   }
   
   .skeleton-shimmer {
