@@ -12,7 +12,7 @@ export default function AffiliatePage() {
       <h1 className="font-heading font-bold text-3xl text-navy mb-4">Our Story</h1>
 
       <p className="text-muted-foreground leading-relaxed mb-4">
-        WorkπServ began as one Pioneer’s idea: that the Pi ecosystem needs real,
+        WorkPiServ began as one Pioneer’s idea: that the Pi ecosystem needs real,
         everyday utility — not promises, but a place where people can actually
         <span className="text-foreground"> use </span> Pi for something meaningful.
       </p>
@@ -34,8 +34,8 @@ export default function AffiliatePage() {
         {values.map((v, i) => (
           <div key={i} className="p-6 bg-brand-light rounded-xl">
             <div className="text-3xl mb-3">{v.icon}</div>
-            <h3 className="font-bold text-dark mb-1">{v.title}</h3>
-            <p className="text-dark/70 text-sm">{v.desc}</p>
+            <h3 className="font-bold text-navy mb-1">{v.title}</h3>
+            <p className="text-muted-foreground text-sm">{v.desc}</p>
           </div>
         ))}
       </div>
