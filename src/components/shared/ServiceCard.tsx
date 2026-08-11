@@ -44,7 +44,7 @@ export function ServiceCard({ service, index = 0 }: ServiceCardProps) {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
               </>
             ) : (
-              <div className="w-full h-full bg-gradient-to-br from-[#1E1B4B] via-[#2A2566] to-[#443B8E] flex items-center justify-center transition-transform duration-500 group-hover:scale-105">
+              <div className="w-full h-full bg-gradient-to-br from-[#F7F6F3] via-[#EFEDE8] to-[#E8E6DF] flex items-center justify-center transition-transform duration-500 group-hover:scale-105">
                 <span className="text-[110px] font-bold leading-none select-none text-[#FF6B35] opacity-30">π</span>
                 <span className="absolute bottom-3 left-1/2 -translate-x-1/2 text-white/40 text-xs font-semibold tracking-widest uppercase">WorkPiServ</span>
               </div>
