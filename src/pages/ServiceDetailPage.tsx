@@ -46,7 +46,7 @@ function normalizeService(s: any): Service {
       name        : freelancerId.displayName || freelancerId.username || 'Pioneer',
       username    : freelancerId.username || '',
       avatar      : freelancerId.avatar || '',
-      title       : freelancerId.title || 'Freelancer on WorkπServ',
+      title       : freelancerId.title || 'Freelancer on WorkPiServ',
       verified    : freelancerId.verified || false,
       location    : freelancerId.location || 'Pi Network',
       memberSince : freelancerId.memberSince || '',

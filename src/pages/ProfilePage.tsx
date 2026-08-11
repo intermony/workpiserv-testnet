@@ -16,11 +16,11 @@ import { API_BASE_URL as API_URL, apiHeaders, handleUnauthorized } from '@/confi
 // Adresse publique Pi (format Stellar) : commence par G, 56 caractères
 const PI_ADDRESS_REGEX = /^G[A-Z2-7]{55}$/;
 
-// Style commun des champs de saisie — dégradé mauve harmonisé avec le menu, texte clair lisible
+// Style commun des champs de saisie — fond clair neutre, texte sombre lisible
 const FIELD_CLASS =
-  "w-full rounded-xl px-4 py-3 text-sm border border-[#3C3580] " +
-  "bg-gradient-to-br from-[#2E2769] to-[#241E52] text-[#ECE9FF] " +
-  "placeholder:text-[#9089C8] focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand";
+  "w-full rounded-xl px-4 py-3 text-sm border border-[#E8E6DF] " +
+  "bg-white text-[#1A1A2E] " +
+  "placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand";
 
 function Avatar({ avatar, size = 72 }: { avatar?: string; size?: number }) {
   if (avatar && avatar.startsWith('http')) {
@@ -333,8 +333,8 @@ export default function ProfilePage() {
           </section>
         ) : (
           <section className="card-surface p-4 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-[#4ADE80]/15 flex items-center justify-center shrink-0">
-              <Check size={18} className="text-[#4ADE80]" />
+            <div className="w-9 h-9 rounded-full bg-[#16A34A]/15 flex items-center justify-center shrink-0">
+              <Check size={18} className="text-[#16A34A]" />
             </div>
             <div>
               <p className="font-heading font-semibold text-navy text-sm">{t('completion.done')}</p>
@@ -458,12 +458,12 @@ export default function ProfilePage() {
           </div>
 
           {/* ── AVERTISSEMENTS (toujours visibles) ── */}
-          <div className="rounded-2xl border border-[#F87171]/40 bg-[#F87171]/10 p-4 space-y-2">
-            <p className="text-xs font-bold text-[#F87171] flex items-center gap-1.5">
+          <div className="rounded-2xl border border-[#DC2626]/40 bg-[#DC2626]/10 p-4 space-y-2">
+            <p className="text-xs font-bold text-[#DC2626] flex items-center gap-1.5">
               <AlertTriangle size={14} className="shrink-0" />
               {t('wallet.warning.title')}
             </p>
-            <ul className="space-y-1.5 text-xs text-[#FCA5A5] list-none">
+            <ul className="space-y-1.5 text-xs text-[#B91C1C] list-none">
               <li className="flex gap-2"><span className="shrink-0">🔐</span>{t('wallet.warning.phrase')}</li>
               <li className="flex gap-2"><span className="shrink-0">✅</span>{t('wallet.warning.publicOnly')}</li>
               <li className="flex gap-2"><span className="shrink-0">⚠️</span>{t('wallet.warning.verify')}</li>
@@ -472,9 +472,9 @@ export default function ProfilePage() {
           </div>
 
           {/* ── Explication format ── */}
-          <div className="rounded-2xl border border-[#60A5FA]/30 bg-[#60A5FA]/10 p-3 flex gap-2">
-            <Info size={14} className="text-[#60A5FA] shrink-0 mt-0.5" />
-            <p className="text-xs text-[#93C5FD]">{t('wallet.info.format')}</p>
+          <div className="rounded-2xl border border-[#0077B6]/30 bg-[#0077B6]/10 p-3 flex gap-2">
+            <Info size={14} className="text-[#0077B6] shrink-0 mt-0.5" />
+            <p className="text-xs text-[#045C7B]">{t('wallet.info.format')}</p>
           </div>
 
           {/* ── Formulaire ou affichage ── */}
@@ -492,24 +492,24 @@ export default function ProfilePage() {
               />
               {/* Compteur de caractères */}
               <div className="flex justify-between items-center">
-                <span className={`text-xs font-mono ${draft.length === 56 ? 'text-[#4ADE80]' : 'text-muted-foreground'}`}>
+                <span className={`text-xs font-mono ${draft.length === 56 ? 'text-[#16A34A]' : 'text-muted-foreground'}`}>
                   {draft.length}/56 {draft.length === 56 ? '✓' : ''}
                 </span>
                 {draft.length > 0 && !draft.startsWith('G') && (
-                  <span className="text-xs text-[#F87171]">⚠️ Doit commencer par G</span>
+                  <span className="text-xs text-[#DC2626]">⚠️ Doit commencer par G</span>
                 )}
               </div>
               {walletError && (
-                <p className="text-xs text-[#F87171] flex items-center gap-1">
+                <p className="text-xs text-[#DC2626] flex items-center gap-1">
                   <AlertTriangle size={12} /> {walletError}
                 </p>
               )}
               {/* Confirmation avant sauvegarde */}
               {draft.length === 56 && draft.startsWith('G') && (
-                <div className="rounded-xl bg-[#FBBF24]/10 border border-[#FBBF24]/40 p-3">
-                  <p className="text-xs text-[#FBBF24] font-medium mb-1">⚠️ {t('wallet.confirm.title')}</p>
-                  <code className="text-[10px] text-[#FDE68A] break-all block">{draft}</code>
-                  <p className="text-xs text-[#FCD34D] mt-1">{t('wallet.confirm.hint')}</p>
+                <div className="rounded-xl bg-[#EAB308]/10 border border-[#EAB308]/40 p-3">
+                  <p className="text-xs text-[#EAB308] font-medium mb-1">⚠️ {t('wallet.confirm.title')}</p>
+                  <code className="text-[10px] text-[#78350F] break-all block">{draft}</code>
+                  <p className="text-xs text-[#92400E] mt-1">{t('wallet.confirm.hint')}</p>
                 </div>
               )}
               <div className="flex gap-2">
@@ -526,12 +526,12 @@ export default function ProfilePage() {
           ) : serverWallet ? (
             <div className="space-y-2">
               <div className="flex items-center gap-2 bg-background border border-border rounded-xl px-4 py-3">
-                <ShieldCheck size={16} className="text-[#4ADE80] shrink-0" />
+                <ShieldCheck size={16} className="text-[#16A34A] shrink-0" />
                 <code className="text-xs text-foreground truncate flex-1">{serverWallet}</code>
                 <button onClick={copyWallet}
                   className="text-muted-foreground hover:text-brand transition-colors shrink-0"
                   aria-label="Copy wallet address">
-                  {copied ? <Check size={16} className="text-[#4ADE80]" /> : <Copy size={16} />}
+                  {copied ? <Check size={16} className="text-[#16A34A]" /> : <Copy size={16} />}
                 </button>
               </div>
               <p className="text-[11px] text-muted-foreground text-center">{t('wallet.info.escrow')}</p>
@@ -562,7 +562,7 @@ export default function ProfilePage() {
         {/* Déconnexion */}
         <button
           onClick={logout}
-          className="w-full flex items-center justify-center gap-2 border border-[#F87171]/40 text-[#F87171] font-medium text-sm py-3 rounded-full hover:bg-[#F87171]/10 transition-colors"
+          className="w-full flex items-center justify-center gap-2 border border-[#DC2626]/40 text-[#DC2626] font-medium text-sm py-3 rounded-full hover:bg-[#DC2626]/10 transition-colors"
         >
           <LogOut size={16} /> {t('header.logout')}
         </button>
@@ -586,12 +586,12 @@ export default function ProfilePage() {
               <Avatar avatar={user?.avatar} size={96} />
             </div>
             {/* Tips */}
-            <div className="rounded-2xl border border-[#60A5FA]/30 bg-[#60A5FA]/10 p-3 text-xs text-[#93C5FD] space-y-1">
+            <div className="rounded-2xl border border-[#0077B6]/30 bg-[#0077B6]/10 p-3 text-xs text-[#045C7B] space-y-1">
               <p>{t('profile.photoTipSquare')}</p>
               <p>{t('profile.photoTipFormat')}</p>
               <p>{t('profile.photoTipSize')}</p>
             </div>
-            {photoError && <p className="text-xs text-[#F87171] flex items-center gap-1"><AlertTriangle size={12}/> {photoError}</p>}
+            {photoError && <p className="text-xs text-[#DC2626] flex items-center gap-1"><AlertTriangle size={12}/> {photoError}</p>}
             <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp"
               className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) uploadPhoto(f); }} />
             <div className="flex gap-3">

@@ -54,7 +54,7 @@ function normalizeApiService(s: any): Service {
       name        : freelancerId.username || 'Pioneer',
       username    : freelancerId.username || '',
       avatar      : freelancerId.avatar || '',
-      title       : 'Freelancer on WorkπServ',
+      title       : 'Freelancer on WorkPiServ',
       verified    : false,
       location    : 'Pi Network',
       memberSince : '',

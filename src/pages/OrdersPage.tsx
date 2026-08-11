@@ -16,15 +16,15 @@ import { API_BASE_URL as API_URL, apiHeaders, handleUnauthorized } from '@/confi
 type OrderEx = Order & { buyerRawId: string; freelancerRawId: string; deliveredAt?: string | null; createdAt?: string | null };
 
 const statusConfig: Record<OrderStatus, { labelKey: string; color: string; bg: string }> = {
-  active:          { labelKey: 'orders.status.active',          color: 'text-[#60A5FA]', bg: 'bg-[#60A5FA]/10' },
-  pending_payment: { labelKey: 'orders.status.pending_payment', color: 'text-[#FBBF24]', bg: 'bg-[#FBBF24]/10' },
+  active:          { labelKey: 'orders.status.active',          color: 'text-[#0077B6]', bg: 'bg-[#0077B6]/10' },
+  pending_payment: { labelKey: 'orders.status.pending_payment', color: 'text-[#EAB308]', bg: 'bg-[#EAB308]/10' },
   in_progress:     { labelKey: 'orders.status.in_progress',     color: 'text-escrow',    bg: 'bg-escrow-light' },
-  delivered:       { labelKey: 'orders.status.delivered',       color: 'text-[#4ADE80]', bg: 'bg-[#4ADE80]/10' },
-  completed:       { labelKey: 'orders.status.completed',       color: 'text-[#4ADE80]', bg: 'bg-[#4ADE80]/10' },
-  cancelled:       { labelKey: 'orders.status.cancelled',       color: 'text-[#F87171]', bg: 'bg-[#F87171]/10' },
-  disputed:        { labelKey: 'orders.status.disputed',        color: 'text-[#FBBF24]', bg: 'bg-[#FBBF24]/10' },
-  refunding:       { labelKey: 'orders.status.refunding',       color: 'text-[#FBBF24]', bg: 'bg-[#FBBF24]/10' },
-  refunded:        { labelKey: 'orders.status.refunded',        color: 'text-[#F87171]', bg: 'bg-[#F87171]/10' },
+  delivered:       { labelKey: 'orders.status.delivered',       color: 'text-[#16A34A]', bg: 'bg-[#16A34A]/10' },
+  completed:       { labelKey: 'orders.status.completed',       color: 'text-[#16A34A]', bg: 'bg-[#16A34A]/10' },
+  cancelled:       { labelKey: 'orders.status.cancelled',       color: 'text-[#DC2626]', bg: 'bg-[#DC2626]/10' },
+  disputed:        { labelKey: 'orders.status.disputed',        color: 'text-[#EAB308]', bg: 'bg-[#EAB308]/10' },
+  refunding:       { labelKey: 'orders.status.refunding',       color: 'text-[#EAB308]', bg: 'bg-[#EAB308]/10' },
+  refunded:        { labelKey: 'orders.status.refunded',        color: 'text-[#DC2626]', bg: 'bg-[#DC2626]/10' },
 };
 
 // Tolère les anciens statuts inconnus (ex. "pending" des premières versions)
@@ -53,7 +53,7 @@ function normalizeOrder(o: any): OrderEx {
       name        : o.freelancerId?.username || 'Pioneer',
       username    : o.freelancerId?.username || '',
       avatar      : o.freelancerId?.avatar || '👤',
-      title       : 'Freelancer on WorkπServ',
+      title       : 'Freelancer on WorkPiServ',
       verified    : false,
       location    : 'Pi Network',
       memberSince : '',
@@ -417,7 +417,7 @@ export default function OrdersPage() {
                         className="w-20 h-14 rounded-lg object-cover shrink-0 bg-muted"
                         onError={(e) => { const t = e.target as HTMLImageElement; t.style.display='none'; const fb = t.parentElement?.querySelector('.img-fallback') as HTMLElement; if(fb) fb.style.display='flex'; }}
                       />
-                      <div className="img-fallback w-20 h-14 rounded-lg shrink-0 bg-gradient-to-br from-[#1E1B4B] via-[#2A2566] to-[#443B8E] items-center justify-center hidden">
+                      <div className="img-fallback w-20 h-14 rounded-lg shrink-0 bg-gradient-to-br from-[#F7F6F3] via-[#EFEDE8] to-[#E8E6DF] items-center justify-center hidden">
                         <span className="text-white text-xs font-bold opacity-60">π</span>
                       </div>
                       <div className="flex-1 min-w-0">
@@ -447,7 +447,7 @@ export default function OrdersPage() {
                       className="w-24 h-16 rounded-lg object-cover shrink-0 bg-muted"
                       onError={(e) => { const t = e.target as HTMLImageElement; t.style.display='none'; const fb = t.parentElement?.querySelector('.img-fallback') as HTMLElement; if(fb) fb.style.display='flex'; }}
                     />
-                    <div className="img-fallback w-24 h-16 rounded-lg shrink-0 bg-gradient-to-br from-[#1E1B4B] via-[#2A2566] to-[#443B8E] items-center justify-center hidden">
+                    <div className="img-fallback w-24 h-16 rounded-lg shrink-0 bg-gradient-to-br from-[#F7F6F3] via-[#EFEDE8] to-[#E8E6DF] items-center justify-center hidden">
                     <span className="text-white text-xs font-bold opacity-60">π</span>
                   </div>
                     <div className="flex-1">
@@ -518,7 +518,7 @@ export default function OrdersPage() {
                     (activeOrder.status === 'in_progress' || activeOrder.status === 'delivered') && (
                     <div className="mt-3">
                       {disputeFor === activeOrder.id ? (
-                        <div className="space-y-2 bg-[#FBBF24]/5 border border-[#FBBF24]/30 rounded-xl p-3">
+                        <div className="space-y-2 bg-[#EAB308]/5 border border-[#EAB308]/30 rounded-xl p-3">
                           <textarea
                             value={disputeReason}
                             onChange={(e) => setDisputeReason(e.target.value)}
@@ -539,7 +539,7 @@ export default function OrdersPage() {
                           </div>
                         </div>
                       ) : (
-                        <button onClick={() => setDisputeFor(activeOrder.id)} className="w-full py-2.5 rounded-xl border border-[#FBBF24]/40 text-[#B45309] dark:text-[#FBBF24] text-sm font-medium flex items-center justify-center gap-2 hover:bg-[#FBBF24]/10 transition-colors">
+                        <button onClick={() => setDisputeFor(activeOrder.id)} className="w-full py-2.5 rounded-xl border border-[#EAB308]/40 text-[#B45309] dark:text-[#EAB308] text-sm font-medium flex items-center justify-center gap-2 hover:bg-[#EAB308]/10 transition-colors">
                           <AlertTriangle size={16} /> {t('orders.openDispute')}
                         </button>
                       )}
@@ -562,13 +562,13 @@ export default function OrdersPage() {
                     (activeOrder.status === 'in_progress' || activeOrder.status === 'delivered') && (
                     <div className="mt-3">
                       {cancelConfirm === activeOrder.id ? (
-                        <div className="bg-[#F87171]/5 border border-[#F87171]/30 rounded-xl p-3 space-y-2">
+                        <div className="bg-[#DC2626]/5 border border-[#DC2626]/30 rounded-xl p-3 space-y-2">
                           <p className="text-sm text-foreground">{t('orders.cancelConfirm')}</p>
                           <div className="flex gap-2">
                             <button
                               onClick={async () => { const ok = await postAction(activeOrder.id, 'cancel', undefined, 'refunding'); if (ok) setCancelConfirm(null); }}
                               disabled={acting}
-                              className="flex-1 py-2 text-sm rounded-lg bg-[#F87171] text-white font-medium disabled:opacity-60"
+                              className="flex-1 py-2 text-sm rounded-lg bg-[#DC2626] text-white font-medium disabled:opacity-60"
                             >
                               {acting ? <Loader2 size={14} className="animate-spin mx-auto" /> : t('orders.confirmYes')}
                             </button>
@@ -578,7 +578,7 @@ export default function OrdersPage() {
                           </div>
                         </div>
                       ) : (
-                        <button onClick={() => setCancelConfirm(activeOrder.id)} className="w-full py-2.5 rounded-xl border border-[#F87171]/40 text-[#DC2626] dark:text-[#F87171] text-sm font-medium flex items-center justify-center gap-2 hover:bg-[#F87171]/10 transition-colors">
+                        <button onClick={() => setCancelConfirm(activeOrder.id)} className="w-full py-2.5 rounded-xl border border-[#DC2626]/40 text-[#DC2626] dark:text-[#DC2626] text-sm font-medium flex items-center justify-center gap-2 hover:bg-[#DC2626]/10 transition-colors">
                           <Ban size={16} /> {t('orders.cancelOrder')}
                         </button>
                       )}
@@ -587,7 +587,7 @@ export default function OrdersPage() {
 
                   {/* Bannières d'état */}
                   {activeOrder.status === 'disputed' && (
-                    <div className="mt-4 text-sm text-[#B45309] dark:text-[#FBBF24] bg-[#FBBF24]/10 rounded-xl py-3 px-4 flex items-center gap-2">
+                    <div className="mt-4 text-sm text-[#B45309] dark:text-[#EAB308] bg-[#EAB308]/10 rounded-xl py-3 px-4 flex items-center gap-2">
                       <AlertTriangle size={16} className="shrink-0" /> {t('orders.disputedBanner')}
                     </div>
                   )}
@@ -597,19 +597,19 @@ export default function OrdersPage() {
                     </div>
                   )}
                   {activeOrder.status === 'refunded' && (
-                    <div className="mt-4 text-sm text-[#DC2626] dark:text-[#F87171] bg-[#F87171]/10 rounded-xl py-3 px-4 flex items-center gap-2">
+                    <div className="mt-4 text-sm text-[#DC2626] dark:text-[#DC2626] bg-[#DC2626]/10 rounded-xl py-3 px-4 flex items-center gap-2">
                       <RotateCcw size={16} className="shrink-0" /> {t('orders.refundedBanner')}
                     </div>
                   )}
 
                   {activeOrder.status === 'completed' && (
-                    <div className="mt-4 flex items-center justify-center gap-2 text-sm text-[#4ADE80] bg-[#4ADE80]/10 rounded-xl py-3">
+                    <div className="mt-4 flex items-center justify-center gap-2 text-sm text-[#16A34A] bg-[#16A34A]/10 rounded-xl py-3">
                       <CheckCircle2 size={16} /> {t('orders.completedBanner')}
                     </div>
                   )}
 
                   {actionError && (
-                    <p className="text-xs text-[#F87171] text-center mt-2">{actionError}</p>
+                    <p className="text-xs text-[#DC2626] text-center mt-2">{actionError}</p>
                   )}
                 </div>
 
