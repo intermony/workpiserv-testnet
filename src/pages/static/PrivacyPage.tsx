@@ -4,7 +4,7 @@ export default function PrivacyPage() {
       <h1 className="font-heading font-bold text-3xl text-navy mb-2">Privacy Policy</h1>
       <p className="text-sm text-muted-foreground mb-8">Last updated: May 2026</p>
       <p className="text-muted-foreground mb-6">
-        Welcome to WorkπServ — the first global freelance marketplace powered by Pi Network. We respect your privacy and are committed to protecting your personal data.
+        Welcome to WorkPiServ — the first global freelance marketplace powered by Pi Network. We respect your privacy and are committed to protecting your personal data.
       </p>
       <h2 className="font-heading font-bold text-xl text-navy mb-3">1. Data We Collect</h2>
       <ul className="space-y-1 text-muted-foreground mb-6 list-disc list-inside">

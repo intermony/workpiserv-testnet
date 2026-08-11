@@ -4,11 +4,11 @@ export default function TermsPage() {
       <h1 className="font-heading font-bold text-3xl text-navy mb-2">Terms of Service</h1>
       <p className="text-sm text-muted-foreground mb-8">Last updated: May 2026</p>
       <p className="text-muted-foreground mb-6">
-        By using WorkπServ, you agree to the following terms and conditions. Please read them carefully.
+        By using WorkPiServ, you agree to the following terms and conditions. Please read them carefully.
       </p>
       <h2 className="font-heading font-bold text-xl text-navy mb-3">1. Acceptance of Terms</h2>
       <p className="text-muted-foreground mb-6">
-        By using WorkπServ, you confirm that you have read, understood, and agreed to these terms. If you do not agree, please do not use the platform.
+        By using WorkPiServ, you confirm that you have read, understood, and agreed to these terms. If you do not agree, please do not use the platform.
       </p>
       <h2 className="font-heading font-bold text-xl text-navy mb-3">2. Service Description</h2>
       <ul className="space-y-1 text-muted-foreground mb-6 list-disc list-inside">

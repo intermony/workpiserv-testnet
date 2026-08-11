@@ -5,7 +5,7 @@ export default function CookiesPage() {
       <p className="text-sm text-muted-foreground mb-8">Last updated: May 2026</p>
 
       <p className="text-muted-foreground mb-6">
-        WorkπServ uses cookies and similar technologies to improve your experience on our platform. This page explains what cookies we use and why.
+        WorkPiServ uses cookies and similar technologies to improve your experience on our platform. This page explains what cookies we use and why.
       </p>
 
       <h2 className="font-heading font-bold text-xl text-navy mb-3">1. What Are Cookies?</h2>

@@ -12,7 +12,7 @@ export default function AffiliatePage() {
       <h1 className="font-heading font-bold text-3xl text-navy mb-4">Our Story</h1>
 
       <p className="text-muted-foreground leading-relaxed mb-4">
-        WorkπServ began as one Pioneer’s idea: that the Pi ecosystem needs real,
+        WorkPiServ began as one Pioneer’s idea: that the Pi ecosystem needs real,
         everyday utility — not promises, but a place where people can actually
         <span className="text-foreground"> use </span> Pi for something meaningful.
       </p>
