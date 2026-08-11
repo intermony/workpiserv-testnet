@@ -30,7 +30,7 @@ export function Footer() {
   const navigate = useNavigate();
 
   return (
-    <footer className="bg-[#100D26] text-white">
+    <footer className="bg-[#1A1A2E] text-white">
       <div className="section-container py-16 pb-24 md:pb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
 

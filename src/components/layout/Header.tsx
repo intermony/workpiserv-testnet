@@ -286,13 +286,13 @@ export function Header() {
                 {!isMobile && (
                   <div className="mb-6">
                     <div className="inline-block bg-white p-3 rounded-2xl border-2 border-gray-100">
-                      <QRCodeSVG value="pi://workpiserv.com" size={140} fgColor="#1E1B4B" />
+                      <QRCodeSVG value="pi://workpiserv.com" size={140} fgColor="#1A1A2E" />
                     </div>
                     <p className="text-xs text-muted-foreground mt-2">{t('pimodal.scan')}</p>
                   </div>
                 )}
                 <div className="space-y-3">
-                  <a href={PI_BROWSER_LINKS.android} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full bg-[#100D26] text-white py-3 px-4 rounded-full font-medium hover:bg-[#100D26]/90 transition-colors">
+                  <a href={PI_BROWSER_LINKS.android} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full bg-[#1A1A2E] text-white py-3 px-4 rounded-full font-medium hover:bg-[#1A1A2E]/90 transition-colors">
                     <Smartphone size={18} />{t('pimodal.android')}
                   </a>
                   <a href={PI_BROWSER_LINKS.ios} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full border-2 border-navy text-navy py-3 px-4 rounded-full font-medium hover:bg-background transition-colors">
