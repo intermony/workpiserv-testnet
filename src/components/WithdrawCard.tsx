@@ -72,12 +72,12 @@ const STR: Record<string, Strings> = {
 };
 
 const STATUS_STYLE: Record<WStatus, { color: string; Icon: typeof Clock }> = {
-  requested:  { color: '#FBBF24', Icon: Clock },
-  processing: { color: '#60A5FA', Icon: Loader2 },
-  submitted:  { color: '#60A5FA', Icon: Loader2 },
-  completed:  { color: '#4ADE80', Icon: CheckCircle2 },
-  failed:     { color: '#F87171', Icon: XCircle },
-  blocked:    { color: '#F87171', Icon: XCircle },
+  requested:  { color: '#EAB308', Icon: Clock },
+  processing: { color: '#0077B6', Icon: Loader2 },
+  submitted:  { color: '#0077B6', Icon: Loader2 },
+  completed:  { color: '#16A34A', Icon: CheckCircle2 },
+  failed:     { color: '#DC2626', Icon: XCircle },
+  blocked:    { color: '#DC2626', Icon: XCircle },
 };
 
 export default function WithdrawCard({ balance }: { balance: number }) {
@@ -163,8 +163,8 @@ export default function WithdrawCard({ balance }: { balance: number }) {
         </button>
       </div>
 
-      {error && <p className="text-xs text-[#F87171]">{error}</p>}
-      {success && <p className="text-xs text-[#4ADE80]">{success}</p>}
+      {error && <p className="text-xs text-[#DC2626]">{error}</p>}
+      {success && <p className="text-xs text-[#16A34A]">{success}</p>}
 
       {list.length > 0 && (
         <div className="space-y-2 pt-1">

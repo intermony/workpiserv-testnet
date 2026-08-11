@@ -124,7 +124,7 @@ export default function AdminA2UCard({ currentUid }: { currentUid?: string }) {
 
       <div className="flex items-center justify-between">
         <span className="inline-flex items-center gap-1.5 text-sm text-navy">
-          <CheckCircle2 size={15} className="text-[#4ADE80]" />
+          <CheckCircle2 size={15} className="text-[#16A34A]" />
           {s.paidSession}: <strong>{paid.size}</strong>
         </span>
         <button
@@ -163,12 +163,12 @@ export default function AdminA2UCard({ currentUid }: { currentUid?: string }) {
                     {u.pi_uid ? u.pi_uid.slice(0, 14) + '…' : s.noUid}
                   </p>
                   {st.phase === 'done' && (
-                    <p className="text-[11px] text-[#4ADE80] flex items-center gap-1">
+                    <p className="text-[11px] text-[#16A34A] flex items-center gap-1">
                       <CheckCircle2 size={11} /> {s.sent} {st.msg}
                     </p>
                   )}
                   {st.phase === 'error' && (
-                    <p className="text-[11px] text-[#F87171] flex items-center gap-1">
+                    <p className="text-[11px] text-[#DC2626] flex items-center gap-1">
                       <XCircle size={11} /> {st.msg}
                     </p>
                   )}

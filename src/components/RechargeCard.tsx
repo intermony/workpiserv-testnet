@@ -208,12 +208,12 @@ export default function RechargeCard({
       </div>
 
       {error && (
-        <p className="text-xs text-[#F87171] flex items-center gap-1.5">
+        <p className="text-xs text-[#DC2626] flex items-center gap-1.5">
           {phase === 'cancelled' ? <Info size={13} /> : <XCircle size={13} />} {error}
         </p>
       )}
       {success && (
-        <p className="text-xs text-[#4ADE80] flex items-center gap-1.5">
+        <p className="text-xs text-[#16A34A] flex items-center gap-1.5">
           <CheckCircle2 size={13} /> {success}
         </p>
       )}

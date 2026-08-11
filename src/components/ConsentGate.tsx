@@ -53,15 +53,15 @@ const T: Record<Lang, Locale> = {
     label: 'FR',
     title: 'Conditions & avertissements',
     intro:
-      "Avant d'utiliser WorkπServ, merci de lire et d'accepter les points suivants. Ils protègent autant les acheteurs que les freelances.",
+      "Avant d'utiliser WorkPiServ, merci de lire et d'accepter les points suivants. Ils protègent autant les acheteurs que les freelances.",
     sections: [
       {
         h: '1. Nature du service',
-        p: IS_MAINNET ? "WorkπServ est une place de marché de services entre Pioneers, réglée en Pi. La plateforme fonctionne sur le réseau principal (Mainnet) : les Pi échangés ont une valeur réelle et les transactions sont définitives. Engage-toi en connaissance de cause." : "WorkπServ est une place de marché de services entre Pioneers, réglée en Pi. La plateforme est en phase de test (Testnet) : les Pi échangés n'ont pas de valeur réelle tant que le passage en Mainnet n'est pas annoncé.",
+        p: IS_MAINNET ? "WorkPiServ est une place de marché de services entre Pioneers, réglée en Pi. La plateforme fonctionne sur le réseau principal (Mainnet) : les Pi échangés ont une valeur réelle et les transactions sont définitives. Engage-toi en connaissance de cause." : "WorkPiServ est une place de marché de services entre Pioneers, réglée en Pi. La plateforme est en phase de test (Testnet) : les Pi échangés n'ont pas de valeur réelle tant que le passage en Mainnet n'est pas annoncé.",
       },
       {
         h: '2. Détention des fonds en escrow',
-        p: "Quand tu paies un service, tes Pi sont placés en séquestre (escrow) jusqu'à la fin de la commande. WorkπServ détient actuellement ces fonds lui-même, en attendant le contrat d'escrow natif de Pi Network vers lequel la plateforme migrera dès qu'il sera disponible. WorkπServ n'est ni une banque ni un dépositaire (custodian) régulé.",
+        p: "Quand tu paies un service, tes Pi sont placés en séquestre (escrow) jusqu'à la fin de la commande. WorkPiServ détient actuellement ces fonds lui-même, en attendant le contrat d'escrow natif de Pi Network vers lequel la plateforme migrera dès qu'il sera disponible. WorkPiServ n'est ni une banque ni un dépositaire (custodian) régulé.",
       },
       {
         h: '3. Commission',
@@ -73,15 +73,15 @@ const T: Record<Lang, Locale> = {
       },
       {
         h: '5. Sécurité — anti-arnaque',
-        p: "Ne partage JAMAIS ta phrase secrète (seed phrase) ni tes clés privées : WorkπServ ne te les demandera jamais. Garde tes échanges et tes paiements sur la plateforme. Tout signalement d'arnaque est pris au sérieux.",
+        p: "Ne partage JAMAIS ta phrase secrète (seed phrase) ni tes clés privées : WorkPiServ ne te les demandera jamais. Garde tes échanges et tes paiements sur la plateforme. Tout signalement d'arnaque est pris au sérieux.",
       },
       {
         h: '6. Risque & responsabilité',
-        p: "Les services sont fournis directement entre utilisateurs ; WorkπServ facilite la mise en relation et le séquestre mais ne garantit pas la qualité d'un travail. Les crypto-actifs comportent des risques (volatilité, irréversibilité des transactions). Tu utilises la plateforme à tes propres risques.",
+        p: "Les services sont fournis directement entre utilisateurs ; WorkPiServ facilite la mise en relation et le séquestre mais ne garantit pas la qualité d'un travail. Les crypto-actifs comportent des risques (volatilité, irréversibilité des transactions). Tu utilises la plateforme à tes propres risques.",
       },
       {
         h: '7. Cadre juridique',
-        p: IS_MAINNET ? "WorkπServ n'est pas encore exploité par une société constituée ; une entité juridique est en cours de création dans une juridiction favorable aux crypto-actifs, et des conditions définitives (dont le droit applicable) seront publiées à ce moment-là. En attendant, il t'appartient de respecter les lois de ton pays concernant les crypto-actifs et l'utilisation de ce service." : "WorkπServ est en phase de test et n'est pas encore exploité par une société constituée. Avant le passage en Mainnet, une entité juridique sera créée dans une juridiction favorable aux crypto-actifs, et des conditions définitives (dont le droit applicable) seront publiées à ce moment-là. En attendant, il t'appartient de respecter les lois de ton pays concernant les crypto-actifs et l'utilisation de ce service.",
+        p: IS_MAINNET ? "WorkPiServ n'est pas encore exploité par une société constituée ; une entité juridique est en cours de création dans une juridiction favorable aux crypto-actifs, et des conditions définitives (dont le droit applicable) seront publiées à ce moment-là. En attendant, il t'appartient de respecter les lois de ton pays concernant les crypto-actifs et l'utilisation de ce service." : "WorkPiServ est en phase de test et n'est pas encore exploité par une société constituée. Avant le passage en Mainnet, une entité juridique sera créée dans une juridiction favorable aux crypto-actifs, et des conditions définitives (dont le droit applicable) seront publiées à ce moment-là. En attendant, il t'appartient de respecter les lois de ton pays concernant les crypto-actifs et l'utilisation de ce service.",
       },
     ],
     checkbox: "J'ai lu et j'accepte les conditions et avertissements ci-dessus.",
@@ -95,15 +95,15 @@ const T: Record<Lang, Locale> = {
     label: 'EN',
     title: 'Terms & disclaimers',
     intro:
-      'Before using WorkπServ, please read and accept the following. These protect both buyers and freelancers.',
+      'Before using WorkPiServ, please read and accept the following. These protect both buyers and freelancers.',
     sections: [
       {
         h: '1. Nature of the service',
-        p: IS_MAINNET ? "WorkπServ is a marketplace for services between Pioneers, settled in Pi. The platform runs on the main network (Mainnet): the Pi exchanged has real value and transactions are final. Proceed with full awareness." : "WorkπServ is a marketplace for services between Pioneers, settled in Pi. The platform is in a testing phase (Testnet): the Pi exchanged has no real value until a Mainnet switch is announced.",
+        p: IS_MAINNET ? "WorkPiServ is a marketplace for services between Pioneers, settled in Pi. The platform runs on the main network (Mainnet): the Pi exchanged has real value and transactions are final. Proceed with full awareness." : "WorkPiServ is a marketplace for services between Pioneers, settled in Pi. The platform is in a testing phase (Testnet): the Pi exchanged has no real value until a Mainnet switch is announced.",
       },
       {
         h: '2. Funds held in escrow',
-        p: "When you pay for a service, your Pi is placed in escrow until the order completes. WorkπServ currently holds these funds itself, pending Pi Network's native escrow smart contract, to which the platform will migrate once available. WorkπServ is neither a bank nor a regulated custodian.",
+        p: "When you pay for a service, your Pi is placed in escrow until the order completes. WorkPiServ currently holds these funds itself, pending Pi Network's native escrow smart contract, to which the platform will migrate once available. WorkPiServ is neither a bank nor a regulated custodian.",
       },
       {
         h: '3. Commission',
@@ -115,15 +115,15 @@ const T: Record<Lang, Locale> = {
       },
       {
         h: '5. Security — anti-scam',
-        p: 'NEVER share your seed phrase or private keys: WorkπServ will never ask for them. Keep your communication and payments on the platform. All scam reports are taken seriously.',
+        p: 'NEVER share your seed phrase or private keys: WorkPiServ will never ask for them. Keep your communication and payments on the platform. All scam reports are taken seriously.',
       },
       {
         h: '6. Risk & liability',
-        p: 'Services are provided directly between users; WorkπServ facilitates matching and escrow but does not guarantee the quality of any work. Crypto-assets carry risks (volatility, irreversible transactions). You use the platform at your own risk.',
+        p: 'Services are provided directly between users; WorkPiServ facilitates matching and escrow but does not guarantee the quality of any work. Crypto-assets carry risks (volatility, irreversible transactions). You use the platform at your own risk.',
       },
       {
         h: '7. Legal framework',
-        p: IS_MAINNET ? "WorkπServ is not yet operated by an incorporated company; a legal entity is being established in a crypto-friendly jurisdiction, and definitive terms (including governing law) will be published at that time. In the meantime, you are responsible for complying with your own country's laws regarding crypto-assets and the use of this service." : 'WorkπServ is in a testing phase and is not yet operated by an incorporated company. Before the Mainnet switch, a legal entity will be established in a crypto-friendly jurisdiction, and definitive terms (including governing law) will be published at that time. In the meantime, you are responsible for complying with your own country\'s laws regarding crypto-assets and the use of this service.',
+        p: IS_MAINNET ? "WorkPiServ is not yet operated by an incorporated company; a legal entity is being established in a crypto-friendly jurisdiction, and definitive terms (including governing law) will be published at that time. In the meantime, you are responsible for complying with your own country's laws regarding crypto-assets and the use of this service." : 'WorkPiServ is in a testing phase and is not yet operated by an incorporated company. Before the Mainnet switch, a legal entity will be established in a crypto-friendly jurisdiction, and definitive terms (including governing law) will be published at that time. In the meantime, you are responsible for complying with your own country\'s laws regarding crypto-assets and the use of this service.',
       },
     ],
     checkbox: 'I have read and accept the terms and disclaimers above.',
@@ -137,15 +137,15 @@ const T: Record<Lang, Locale> = {
     label: 'العربية',
     title: 'الشروط والتنبيهات',
     intro:
-      'قبل استخدام WorkπServ، يُرجى قراءة النقاط التالية والموافقة عليها. فهي تحمي المشترين والمستقلّين على حدٍّ سواء.',
+      'قبل استخدام WorkPiServ، يُرجى قراءة النقاط التالية والموافقة عليها. فهي تحمي المشترين والمستقلّين على حدٍّ سواء.',
     sections: [
       {
         h: '١. طبيعة الخدمة',
-        p: IS_MAINNET ? 'WorkπServ سوقٌ لتبادل الخدمات بين الرّوّاد (Pioneers) تُسوَّى بعملة Pi. تعمل المنصّة على الشبكة الرئيسية (Mainnet): عملة Pi المتبادَلة لها قيمة حقيقية والمعاملات نهائية. تابع وأنت على دراية كاملة.' : 'WorkπServ سوقٌ لتبادل الخدمات بين الرّوّاد (Pioneers) تُسوَّى بعملة Pi. المنصّة في طور التجربة (Testnet): عملة Pi المتبادَلة لا قيمة حقيقية لها إلى حين الإعلان عن التحوّل إلى الشبكة الرئيسية (Mainnet).',
+        p: IS_MAINNET ? 'WorkPiServ سوقٌ لتبادل الخدمات بين الرّوّاد (Pioneers) تُسوَّى بعملة Pi. تعمل المنصّة على الشبكة الرئيسية (Mainnet): عملة Pi المتبادَلة لها قيمة حقيقية والمعاملات نهائية. تابع وأنت على دراية كاملة.' : 'WorkPiServ سوقٌ لتبادل الخدمات بين الرّوّاد (Pioneers) تُسوَّى بعملة Pi. المنصّة في طور التجربة (Testnet): عملة Pi المتبادَلة لا قيمة حقيقية لها إلى حين الإعلان عن التحوّل إلى الشبكة الرئيسية (Mainnet).',
       },
       {
         h: '٢. الاحتفاظ بالأموال في الضمان (Escrow)',
-        p: 'عند دفعك مقابل خدمة، تُحفَظ عملات Pi الخاصة بك في الضمان إلى حين إتمام الطلب. تحتفظ WorkπServ حاليًا بهذه الأموال بنفسها، في انتظار عقد الضمان الأصلي (smart contract) لشبكة Pi الذي ستنتقل إليه المنصّة فور توفّره. WorkπServ ليست بنكًا ولا جهة إيداع (custodian) خاضعة للتنظيم.',
+        p: 'عند دفعك مقابل خدمة، تُحفَظ عملات Pi الخاصة بك في الضمان إلى حين إتمام الطلب. تحتفظ WorkPiServ حاليًا بهذه الأموال بنفسها، في انتظار عقد الضمان الأصلي (smart contract) لشبكة Pi الذي ستنتقل إليه المنصّة فور توفّره. WorkPiServ ليست بنكًا ولا جهة إيداع (custodian) خاضعة للتنظيم.',
       },
       {
         h: '٣. العمولة',
@@ -157,15 +157,15 @@ const T: Record<Lang, Locale> = {
       },
       {
         h: '٥. الأمان — مكافحة الاحتيال',
-        p: 'لا تُشارِك أبدًا عبارتك السرّية (seed phrase) أو مفاتيحك الخاصة: لن تطلبها منك WorkπServ مطلقًا. أبقِ مراسلاتك ومدفوعاتك داخل المنصّة. ويُؤخَذ كل بلاغٍ عن احتيال على محمل الجدّ.',
+        p: 'لا تُشارِك أبدًا عبارتك السرّية (seed phrase) أو مفاتيحك الخاصة: لن تطلبها منك WorkPiServ مطلقًا. أبقِ مراسلاتك ومدفوعاتك داخل المنصّة. ويُؤخَذ كل بلاغٍ عن احتيال على محمل الجدّ.',
       },
       {
         h: '٦. المخاطر والمسؤولية',
-        p: 'تُقدَّم الخدمات مباشرةً بين المستخدمين؛ تُيسِّر WorkπServ التواصل والضمان لكنها لا تضمن جودة أي عمل. تنطوي الأصول المشفّرة على مخاطر (تقلّب الأسعار، وعدم قابلية المعاملات للإلغاء). أنت تستخدم المنصّة على مسؤوليتك الخاصة.',
+        p: 'تُقدَّم الخدمات مباشرةً بين المستخدمين؛ تُيسِّر WorkPiServ التواصل والضمان لكنها لا تضمن جودة أي عمل. تنطوي الأصول المشفّرة على مخاطر (تقلّب الأسعار، وعدم قابلية المعاملات للإلغاء). أنت تستخدم المنصّة على مسؤوليتك الخاصة.',
       },
       {
         h: '٧. الإطار القانوني',
-        p: IS_MAINNET ? 'منصّة WorkπServ ليست بعدُ مُشغّلة من قِبَل شركة مُسجّلة؛ يجري حاليًا إنشاء كيان قانوني في ولاية قضائية داعمة للأصول المشفّرة، وستُنشَر عندئذٍ شروطٌ نهائية (بما في ذلك القانون الواجب التطبيق). وفي غضون ذلك، تقع على عاتقك مسؤولية الامتثال لقوانين بلدك المتعلّقة بالأصول المشفّرة وباستخدام هذه الخدمة.' : 'منصّة WorkπServ في طور التجربة وليست بعدُ مُشغّلة من قِبَل شركة مُسجّلة. قبل الانتقال إلى الشبكة الرئيسية (Mainnet)، سيُنشأ كيانٌ قانوني في ولاية قضائية داعمة للأصول المشفّرة، وستُنشَر عندئذٍ شروطٌ نهائية (بما في ذلك القانون الواجب التطبيق). وفي غضون ذلك، تقع على عاتقك مسؤولية الامتثال لقوانين بلدك المتعلّقة بالأصول المشفّرة وباستخدام هذه الخدمة.',
+        p: IS_MAINNET ? 'منصّة WorkPiServ ليست بعدُ مُشغّلة من قِبَل شركة مُسجّلة؛ يجري حاليًا إنشاء كيان قانوني في ولاية قضائية داعمة للأصول المشفّرة، وستُنشَر عندئذٍ شروطٌ نهائية (بما في ذلك القانون الواجب التطبيق). وفي غضون ذلك، تقع على عاتقك مسؤولية الامتثال لقوانين بلدك المتعلّقة بالأصول المشفّرة وباستخدام هذه الخدمة.' : 'منصّة WorkPiServ في طور التجربة وليست بعدُ مُشغّلة من قِبَل شركة مُسجّلة. قبل الانتقال إلى الشبكة الرئيسية (Mainnet)، سيُنشأ كيانٌ قانوني في ولاية قضائية داعمة للأصول المشفّرة، وستُنشَر عندئذٍ شروطٌ نهائية (بما في ذلك القانون الواجب التطبيق). وفي غضون ذلك، تقع على عاتقك مسؤولية الامتثال لقوانين بلدك المتعلّقة بالأصول المشفّرة وباستخدام هذه الخدمة.',
       },
     ],
     checkbox: 'لقد قرأتُ الشروط والتنبيهات أعلاه وأوافق عليها.',
