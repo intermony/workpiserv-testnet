@@ -30,17 +30,17 @@ export function Footer() {
   const navigate = useNavigate();
 
   return (
-    <footer className="bg-[#1A1A2E] text-white">
+    <footer className="bg-[#EFEDE8] text-[#1A1A2E] border-t border-[#E8E6DF]">
       <div className="section-container py-16 pb-24 md:pb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
 
           {/* Brand */}
           <div>
             <button onClick={() => navigate('/')} className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-                <span className="text-brand font-bold text-xs">Pi</span>
+              <div className="w-8 h-8 bg-brand rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-xs">Pi</span>
               </div>
-              <span className="font-heading font-bold text-lg text-white">
+              <span className="font-heading font-bold text-lg text-navy">
                 WorkPiServ
               </span>
             </button>
@@ -56,13 +56,13 @@ export function Footer() {
 
           {/* Platform */}
           <div>
-            <h4 className="text-sm font-semibold uppercase tracking-wider text-gray-300 mb-4">{t('footer.platform')}</h4>
+            <h4 className="text-sm font-semibold uppercase tracking-wider text-navy mb-4">{t('footer.platform')}</h4>
             <ul className="space-y-3">
               {platformLinks.map((link) => (
                 <li key={link.label}>
                   <button
                     onClick={() => navigate(link.href)}
-                    className="text-sm text-muted-foreground hover:text-white transition-colors text-left"
+                    className="text-sm text-muted-foreground hover:text-brand transition-colors text-left"
                   >
                     {t(link.label)}
                   </button>
@@ -73,13 +73,13 @@ export function Footer() {
 
           {/* Support */}
           <div>
-            <h4 className="text-sm font-semibold uppercase tracking-wider text-gray-300 mb-4">{t('footer.support')}</h4>
+            <h4 className="text-sm font-semibold uppercase tracking-wider text-navy mb-4">{t('footer.support')}</h4>
             <ul className="space-y-3">
               {supportLinks.map((link) => (
                 <li key={link.label}>
                   <button
                     onClick={() => navigate(link.href)}
-                    className="text-sm text-muted-foreground hover:text-white transition-colors text-left"
+                    className="text-sm text-muted-foreground hover:text-brand transition-colors text-left"
                   >
                     {t(link.label)}
                   </button>
@@ -90,7 +90,7 @@ export function Footer() {
 
           {/* Community */}
           <div>
-            <h4 className="text-sm font-semibold uppercase tracking-wider text-gray-300 mb-4">{t('footer.community')}</h4>
+            <h4 className="text-sm font-semibold uppercase tracking-wider text-navy mb-4">{t('footer.community')}</h4>
             <ul className="space-y-3">
               {communityLinks.map((link) => (
                 <li key={link.label}>
@@ -100,7 +100,7 @@ export function Footer() {
                       href={link.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-white transition-colors"
+                      className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-brand transition-colors"
                     >
                       <FileText size={13} className="shrink-0 text-brand" />
                       {t(link.label)}
@@ -108,7 +108,7 @@ export function Footer() {
                   ) : (
                     <button
                       onClick={() => navigate(link.href)}
-                      className="text-sm text-muted-foreground hover:text-white transition-colors text-left"
+                      className="text-sm text-muted-foreground hover:text-brand transition-colors text-left"
                     >
                       {t(link.label)}
                     </button>
@@ -120,26 +120,26 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="mt-12 pt-6 border-t border-[#E8E6DF] flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted-foreground">
             &copy; 2026 WorkPiServ. {t('footer.rights')}
           </p>
           <div className="flex items-center gap-5 flex-wrap justify-center">
             <button
               onClick={() => navigate('/privacy')}
-              className="text-sm text-muted-foreground hover:text-white transition-colors py-1"
+              className="text-sm text-muted-foreground hover:text-brand transition-colors py-1"
             >
               {t('footer.privacy')}
             </button>
             <button
               onClick={() => navigate('/terms')}
-              className="text-sm text-muted-foreground hover:text-white transition-colors py-1"
+              className="text-sm text-muted-foreground hover:text-brand transition-colors py-1"
             >
               {t('footer.terms')}
             </button>
             <button
               onClick={() => navigate('/cookies')}
-              className="text-sm text-muted-foreground hover:text-white transition-colors py-1"
+              className="text-sm text-muted-foreground hover:text-brand transition-colors py-1"
             >
               {t('footer.cookies')}
             </button>
@@ -148,7 +148,7 @@ export function Footer() {
               href="/WorkPiServ_Whitepaper_v1.html"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 text-sm text-brand hover:text-white transition-colors py-1 font-medium"
+              className="flex items-center gap-1 text-sm text-brand hover:text-brand-hover transition-colors py-1 font-medium"
             >
               <FileText size={13} />
               Whitepaper
