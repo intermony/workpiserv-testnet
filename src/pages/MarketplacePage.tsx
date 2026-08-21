@@ -300,13 +300,13 @@ export default function MarketplacePage() {
           )}
 
           <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
               <p className="text-sm text-muted-foreground">
                 {loading
                   ? t('market.loadingServices')
                   : t('market.showing').replace('{n}', String(filteredServices.length)).replace('{m}', String(allServices.length))}
               </p>
-              <div className="flex items-center gap-2 relative">
+              <div className="flex items-center gap-2 relative flex-wrap">
                 {!isDesktop && (
                   <button
                     onClick={() => setMobileFilterOpen(true)}
@@ -317,7 +317,7 @@ export default function MarketplacePage() {
                 )}
                 <button
                   onClick={() => setSortOpen(!sortOpen)}
-                  className="flex items-center gap-2 text-sm h-10 px-4 text-muted-foreground hover:text-navy transition-colors bg-card border border-border rounded-lg shrink-0"
+                  className="flex items-center gap-2 text-sm h-10 px-4 text-muted-foreground hover:text-navy transition-colors bg-card border-[1.5px] border-border rounded-full shrink-0 whitespace-nowrap"
                 >
                   {t(sortOptions.find(o => o.value === activeSort)?.label || '')}
                   <ChevronDown size={16} />
