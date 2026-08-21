@@ -310,14 +310,14 @@ export default function MarketplacePage() {
                 {!isDesktop && (
                   <button
                     onClick={() => setMobileFilterOpen(true)}
-                    className="btn-secondary text-sm py-2 px-4 flex items-center gap-2"
+                    className="btn-secondary text-sm h-10 px-4 flex items-center gap-2 shrink-0"
                   >
                     <Filter size={16} /> {t('market.filters')}
                   </button>
                 )}
                 <button
                   onClick={() => setSortOpen(!sortOpen)}
-                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-navy transition-colors bg-card border border-border rounded-lg px-4 py-2"
+                  className="flex items-center gap-2 text-sm h-10 px-4 text-muted-foreground hover:text-navy transition-colors bg-card border border-border rounded-lg shrink-0"
                 >
                   {t(sortOptions.find(o => o.value === activeSort)?.label || '')}
                   <ChevronDown size={16} />
