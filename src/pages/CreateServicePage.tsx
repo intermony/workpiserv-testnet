@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ChevronDown, Loader2, CheckCircle } from 'lucide-react';
 import { useLanguage } from '@/i18n';
+import { ServiceImageUpload } from '@/components/ServiceImageUpload';
 
 import { API_BASE_URL as API_URL, apiHeaders, handleUnauthorized } from '@/config/network';
 const CATEGORIES = [
@@ -28,8 +29,32 @@ export default function CreateServicePage() {
   const [priceCurrency, setPriceCurrency] = useState<'PI' | 'USD'>('PI');
   const [deliveryDays, setDelivery] = useState('3');
   const [description, setDesc]      = useState('');
+  const [image, setImage]           = useState('');
 
   const isValid = title.trim().length >= 10 && category && Number(price) > 0 && description.trim().length >= 30;
+
+  async function handleImageUpload(file: File) {
+    let token: string | null = null;
+    try { token = localStorage.getItem('workpiserv_token'); } catch { token = null; }
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const res = await fetch(`${API_URL}/api/services/upload-image`, {
+      method: 'POST',
+      headers: apiHeaders({
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      }),
+      body: formData,
+    });
+
+    if (!res.ok) {
+      handleUnauthorized(res.status);
+      throw new Error('upload failed');
+    }
+    const data = await res.json();
+    setImage(data.imageUrl);
+  }
 
   async function handleSubmit() {
     if (!isValid) return;
@@ -52,6 +77,7 @@ export default function CreateServicePage() {
           priceCurrency,
           deliveryDays: Number(deliveryDays),
           description: description.trim(),
+          image,
         }),
       });
 
@@ -101,6 +127,19 @@ export default function CreateServicePage() {
 
       <div className="section-container py-8 max-w-2xl">
         <div className="space-y-5">
+
+          {/* Cover image */}
+          <ServiceImageUpload
+            currentImage={image}
+            onUpload={handleImageUpload}
+            onRemove={() => setImage('')}
+            label={t('create.image')}
+            hint={t('create.imageHint')}
+            uploadingLabel={t('create.imageUploading')}
+            errorFormat={t('create.imageErrorFormat')}
+            errorSize={t('create.imageErrorSize')}
+            errorGeneric={t('create.imageErrorGeneric')}
+          />
 
           {/* Title */}
           <div className="card-surface p-5">
