@@ -497,6 +497,15 @@ export default function OrdersPage() {
                     </button>
                   )}
 
+                  {/* 🔧 DEBUG TEMPORAIRE — à retirer une fois le bug résolu */}
+                  <div className="mt-4 p-3 border-2 border-dashed border-red-500 bg-red-50 text-xs font-mono break-all">
+                    <div>DEBUG myId = "{myId}"</div>
+                    <div>DEBUG buyerRawId = "{activeOrder.buyerRawId}"</div>
+                    <div>DEBUG match (myId===buyerRawId) = {String(myId === activeOrder.buyerRawId)}</div>
+                    <div>DEBUG status = "{activeOrder.status}"</div>
+                    <div>DEBUG status===delivered = {String(activeOrder.status === 'delivered')}</div>
+                  </div>
+
                   {myId === activeOrder.buyerRawId && activeOrder.status === 'delivered' && (
                     <div className="mt-4">
                       <button
