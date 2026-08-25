@@ -303,19 +303,33 @@ export default function OrdersPage() {
   };
 
   useEffect(() => {
-    let token: string | null = null;
-    try { token = localStorage.getItem('workpiserv_token'); } catch { token = null; }
-    fetch(`${API_URL}/api/orders`, {
-      headers: apiHeaders(token ? { Authorization: `Bearer ${token}` } : {}),
-    })
-      .then(r => { if (!r.ok) { handleUnauthorized(r.status); return null; } return r.json(); })
-      .then(data => {
-        if (!data) { setError(true); return; }
-        const raw = Array.isArray(data) ? data : data.orders || [];
-        setOrders(raw.map(normalizeOrder));
+    let cancelled = false;
+    const fetchOrders = (silent: boolean) => {
+      let token: string | null = null;
+      try { token = localStorage.getItem('workpiserv_token'); } catch { token = null; }
+      if (!silent) setLoading(true);
+      fetch(`${API_URL}/api/orders`, {
+        headers: apiHeaders(token ? { Authorization: `Bearer ${token}` } : {}),
       })
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
+        .then(r => { if (!r.ok) { handleUnauthorized(r.status); return null; } return r.json(); })
+        .then(data => {
+          if (cancelled) return;
+          if (!data) { if (!silent) setError(true); return; }
+          const raw = Array.isArray(data) ? data : data.orders || [];
+          setOrders(raw.map(normalizeOrder));
+        })
+        .catch(() => { if (!cancelled && !silent) setError(true); })
+        .finally(() => { if (!cancelled && !silent) setLoading(false); });
+    };
+
+    fetchOrders(false); // chargement initial (avec spinner)
+
+    // Rafraîchissement silencieux périodique — évite qu'un statut
+    // (ex. "delivered") reste figé côté acheteur tant qu'il n'a pas
+    // rechargé manuellement la page. Pas de spinner, pas de flash UI.
+    const interval = setInterval(() => fetchOrders(true), 15000);
+
+    return () => { cancelled = true; clearInterval(interval); };
   }, []);
 
   const filtered = useMemo(() => {
@@ -496,15 +510,6 @@ export default function OrdersPage() {
                       {t('orders.markDelivered')}
                     </button>
                   )}
-
-                  {/* 🔧 DEBUG TEMPORAIRE — à retirer une fois le bug résolu */}
-                  <div className="mt-4 p-3 border-2 border-dashed border-red-500 bg-red-50 text-xs font-mono break-all">
-                    <div>DEBUG myId = "{myId}"</div>
-                    <div>DEBUG buyerRawId = "{activeOrder.buyerRawId}"</div>
-                    <div>DEBUG match (myId===buyerRawId) = {String(myId === activeOrder.buyerRawId)}</div>
-                    <div>DEBUG status = "{activeOrder.status}"</div>
-                    <div>DEBUG status===delivered = {String(activeOrder.status === 'delivered')}</div>
-                  </div>
 
                   {myId === activeOrder.buyerRawId && activeOrder.status === 'delivered' && (
                     <div className="mt-4">
