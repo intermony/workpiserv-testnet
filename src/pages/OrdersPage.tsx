@@ -327,9 +327,18 @@ export default function OrdersPage() {
     // Rafraîchissement silencieux périodique — évite qu'un statut
     // (ex. "delivered") reste figé côté acheteur tant qu'il n'a pas
     // rechargé manuellement la page. Pas de spinner, pas de flash UI.
-    const interval = setInterval(() => fetchOrders(true), 15000);
+    // Rafraîchissement silencieux — 5 min, aligné sur le standard (jamais
+    // <1 min pour un polling non-critique ; le vrai signal de vérité reste
+    // le Notification créé côté backend à la livraison, pas ce polling qui
+    // n'est qu'un filet de sécurité visuel). Pas de spinner, pas de flash UI.
+    const interval = setInterval(() => fetchOrders(true), 5 * 60 * 1000);
 
-    return () => { cancelled = true; clearInterval(interval); };
+    // + refetch immédiat quand l'utilisateur revient sur l'app/onglet —
+    // coût zéro en arrière-plan, réactif dès la reprise (standard polling).
+    const onVisible = () => { if (document.visibilityState === 'visible') fetchOrders(true); };
+    document.addEventListener('visibilitychange', onVisible);
+
+    return () => { cancelled = true; clearInterval(interval); document.removeEventListener('visibilitychange', onVisible); };
   }, []);
 
   const filtered = useMemo(() => {
