@@ -19,7 +19,7 @@ interface Withdrawal {
 interface Strings {
   title: string; sub: string; available: string; min: string; placeholder: string;
   btn: string; sending: string; histTitle: string; histEmpty: string;
-  errInvalid: string; errInsufficient: string; okRequested: string;
+  errInvalid: string; errInsufficient: string; okRequested: string; lockedNote: string;
   st: Record<WStatus, string>;
 }
 
@@ -31,6 +31,7 @@ const STR: Record<string, Strings> = {
     btn: 'Withdraw', sending: 'Sending…', histTitle: 'Recent withdrawals', histEmpty: 'No withdrawals yet.',
     errInvalid: 'Enter a valid amount.', errInsufficient: 'Insufficient balance.',
     okRequested: 'Withdrawal requested. It will be paid within 48h unless reviewed.',
+    lockedNote: '{n} π are still under the 15-day security hold and not yet withdrawable.',
     st: { requested: 'Pending (48h)', processing: 'Processing', submitted: 'On blockchain', completed: 'Paid', failed: 'Failed (refunded)', blocked: 'Blocked (refunded)' },
   },
   fr: {
@@ -40,6 +41,7 @@ const STR: Record<string, Strings> = {
     btn: 'Retirer', sending: 'Envoi…', histTitle: 'Retraits récents', histEmpty: 'Aucun retrait pour le moment.',
     errInvalid: 'Entrez un montant valide.', errInsufficient: 'Solde insuffisant.',
     okRequested: 'Demande enregistrée. Versement sous 48h sauf vérification.',
+    lockedNote: '{n} π sont encore sous le délai de sécurité de 15 jours, pas encore retirables.',
     st: { requested: 'En attente (48h)', processing: 'En cours', submitted: 'Sur la blockchain', completed: 'Versé', failed: 'Échec (remboursé)', blocked: 'Bloqué (remboursé)' },
   },
   ar: {
@@ -49,6 +51,7 @@ const STR: Record<string, Strings> = {
     btn: 'سحب', sending: 'جارٍ الإرسال…', histTitle: 'عمليات السحب الأخيرة', histEmpty: 'لا توجد عمليات سحب بعد.',
     errInvalid: 'أدخل مبلغًا صحيحًا.', errInsufficient: 'الرصيد غير كافٍ.',
     okRequested: 'تم تسجيل الطلب. الدفع خلال 48 ساعة ما لم تتم المراجعة.',
+    lockedNote: 'لا يزال {n} π ضمن فترة الأمان لمدة 15 يومًا وغير قابل للسحب بعد.',
     st: { requested: 'قيد الانتظار (48س)', processing: 'قيد المعالجة', submitted: 'على البلوكشين', completed: 'تم الدفع', failed: 'فشل (مُسترد)', blocked: 'محظور (مُسترد)' },
   },
   zh: {
@@ -58,6 +61,7 @@ const STR: Record<string, Strings> = {
     btn: '提现', sending: '发送中…', histTitle: '最近的提现', histEmpty: '暂无提现记录。',
     errInvalid: '请输入有效金额。', errInsufficient: '余额不足。',
     okRequested: '提现已申请。将在 48 小时内支付，除非需要审核。',
+    lockedNote: '{n} π 仍处于15天安全锁定期内，尚不可提现。',
     st: { requested: '等待中（48小时）', processing: '处理中', submitted: '区块链处理中', completed: '已支付', failed: '失败（已退款）', blocked: '已拦截（已退款）' },
   },
   vi: {
@@ -67,6 +71,7 @@ const STR: Record<string, Strings> = {
     btn: 'Rút tiền', sending: 'Đang gửi…', histTitle: 'Lịch sử rút gần đây', histEmpty: 'Chưa có khoản rút nào.',
     errInvalid: 'Nhập số tiền hợp lệ.', errInsufficient: 'Số dư không đủ.',
     okRequested: 'Đã gửi yêu cầu. Thanh toán trong 48 giờ trừ khi cần xem xét.',
+    lockedNote: '{n} π vẫn đang trong thời gian khóa an toàn 15 ngày, chưa thể rút.',
     st: { requested: 'Đang chờ (48h)', processing: 'Đang xử lý', submitted: 'Trên blockchain', completed: 'Đã thanh toán', failed: 'Thất bại (đã hoàn)', blocked: 'Bị chặn (đã hoàn)' },
   },
 };
@@ -80,7 +85,7 @@ const STATUS_STYLE: Record<WStatus, { color: string; Icon: typeof Clock }> = {
   blocked:    { color: '#DC2626', Icon: XCircle },
 };
 
-export default function WithdrawCard({ balance }: { balance: number }) {
+export default function WithdrawCard({ balance, locked = 0 }: { balance: number; locked?: number }) {
   const { lang } = useLanguage();
   const s = STR[lang] || STR.en;
 
@@ -142,6 +147,9 @@ export default function WithdrawCard({ balance }: { balance: number }) {
         <div>
           <p className="text-sm text-muted-foreground">{s.available}</p>
           <p className="font-heading font-bold text-2xl text-navy">{display} <span className="text-brand">π</span></p>
+          {locked > 0 && (
+            <p className="text-xs text-amber-600 mt-1">{s.lockedNote.replace('{n}', String(locked))}</p>
+          )}
         </div>
         <p className="text-xs text-muted-foreground">{s.min}: {MIN_WITHDRAWAL} π</p>
       </div>
