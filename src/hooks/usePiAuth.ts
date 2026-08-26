@@ -7,6 +7,8 @@ interface PiUser {
   uid?: string;
   username: string;
   balance: number;
+  lockedBalance?: number;
+  availableBalance?: number;
   type: string;
   role?: string;
   unreadNotifications: number;
