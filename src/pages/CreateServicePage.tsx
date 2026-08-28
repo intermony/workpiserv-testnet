@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ChevronDown, Loader2, CheckCircle } from 'lucide-react';
 import { useLanguage } from '@/i18n';
@@ -16,8 +16,6 @@ const CATEGORIES = [
   { id: 'consulting', name: 'Consulting' },
 ];
 
-type FieldName = 'title' | 'category' | 'price' | 'description';
-
 export default function CreateServicePage() {
   const navigate = useNavigate();
   const { t } = useLanguage();
@@ -33,38 +31,30 @@ export default function CreateServicePage() {
   const [description, setDesc]      = useState('');
   const [image, setImage]           = useState('');
 
-  // Validation par champ — chaque règle est indépendante pour permettre
-  // un message d'erreur précis sous le champ concerné.
-  const [touched, setTouched] = useState<Record<FieldName, boolean>>({
-    title: false,
-    category: false,
-    price: false,
-    description: false,
-  });
-
+  // Validation inline par champ — pattern standard (Stripe, Google Material,
+  // NN/G) : erreur affichée au blur, pas à chaque frappe ; jamais en toast
+  // pour la validation (un toast disparaît, l'utilisateur perd le contexte).
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const titleRef = useRef<HTMLInputElement>(null);
   const categoryRef = useRef<HTMLSelectElement>(null);
   const priceRef = useRef<HTMLInputElement>(null);
   const descRef = useRef<HTMLTextAreaElement>(null);
 
-  const titleValid = title.trim().length >= 10;
-  const categoryValid = category.length > 0;
-  const priceValid = Number(price) > 0;
-  const descValid = description.trim().length >= 30;
-
-  const isValid = titleValid && categoryValid && priceValid && descValid;
-
-  function markTouched(field: FieldName) {
-    setTouched(prev => ({ ...prev, [field]: true }));
-  }
-
-  const showTitleError = touched.title && !titleValid;
-  const showCategoryError = touched.category && !categoryValid;
-  const showPriceError = touched.price && !priceValid;
-  const showDescError = touched.description && !descValid;
-
-  const errorBorderClass = 'border-red-500 focus:border-red-500 focus:ring-red-500/20';
-  const normalBorderClass = 'border-border focus:border-brand focus:ring-brand/20';
+  const fieldErrors = {
+    title: title.trim().length >= 10 ? '' : t('create.errTitle'),
+    category: category ? '' : t('create.errCategory'),
+    price: Number(price) > 0 ? '' : t('create.errPrice'),
+    description: description.trim().length >= 30 ? '' : t('create.errDescription'),
+  };
+  const isValid = !fieldErrors.title && !fieldErrors.category && !fieldErrors.price && !fieldErrors.description;
+  const markTouched = (field: string) => setTouched(prev => ({ ...prev, [field]: true }));
+  const showErr = (field: keyof typeof fieldErrors) => touched[field] ? fieldErrors[field] : '';
+  const fieldRefs: Record<string, React.RefObject<HTMLElement>> = {
+    title: titleRef as React.RefObject<HTMLElement>,
+    category: categoryRef as React.RefObject<HTMLElement>,
+    price: priceRef as React.RefObject<HTMLElement>,
+    description: descRef as React.RefObject<HTMLElement>,
+  };
 
   async function handleImageUpload(file: File) {
     let token: string | null = null;
@@ -91,23 +81,19 @@ export default function CreateServicePage() {
 
   async function handleSubmit() {
     if (!isValid) {
-      // Marque tous les champs comme "touchés" pour révéler tous les messages
-      // d'erreur d'un coup, puis scroll+focus vers le premier champ invalide.
+      // Marque tous les champs comme "touchés" pour révéler les erreurs
+      // inline, puis amène l'utilisateur droit sur le premier problème —
+      // pattern standard (Stripe, Google Forms) plutôt qu'un bouton
+      // désactivé sans explication.
       setTouched({ title: true, category: true, price: true, description: true });
-
-      const firstInvalid = !titleValid
-        ? titleRef.current
-        : !categoryValid
-        ? categoryRef.current
-        : !priceValid
-        ? priceRef.current
-        : descRef.current;
-
-      firstInvalid?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      firstInvalid?.focus();
+      const firstInvalid = (['title', 'category', 'price', 'description'] as const)
+        .find(f => fieldErrors[f]);
+      if (firstInvalid) {
+        fieldRefs[firstInvalid].current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        fieldRefs[firstInvalid].current?.focus();
+      }
       return;
     }
-
     setLoading(true);
     setError('');
     let token: string | null = null;
@@ -205,16 +191,15 @@ export default function CreateServicePage() {
               onChange={e => setTitle(e.target.value)}
               onBlur={() => markTouched('title')}
               maxLength={120}
-              aria-invalid={showTitleError}
               className={`w-full h-12 px-4 border rounded-xl text-sm bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 transition-all ${
-                showTitleError ? errorBorderClass : normalBorderClass
+                showErr('title') ? 'border-red-400 focus:border-red-400 focus:ring-red-200' : 'border-border focus:border-brand focus:ring-brand/20'
               }`}
             />
-            <div className="flex items-start justify-between mt-1 gap-2">
-              {showTitleError ? (
-                <p className="text-xs text-red-600">{t('create.errTitle')}</p>
+            <div className="flex items-center justify-between mt-1">
+              {showErr('title') ? (
+                <p className="text-xs text-red-600">{showErr('title')}</p>
               ) : <span />}
-              <p className="text-xs text-muted-foreground text-right shrink-0">{title.length}/120</p>
+              <p className="text-xs text-muted-foreground text-right">{title.length}/120</p>
             </div>
           </div>
 
@@ -229,9 +214,8 @@ export default function CreateServicePage() {
                 value={category}
                 onChange={e => setCategory(e.target.value)}
                 onBlur={() => markTouched('category')}
-                aria-invalid={showCategoryError}
                 className={`w-full h-12 px-4 pr-10 border rounded-xl text-sm appearance-none focus:outline-none focus:ring-2 transition-all bg-card ${
-                  showCategoryError ? errorBorderClass : normalBorderClass
+                  showErr('category') ? 'border-red-400 focus:border-red-400 focus:ring-red-200' : 'border-border focus:border-brand focus:ring-brand/20'
                 }`}
               >
                 <option value="">{t('create.selectCategory')}</option>
@@ -241,9 +225,7 @@ export default function CreateServicePage() {
               </select>
               <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
             </div>
-            {showCategoryError && (
-              <p className="text-xs text-red-600 mt-1">{t('create.errCategory')}</p>
-            )}
+            {showErr('category') && <p className="text-xs text-red-600 mt-1">{showErr('category')}</p>}
           </div>
 
           {/* Price & Delivery */}
@@ -276,15 +258,13 @@ export default function CreateServicePage() {
                     onChange={e => setPrice(e.target.value)}
                     onBlur={() => markTouched('price')}
                     min="1"
-                    aria-invalid={showPriceError}
                     className={`w-full h-12 pl-8 pr-4 border rounded-xl text-sm bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 transition-all ${
-                      showPriceError ? errorBorderClass : normalBorderClass
+                      showErr('price') ? 'border-red-400 focus:border-red-400 focus:ring-red-200' : 'border-border focus:border-brand focus:ring-brand/20'
                     }`}
                   />
                 </div>
-                {showPriceError ? (
-                  <p className="text-xs text-red-600 mt-1">{t('create.errPrice')}</p>
-                ) : priceCurrency === 'USD' && (
+                {showErr('price') && <p className="text-xs text-red-600 mt-1">{showErr('price')}</p>}
+                {priceCurrency === 'USD' && (
                   <p className="text-[11px] text-muted-foreground mt-1">Le montant en Pi sera calculé et verrouillé au taux du moment lors de chaque commande.</p>
                 )}
               </div>
@@ -320,25 +300,24 @@ export default function CreateServicePage() {
               onBlur={() => markTouched('description')}
               rows={6}
               maxLength={2000}
-              aria-invalid={showDescError}
               className={`w-full px-4 py-3 border rounded-xl text-sm bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 transition-all resize-y ${
-                showDescError ? errorBorderClass : normalBorderClass
+                showErr('description') ? 'border-red-400 focus:border-red-400 focus:ring-red-200' : 'border-border focus:border-brand focus:ring-brand/20'
               }`}
             />
-            <div className="flex items-start justify-between mt-1 gap-2">
-              {showDescError ? (
-                <p className="text-xs text-red-600">{t('create.errDescription')}</p>
+            <div className="flex items-center justify-between mt-1">
+              {showErr('description') ? (
+                <p className="text-xs text-red-600">{showErr('description')}</p>
               ) : <span />}
-              <p className="text-xs text-muted-foreground text-right shrink-0">{description.length}/2000</p>
+              <p className="text-xs text-muted-foreground text-right">{description.length}/2000</p>
             </div>
           </div>
 
           {/* Escrow note */}
-          <div className="rounded-xl p-4 text-sm" style={{ backgroundColor: '#0077B615', border: '1px solid #0077B640', color: '#004E64' }}>
+          <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 text-sm text-purple-700">
             {t('create.escrowNote')}
           </div>
 
-          {/* Error serveur (réseau, backend) — jamais utilisée pour la validation de formulaire */}
+          {/* Error */}
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
               {error}
@@ -348,7 +327,7 @@ export default function CreateServicePage() {
           {/* Submit */}
           <button
             onClick={handleSubmit}
-            disabled={loading}
+            disabled={!isValid || loading}
             className={`w-full py-4 rounded-2xl font-semibold text-base transition-all flex items-center justify-center gap-2 ${
               isValid && !loading
                 ? 'bg-brand text-white hover:bg-brand/90'
