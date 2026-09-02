@@ -18,8 +18,8 @@ const PI_ADDRESS_REGEX = /^G[A-Z2-7]{55}$/;
 
 // Style commun des champs de saisie — fond clair neutre, texte sombre lisible
 const FIELD_CLASS =
-  "w-full rounded-xl px-4 py-3 text-sm border border-[#E8E6DF] " +
-  "bg-white text-[#1A1A2E] " +
+  "w-full rounded-xl px-4 py-3 text-sm border border-[#E2E8F0] " +
+  "bg-white text-[#0F172A] " +
   "placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand";
 
 function Avatar({ avatar, size = 72 }: { avatar?: string; size?: number }) {
@@ -314,7 +314,7 @@ export default function ProfilePage() {
             </div>
             <div className="h-2.5 w-full rounded-full bg-border overflow-hidden">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-brand to-[#0077B6] transition-all duration-500"
+                className="h-full rounded-full bg-gradient-to-r from-brand to-[#3B82F6] transition-all duration-500"
                 style={{ width: `${completionPct}%` }}
               />
             </div>
@@ -333,8 +333,8 @@ export default function ProfilePage() {
           </section>
         ) : (
           <section className="card-surface p-4 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-[#16A34A]/15 flex items-center justify-center shrink-0">
-              <Check size={18} className="text-[#16A34A]" />
+            <div className="w-9 h-9 rounded-full bg-[#22C55E]/15 flex items-center justify-center shrink-0">
+              <Check size={18} className="text-[#22C55E]" />
             </div>
             <div>
               <p className="font-heading font-semibold text-navy text-sm">{t('completion.done')}</p>
@@ -461,8 +461,8 @@ export default function ProfilePage() {
           </div>
 
           {/* ── AVERTISSEMENTS (toujours visibles) ── */}
-          <div className="rounded-2xl border border-[#DC2626]/40 bg-[#DC2626]/10 p-4 space-y-2">
-            <p className="text-xs font-bold text-[#DC2626] flex items-center gap-1.5">
+          <div className="rounded-2xl border border-[#EF4444]/40 bg-[#EF4444]/10 p-4 space-y-2">
+            <p className="text-xs font-bold text-[#EF4444] flex items-center gap-1.5">
               <AlertTriangle size={14} className="shrink-0" />
               {t('wallet.warning.title')}
             </p>
@@ -475,9 +475,9 @@ export default function ProfilePage() {
           </div>
 
           {/* ── Explication format ── */}
-          <div className="rounded-2xl border border-[#0077B6]/30 bg-[#0077B6]/10 p-3 flex gap-2">
-            <Info size={14} className="text-[#0077B6] shrink-0 mt-0.5" />
-            <p className="text-xs text-[#045C7B]">{t('wallet.info.format')}</p>
+          <div className="rounded-2xl border border-[#3B82F6]/30 bg-[#3B82F6]/10 p-3 flex gap-2">
+            <Info size={14} className="text-[#3B82F6] shrink-0 mt-0.5" />
+            <p className="text-xs text-[#1E40AF]">{t('wallet.info.format')}</p>
           </div>
 
           {/* ── Formulaire ou affichage ── */}
@@ -495,22 +495,22 @@ export default function ProfilePage() {
               />
               {/* Compteur de caractères */}
               <div className="flex justify-between items-center">
-                <span className={`text-xs font-mono ${draft.length === 56 ? 'text-[#16A34A]' : 'text-muted-foreground'}`}>
+                <span className={`text-xs font-mono ${draft.length === 56 ? 'text-[#22C55E]' : 'text-muted-foreground'}`}>
                   {draft.length}/56 {draft.length === 56 ? '✓' : ''}
                 </span>
                 {draft.length > 0 && !draft.startsWith('G') && (
-                  <span className="text-xs text-[#DC2626]">⚠️ Doit commencer par G</span>
+                  <span className="text-xs text-[#EF4444]">⚠️ Doit commencer par G</span>
                 )}
               </div>
               {walletError && (
-                <p className="text-xs text-[#DC2626] flex items-center gap-1">
+                <p className="text-xs text-[#EF4444] flex items-center gap-1">
                   <AlertTriangle size={12} /> {walletError}
                 </p>
               )}
               {/* Confirmation avant sauvegarde */}
               {draft.length === 56 && draft.startsWith('G') && (
-                <div className="rounded-xl bg-[#EAB308]/10 border border-[#EAB308]/40 p-3">
-                  <p className="text-xs text-[#EAB308] font-medium mb-1">⚠️ {t('wallet.confirm.title')}</p>
+                <div className="rounded-xl bg-[#F59E0B]/10 border border-[#F59E0B]/40 p-3">
+                  <p className="text-xs text-[#F59E0B] font-medium mb-1">⚠️ {t('wallet.confirm.title')}</p>
                   <code className="text-[10px] text-[#78350F] break-all block">{draft}</code>
                   <p className="text-xs text-[#92400E] mt-1">{t('wallet.confirm.hint')}</p>
                 </div>
@@ -529,12 +529,12 @@ export default function ProfilePage() {
           ) : serverWallet ? (
             <div className="space-y-2">
               <div className="flex items-center gap-2 bg-background border border-border rounded-xl px-4 py-3">
-                <ShieldCheck size={16} className="text-[#16A34A] shrink-0" />
+                <ShieldCheck size={16} className="text-[#22C55E] shrink-0" />
                 <code className="text-xs text-foreground truncate flex-1">{serverWallet}</code>
                 <button onClick={copyWallet}
                   className="text-muted-foreground hover:text-brand transition-colors shrink-0"
                   aria-label="Copy wallet address">
-                  {copied ? <Check size={16} className="text-[#16A34A]" /> : <Copy size={16} />}
+                  {copied ? <Check size={16} className="text-[#22C55E]" /> : <Copy size={16} />}
                 </button>
               </div>
               <p className="text-[11px] text-muted-foreground text-center">{t('wallet.info.escrow')}</p>
@@ -565,7 +565,7 @@ export default function ProfilePage() {
         {/* Déconnexion */}
         <button
           onClick={logout}
-          className="w-full flex items-center justify-center gap-2 border border-[#DC2626]/40 text-[#DC2626] font-medium text-sm py-3 rounded-full hover:bg-[#DC2626]/10 transition-colors"
+          className="w-full flex items-center justify-center gap-2 border border-[#EF4444]/40 text-[#EF4444] font-medium text-sm py-3 rounded-full hover:bg-[#EF4444]/10 transition-colors"
         >
           <LogOut size={16} /> {t('header.logout')}
         </button>
@@ -589,12 +589,12 @@ export default function ProfilePage() {
               <Avatar avatar={user?.avatar} size={96} />
             </div>
             {/* Tips */}
-            <div className="rounded-2xl border border-[#0077B6]/30 bg-[#0077B6]/10 p-3 text-xs text-[#045C7B] space-y-1">
+            <div className="rounded-2xl border border-[#3B82F6]/30 bg-[#3B82F6]/10 p-3 text-xs text-[#1E40AF] space-y-1">
               <p>{t('profile.photoTipSquare')}</p>
               <p>{t('profile.photoTipFormat')}</p>
               <p>{t('profile.photoTipSize')}</p>
             </div>
-            {photoError && <p className="text-xs text-[#DC2626] flex items-center gap-1"><AlertTriangle size={12}/> {photoError}</p>}
+            {photoError && <p className="text-xs text-[#EF4444] flex items-center gap-1"><AlertTriangle size={12}/> {photoError}</p>}
             <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp"
               className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) uploadPhoto(f); }} />
             <div className="flex gap-3">
