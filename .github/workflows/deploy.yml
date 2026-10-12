@@ -1,4 +1,4 @@
-name: Deploy WorkPiServ to GitHub Pages
+name: Deploy WorkPiServ Testnet to GitHub Pages
 permissions:
   contents: write
 on:
@@ -21,7 +21,7 @@ jobs:
         run: npm run build
         env:
           VITE_BACKEND_URL: https://workpiserv-api-testnet.onrender.com
-          VITE_PI_SANDBOX: true
+          VITE_PI_SANDBOX: "true"
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
