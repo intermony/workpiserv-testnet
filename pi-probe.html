@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Pi Probe — diagnostic Pi Browser</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; background: #fff; color: #111; line-height: 1.5; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  p { margin: 4px 0 12px; color: #444; font-size: 14px; }
+  button { font-size: 16px; padding: 10px 16px; border-radius: 8px; border: 1px solid #0D9488; background: #0D9488; color: #fff; margin-right: 8px; }
+  button.alt { background: #fff; color: #0D9488; }
+  #verdict { margin: 16px 0 8px; padding: 12px; border-radius: 8px; font-weight: 600; background: #f1f5f9; }
+  #verdict.yes { background: #dcfce7; }
+  #verdict.no { background: #fee2e2; }
+  pre { white-space: pre-wrap; word-break: break-all; font-size: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; }
+</style>
+</head>
+<body>
+<h1>Pi Probe</h1>
+<p>Ouvrir cette page dans le <b>Pi Browser</b>. Elle liste ce que le navigateur expose pour signer des transactions.</p>
+
+<button id="run">Lancer le diagnostic</button>
+<button id="copy" class="alt">Copier le rapport</button>
+
+<div id="verdict">En attente.</div>
+<pre id="out"></pre>
+
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<script>
+(function () {
+  var KEYWORDS = /sign|transaction|contract|soroban|stellar|xdr|invoke|wallet|auth|payment/i;
+  var out = document.getElementById('out');
+  var verdict = document.getElementById('verdict');
+  var lines = [];
+
+  function log(s) { lines.push(s); out.textContent = lines.join('\n'); }
+
+  function methodsOf(obj) {
+    var names = {};
+    var o = obj, depth = 0;
+    while (o && o !== Object.prototype && depth < 4) {
+      try { Object.getOwnPropertyNames(o).forEach(function (n) { names[n] = true; }); } catch (e) {}
+      o = Object.getPrototypeOf(o); depth++;
+    }
+    return Object.keys(names).sort();
+  }
+
+  function describe(label, obj) {
+    if (obj === undefined || obj === null) { log(label + ' : absent'); return []; }
+    var names = methodsOf(obj);
+    log(label + ' : présent (' + typeof obj + '), ' + names.length + ' propriétés');
+    names.forEach(function (n) {
+      var t = '?';
+      try { t = typeof obj[n]; } catch (e) { t = 'inaccessible'; }
+      log('  - ' + n + ' [' + t + ']');
+    });
+    return names;
+  }
+
+  function run() {
+    lines = []; out.textContent = '';
+    verdict.className = ''; verdict.textContent = 'Diagnostic en cours…';
+
+    log('Date : ' + new Date().toISOString());
+    log('User-Agent : ' + navigator.userAgent);
+    log('Page : ' + location.href);
+    log('');
+
+    var piNames = describe('window.Pi', window.Pi);
+
+    if (window.Pi && typeof window.Pi.init === 'function') {
+      try { window.Pi.init({ version: '2.0', sandbox: true }); log('Pi.init(sandbox) : OK'); }
+      catch (e) { log('Pi.init : erreur ' + e.message); }
+    }
+
+    log('');
+    var others = ['stellar', 'freighter', 'StellarSdk', 'PiNetwork', 'ethereum', 'xBullSDK', 'albedo', 'rabet'];
+    var foundOther = [];
+    others.forEach(function (k) {
+      if (window[k] !== undefined) { foundOther.push(k); describe('window.' + k, window[k]); }
+      else log('window.' + k + ' : absent');
+    });
+
+    // Recherche de candidats à la signature
+    var hits = piNames.filter(function (n) { return /sign|transaction|contract|soroban|invoke|xdr/i.test(n); });
+
+    log('');
+    log('Candidats (noms contenant sign / transaction / contract / soroban / invoke / xdr) : ' +
+        (hits.length ? hits.join(', ') : 'aucun'));
+    log('Autres fournisseurs de portefeuille trouvés : ' + (foundOther.length ? foundOther.join(', ') : 'aucun'));
+
+    if (!window.Pi) {
+      verdict.className = 'no';
+      verdict.textContent = 'window.Pi absent : ouvre la page dans le Pi Browser (pas Safari/Chrome).';
+    } else if (hits.length || foundOther.length) {
+      verdict.className = 'yes';
+      verdict.textContent = 'Candidats trouvés : envoie-moi le rapport complet (bouton Copier).';
+    } else {
+      verdict.className = 'no';
+      verdict.textContent = 'Aucune fonction de signature de transaction ou de contrat détectée.';
+    }
+  }
+
+  document.getElementById('run').addEventListener('click', run);
+  document.getElementById('copy').addEventListener('click', function () {
+    var text = out.textContent;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { verdict.textContent = 'Rapport copié.'; },
+        function () { verdict.textContent = 'Copie impossible : sélectionne le texte à la main.'; });
+    } else {
+      verdict.textContent = 'Copie impossible : sélectionne le texte à la main.';
+    }
+  });
+})();
+</script>
+</body>
+</html>
