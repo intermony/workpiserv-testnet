@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Pi Probe 4 — adresse du wallet</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; background: #fff; color: #111; line-height: 1.5; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  p { margin: 4px 0 12px; color: #444; font-size: 14px; }
+  button { font-size: 16px; padding: 10px 14px; border-radius: 8px; border: 1px solid #0D9488; background: #0D9488; color: #fff; margin: 0 8px 8px 0; }
+  button.alt { background: #fff; color: #0D9488; }
+  #status { margin: 12px 0 8px; padding: 12px; border-radius: 8px; font-weight: 600; background: #f1f5f9; }
+  pre { white-space: pre-wrap; word-break: break-all; font-size: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; }
+</style>
+</head>
+<body>
+<h1>Pi Probe 4</h1>
+<p>Ouvrir dans le <b>Pi Browser</b>. Connecte l'utilisateur et lit son adresse de wallet. Aucune transaction n'est envoyée.</p>
+
+<button id="b1">Se connecter et lire le wallet</button>
+<button id="b2" class="alt">Copier le rapport</button>
+
+<div id="status">En attente.</div>
+<pre id="out"></pre>
+
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<script>
+(function () {
+  var out = document.getElementById('out');
+  var status = document.getElementById('status');
+  var lines = [];
+  function log(s) { lines.push(s); out.textContent = lines.join('\n'); }
+  function setStatus(s) { status.textContent = s; }
+  function str(x) { try { return JSON.stringify(x); } catch (e) { return String(x); } }
+
+  document.getElementById('b1').addEventListener('click', function () {
+    lines = []; out.textContent = '';
+    setStatus('Connexion en cours…');
+    try { window.Pi.init({ version: '2.0', sandbox: true }); log('Pi.init(sandbox) : OK'); }
+    catch (e) { log('Pi.init : ' + e.message); }
+
+    var scopes = ['username', 'wallet_address'];
+    log('Scopes demandés : ' + scopes.join(', '));
+
+    window.Pi.authenticate(scopes, function (payment) {
+      log('Paiement incomplet détecté (ignoré) : ' + str(payment));
+    }).then(function (auth) {
+      log('authenticate : OK');
+      log('  username : ' + (auth && auth.user ? auth.user.username : '?'));
+      log('  scopes accordés : ' + str(window.Pi.consentedScopes));
+      try { window.Pi.ensureWalletService(); } catch (e) { log('ensureWalletService : ' + e.message); }
+      log('');
+      log('--- Pi.Wallet.getUserWalletAddresses() ---');
+      return window.Pi.Wallet.getUserWalletAddresses();
+    }).then(function (addr) {
+      log('Résultat : ' + str(addr));
+      setStatus('Terminé. Copie le rapport.');
+    }).catch(function (e) {
+      log('Erreur : ' + (e && e.message ? e.message : str(e)));
+      setStatus('Erreur. Copie le rapport.');
+    });
+  });
+
+  document.getElementById('b2').addEventListener('click', function () {
+    var text = out.textContent;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { setStatus('Rapport copié.'); },
+        function () { setStatus('Copie impossible : sélectionne le texte à la main.'); });
+    } else { setStatus('Copie impossible : sélectionne le texte à la main.'); }
+  });
+})();
+</script>
+</body>
+</html>
