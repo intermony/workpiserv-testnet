@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Pi Probe 3 — SmartContract et Wallet</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; background: #fff; color: #111; line-height: 1.5; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  p { margin: 4px 0 12px; color: #444; font-size: 14px; }
+  button { font-size: 16px; padding: 10px 14px; border-radius: 8px; border: 1px solid #0D9488; background: #0D9488; color: #fff; margin: 0 8px 8px 0; }
+  button.alt { background: #fff; color: #0D9488; }
+  #status { margin: 12px 0 8px; padding: 12px; border-radius: 8px; font-weight: 600; background: #f1f5f9; }
+  pre { white-space: pre-wrap; word-break: break-all; font-size: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; }
+</style>
+</head>
+<body>
+<h1>Pi Probe 3</h1>
+<p>Ouvrir dans le <b>Pi Browser</b>. Lit les méthodes de <code>Pi.SmartContract</code> et <code>Pi.Wallet</code>. Aucune transaction n'est envoyée.</p>
+
+<button id="b1">Lancer l'inspection</button>
+<button id="b2" class="alt">Copier le rapport</button>
+
+<div id="status">En attente.</div>
+<pre id="out"></pre>
+
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<script>
+(function () {
+  var out = document.getElementById('out');
+  var status = document.getElementById('status');
+  var lines = [];
+  function log(s) { lines.push(s); out.textContent = lines.join('\n'); }
+  function setStatus(s) { status.textContent = s; }
+
+  function ownMethods(obj) {
+    var names = {}, o = obj, depth = 0;
+    while (o && o !== Object.prototype && depth < 4) {
+      try { Object.getOwnPropertyNames(o).forEach(function (n) { names[n] = true; }); } catch (e) {}
+      o = Object.getPrototypeOf(o); depth++;
+    }
+    return Object.keys(names).sort();
+  }
+
+  function inspect(label, obj) {
+    log('=== ' + label + ' ===');
+    if (obj === undefined || obj === null) { log('absent'); log(''); return; }
+    log('type : ' + typeof obj);
+    var names = ownMethods(obj);
+    names.forEach(function (n) {
+      var t = '?', v;
+      try { v = obj[n]; t = typeof v; } catch (e) { t = 'inaccessible'; }
+      var extra = '';
+      if (t === 'function' && n !== 'constructor') {
+        try {
+          var s = Function.prototype.toString.call(v);
+          extra = '  (' + s.length + ' car.) ' + s.slice(0, 260).replace(/\s+/g, ' ');
+        } catch (e) {}
+      } else if (t === 'string' || t === 'number' || t === 'boolean') {
+        extra = '  = ' + String(v).slice(0, 120);
+      }
+      log('  - ' + n + ' [' + t + ']' + extra);
+    });
+    log('');
+  }
+
+  document.getElementById('b1').addEventListener('click', function () {
+    lines = []; out.textContent = '';
+    setStatus('Inspection en cours…');
+    try { window.Pi.init({ version: '2.0', sandbox: true }); log('Pi.init(sandbox) : OK'); } catch (e) { log('Pi.init : ' + e.message); }
+    log('');
+    try { window.Pi.ensureSmartContractService(); log('ensureSmartContractService() appelé'); } catch (e) { log('ensureSmartContractService erreur : ' + e.message); }
+    try { window.Pi.ensureWalletService(); log('ensureWalletService() appelé'); } catch (e) { log('ensureWalletService erreur : ' + e.message); }
+    log('');
+    inspect('Pi.SmartContract', window.Pi.SmartContract);
+    inspect('Pi.Wallet', window.Pi.Wallet);
+    setStatus('Terminé. Copie le rapport.');
+  });
+
+  document.getElementById('b2').addEventListener('click', function () {
+    var text = out.textContent;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { setStatus('Rapport copié.'); },
+        function () { setStatus('Copie impossible : sélectionne le texte à la main.'); });
+    } else { setStatus('Copie impossible : sélectionne le texte à la main.'); }
+  });
+})();
+</script>
+</body>
+</html>
