@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Pi Probe 2 — services smart contract</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; background: #fff; color: #111; line-height: 1.5; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  p { margin: 4px 0 12px; color: #444; font-size: 14px; }
+  button { font-size: 16px; padding: 10px 14px; border-radius: 8px; border: 1px solid #0D9488; background: #0D9488; color: #fff; margin: 0 8px 8px 0; }
+  button.alt { background: #fff; color: #0D9488; }
+  #status { margin: 12px 0 8px; padding: 12px; border-radius: 8px; font-weight: 600; background: #f1f5f9; }
+  pre { white-space: pre-wrap; word-break: break-all; font-size: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; }
+</style>
+</head>
+<body>
+<h1>Pi Probe 2</h1>
+<p>Ouvrir dans le <b>Pi Browser</b>. Lance les boutons dans l'ordre : 1, puis 2. Aucune transaction n'est envoyée.</p>
+
+<button id="b1">1. Lire le code des services</button>
+<button id="b2">2. Appeler ensureSmartContractService</button>
+<button id="b3" class="alt">Copier le rapport</button>
+
+<div id="status">En attente.</div>
+<pre id="out"></pre>
+
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<script>
+(function () {
+  var out = document.getElementById('out');
+  var status = document.getElementById('status');
+  var lines = [];
+  function log(s) { lines.push(s); out.textContent = lines.join('\n'); }
+  function setStatus(s) { status.textContent = s; }
+
+  function methodsOf(obj) {
+    var names = {}, o = obj, depth = 0;
+    while (o && o !== Object.prototype && depth < 4) {
+      try { Object.getOwnPropertyNames(o).forEach(function (n) { names[n] = true; }); } catch (e) {}
+      o = Object.getPrototypeOf(o); depth++;
+    }
+    return Object.keys(names).sort();
+  }
+
+  function describe(label, obj) {
+    if (obj === undefined || obj === null) { log(label + ' : ' + obj); return; }
+    log(label + ' : ' + typeof obj);
+    methodsOf(obj).forEach(function (n) {
+      var t = '?';
+      try { t = typeof obj[n]; } catch (e) { t = 'inaccessible'; }
+      log('  - ' + n + ' [' + t + ']');
+    });
+  }
+
+  function src(label, fn) {
+    if (typeof fn !== 'function') { log(label + ' : pas une fonction'); return; }
+    var s = '';
+    try { s = Function.prototype.toString.call(fn); } catch (e) { s = 'illisible: ' + e.message; }
+    log(label + ' (' + s.length + ' car.) :');
+    log(s.slice(0, 1800));
+    log('');
+  }
+
+  document.getElementById('b1').addEventListener('click', function () {
+    lines = []; out.textContent = '';
+    try { window.Pi.init({ version: '2.0', sandbox: true }); log('Pi.init(sandbox) : OK'); } catch (e) { log('Pi.init : ' + e.message); }
+    log('');
+    src('Pi.ensureSmartContractService', window.Pi.ensureSmartContractService);
+    src('Pi.ensureWalletService', window.Pi.ensureWalletService);
+    describe('Pi.api', window.Pi.api);
+    describe('Pi.nativeFeaturesList', window.Pi.nativeFeaturesList);
+    try {
+      var nf = window.Pi.nativeFeaturesList();
+      log('nativeFeaturesList() : ' + (nf && nf.then ? 'promesse' : JSON.stringify(nf)));
+      if (nf && nf.then) { nf.then(function (r) { log('nativeFeaturesList() résultat : ' + JSON.stringify(r)); }, function (e) { log('nativeFeaturesList() erreur : ' + e); }); }
+    } catch (e) { log('nativeFeaturesList() erreur : ' + e.message); }
+    setStatus('Étape 1 terminée. Copie le rapport ou passe à l\'étape 2.');
+  });
+
+  document.getElementById('b2').addEventListener('click', function () {
+    log('');
+    log('--- Appel de Pi.ensureSmartContractService() ---');
+    setStatus('Appel en cours…');
+    try {
+      var r = window.Pi.ensureSmartContractService();
+      Promise.resolve(r).then(function (svc) {
+        log('Résultat : ' + typeof svc);
+        describe('service smart contract', svc);
+        setStatus('Appel terminé. Copie le rapport.');
+      }, function (e) {
+        log('Rejeté : ' + (e && e.message ? e.message : e));
+        setStatus('Appel rejeté. Copie le rapport.');
+      });
+    } catch (e) {
+      log('Erreur : ' + e.message);
+      setStatus('Erreur. Copie le rapport.');
+    }
+  });
+
+  document.getElementById('b3').addEventListener('click', function () {
+    var text = out.textContent;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { setStatus('Rapport copié.'); },
+        function () { setStatus('Copie impossible : sélectionne le texte à la main.'); });
+    } else { setStatus('Copie impossible : sélectionne le texte à la main.'); }
+  });
+})();
+</script>
+</body>
+</html>
