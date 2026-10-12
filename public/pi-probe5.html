@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Pi Probe 5 — authenticate pas à pas</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; background: #fff; color: #111; line-height: 1.5; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  p { margin: 4px 0 12px; color: #444; font-size: 14px; }
+  button { font-size: 16px; padding: 10px 14px; border-radius: 8px; border: 1px solid #0D9488; background: #0D9488; color: #fff; margin: 0 8px 8px 0; }
+  button.alt { background: #fff; color: #0D9488; }
+  #status { margin: 12px 0 8px; padding: 12px; border-radius: 8px; font-weight: 600; background: #f1f5f9; }
+  pre { white-space: pre-wrap; word-break: break-all; font-size: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; }
+</style>
+</head>
+<body>
+<h1>Pi Probe 5</h1>
+<p>Ouvrir dans le <b>Pi Browser</b>. Lance les boutons dans l'ordre. Aucune transaction n'est envoyée.</p>
+
+<button id="b1">1. Connexion (username seul)</button>
+<button id="b2">2. Lire le code des fonctions</button>
+<button id="b3">3. Connexion + wallet_address</button>
+<button id="b4" class="alt">Copier le rapport</button>
+
+<div id="status">En attente.</div>
+<pre id="out"></pre>
+
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<script>
+(function () {
+  var out = document.getElementById('out');
+  var status = document.getElementById('status');
+  var lines = [];
+  var inited = false;
+  function log(s) { lines.push(s); out.textContent = lines.join('\n'); }
+  function setStatus(s) { status.textContent = s; }
+  function str(x) { try { return JSON.stringify(x); } catch (e) { return String(x); } }
+
+  function init() {
+    if (inited) return;
+    try { window.Pi.init({ version: '2.0', sandbox: true }); log('Pi.init(sandbox) : OK'); inited = true; }
+    catch (e) { log('Pi.init : ' + e.message); }
+  }
+
+  // Attend la promesse, mais abandonne l'attente après ms millisecondes
+  function withTimeout(p, ms) {
+    return new Promise(function (resolve, reject) {
+      var t = setTimeout(function () { reject(new Error('Aucune réponse après ' + (ms / 1000) + ' s')); }, ms);
+      p.then(function (v) { clearTimeout(t); resolve(v); }, function (e) { clearTimeout(t); reject(e); });
+    });
+  }
+
+  function auth(scopes) {
+    init();
+    log('');
+    log('--- authenticate(' + str(scopes) + ') ---');
+    setStatus('Connexion en cours (20 s max)…');
+    var started = Date.now();
+    var p;
+    try {
+      p = window.Pi.authenticate(scopes, function (payment) { log('Paiement incomplet (ignoré) : ' + str(payment)); });
+    } catch (e) { log('Erreur immédiate : ' + e.message); setStatus('Erreur. Copie le rapport.'); return; }
+    withTimeout(Promise.resolve(p), 20000).then(function (a) {
+      log('OK en ' + (Date.now() - started) + ' ms');
+      log('  username : ' + (a && a.user ? a.user.username : '?'));
+      log('  scopes accordés : ' + str(window.Pi.consentedScopes));
+      if (scopes.indexOf('wallet_address') !== -1) {
+        try { window.Pi.ensureWalletService(); } catch (e) { log('ensureWalletService : ' + e.message); }
+        log('--- Pi.Wallet.getUserWalletAddresses() ---');
+        return withTimeout(Promise.resolve(window.Pi.Wallet.getUserWalletAddresses()), 20000).then(function (addr) {
+          log('Résultat : ' + str(addr));
+        });
+      }
+    }).then(function () { setStatus('Terminé. Copie le rapport.'); })
+      .catch(function (e) {
+        log('Échec : ' + (e && e.message ? e.message : str(e)));
+        setStatus('Échec. Copie le rapport.');
+      });
+  }
+
+  function src(label, fn) {
+    if (typeof fn !== 'function') { log(label + ' : pas une fonction'); return; }
+    var s = '';
+    try { s = Function.prototype.toString.call(fn); } catch (e) { s = 'illisible: ' + e.message; }
+    log(label + ' (' + s.length + ' car.) :');
+    log(s.slice(0, 1500));
+    log('');
+  }
+
+  document.getElementById('b1').addEventListener('click', function () { lines = []; out.textContent = ''; inited = false; auth(['username']); });
+  document.getElementById('b3').addEventListener('click', function () { auth(['username', 'wallet_address']); });
+  document.getElementById('b2').addEventListener('click', function () {
+    init();
+    log('');
+    src('Pi.authenticate', window.Pi.authenticate);
+    src('Pi.requestPermission', window.Pi.requestPermission);
+    src('Pi.signIn', window.Pi.signIn);
+    log('Pi.authenticated = ' + window.Pi.authenticated);
+    log('Pi.consentedScopes = ' + str(window.Pi.consentedScopes));
+    setStatus('Code lu. Copie le rapport.');
+  });
+  document.getElementById('b4').addEventListener('click', function () {
+    var text = out.textContent;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { setStatus('Rapport copié.'); },
+        function () { setStatus('Copie impossible : sélectionne le texte à la main.'); });
+    } else { setStatus('Copie impossible : sélectionne le texte à la main.'); }
+  });
+})();
+</script>
+</body>
+</html>
