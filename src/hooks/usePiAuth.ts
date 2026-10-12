@@ -113,7 +113,7 @@ function useProvideAuth(): UsePiAuthReturn {
       // la connexion quand même (la fenêtre QR se fermera automatiquement).
       authPromise
         .then(late => { finalize(late).catch(() => {}); })
-        .catch(() => { /* navigateur classique : jamais de réponse */ });
+        .catch((e) => { if (e?.code) alert(`Login échoué (tardif) — code: ${e.code} — ${e.message || ''}`); });
       return false;
     } catch (err) {
       // Réseau instable (timeout/coupure après retry) : message clair à l'UI.
@@ -121,6 +121,8 @@ function useProvideAuth(): UsePiAuthReturn {
       const code = (err as { code?: string }).code;
       if (code === 'NETWORK_UNSTABLE') setError('auth.networkUnstable');
       console.error('Auth error:', err);
+      // DEBUG TEMPORAIRE : affiche le code d'erreur (Pi Browser n'a pas de console)
+      alert(`Login échoué — code: ${code || 'inconnu'} — ${(err as Error)?.message || ''}`);
       return false;
     } finally {
       setLoading(false);
