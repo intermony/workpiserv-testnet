@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Pi Probe 6 — autorisation de signature</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; background: #fff; color: #111; line-height: 1.5; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  p { margin: 4px 0 12px; color: #444; font-size: 14px; }
+  button { font-size: 16px; padding: 10px 14px; border-radius: 8px; border: 1px solid #0D9488; background: #0D9488; color: #fff; margin: 0 8px 8px 0; }
+  button.alt { background: #fff; color: #0D9488; }
+  #status { margin: 12px 0 8px; padding: 12px; border-radius: 8px; font-weight: 600; background: #f1f5f9; }
+  pre { white-space: pre-wrap; word-break: break-all; font-size: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; }
+</style>
+</head>
+<body>
+<h1>Pi Probe 6</h1>
+<p>Ouvrir dans le <b>Pi Browser</b>. Envoie une transaction <b>factice et invalide</b> aux fonctions de signature pour voir si l'app y est autorisée. Rien ne peut être signé ni envoyé.</p>
+
+<button id="b1">Lancer le test</button>
+<button id="b2" class="alt">Copier le rapport</button>
+
+<div id="status">En attente.</div>
+<pre id="out"></pre>
+
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<script>
+(function () {
+  var out = document.getElementById('out');
+  var status = document.getElementById('status');
+  var lines = [];
+  function log(s) { lines.push(s); out.textContent = lines.join('\n'); }
+  function setStatus(s) { status.textContent = s; }
+  function str(x) { try { return JSON.stringify(x); } catch (e) { return String(x); } }
+
+  function withTimeout(p, ms) {
+    return new Promise(function (resolve, reject) {
+      var t = setTimeout(function () { reject(new Error('Aucune réponse après ' + (ms / 1000) + ' s')); }, ms);
+      p.then(function (v) { clearTimeout(t); resolve(v); }, function (e) { clearTimeout(t); reject(e); });
+    });
+  }
+
+  // XDR volontairement invalide : ne peut correspondre à aucune transaction réelle
+  var DUMMY = 'AAAAAA==';
+
+  function attempt(label, fn) {
+    log('');
+    log('--- ' + label + ' ---');
+    var p;
+    try { p = Promise.resolve(fn()); }
+    catch (e) { log('Erreur immédiate : ' + (e && e.message ? e.message : str(e))); return Promise.resolve(); }
+    return withTimeout(p, 20000).then(function (r) {
+      log('Résultat : ' + str(r));
+    }, function (e) {
+      log('Erreur : ' + (e && e.message ? e.message : str(e)));
+    });
+  }
+
+  document.getElementById('b1').addEventListener('click', function () {
+    lines = []; out.textContent = '';
+    setStatus('Test en cours…');
+    try { window.Pi.init({ version: '2.0', sandbox: true }); log('Pi.init(sandbox) : OK'); }
+    catch (e) { log('Pi.init : ' + e.message); }
+
+    window.Pi.authenticate(['username', 'wallet_address'], function () {}).then(function (a) {
+      log('authenticate : OK (' + (a && a.user ? a.user.username : '?') + ')');
+      log('scopes : ' + str(window.Pi.consentedScopes));
+      try { window.Pi.ensureSmartContractService(); window.Pi.ensureWalletService(); } catch (e) { log('ensure* : ' + e.message); }
+
+      return attempt('Pi.SmartContract.signTransaction(XDR factice)', function () { return window.Pi.SmartContract.signTransaction(DUMMY); })
+        .then(function () { return attempt('Pi.Wallet.signTransaction(XDR factice)', function () { return window.Pi.Wallet.signTransaction(DUMMY); }); })
+        .then(function () { return attempt('Pi.SmartContract.NativeToken', function () { var n = window.Pi.SmartContract.NativeToken; var names = []; var o = n; var d = 0; while (o && o !== Object.prototype && d < 3) { try { names = names.concat(Object.getOwnPropertyNames(o)); } catch (e) {} o = Object.getPrototypeOf(o); d++; } return names.sort(); }); })
+        .then(function () { return attempt('Pi.SmartContract.Subscription', function () { var n = window.Pi.SmartContract.Subscription; var names = []; var o = n; var d = 0; while (o && o !== Object.prototype && d < 3) { try { names = names.concat(Object.getOwnPropertyNames(o)); } catch (e) {} o = Object.getPrototypeOf(o); d++; } return names.sort(); }); });
+    }).then(function () {
+      setStatus('Terminé. Copie le rapport.');
+    }).catch(function (e) {
+      log('Échec : ' + (e && e.message ? e.message : str(e)));
+      setStatus('Échec. Copie le rapport.');
+    });
+  });
+
+  document.getElementById('b2').addEventListener('click', function () {
+    var text = out.textContent;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { setStatus('Rapport copié.'); },
+        function () { setStatus('Copie impossible : sélectionne le texte à la main.'); });
+    } else { setStatus('Copie impossible : sélectionne le texte à la main.'); }
+  });
+})();
+</script>
+</body>
+</html>
